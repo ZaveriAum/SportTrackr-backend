@@ -1,10 +1,8 @@
 const express = require('express');
 const authController = require('../controllers/authController');
 const router = express.Router();
-const validator = require('../middlewares/validator')
 const { body } = require('express-validator')
 
-router.use(validator.validate)
 
 router.post('/register',[
     body('first_name')
@@ -40,6 +38,8 @@ router.post('/login',[
 ], authController.login);
 
 router.get('/refresh', authController.refresh);
+
+router.get('/confirmation/:token', authController.confirmation)
 
 router.post('/logout', authController.logout)
 

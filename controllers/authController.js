@@ -59,13 +59,28 @@ const refresh = async (req, res) => {
     }
 }
 
+const confirmation = async (req, res)=>{
+    try{
+        const token = req.params.token
+        authService.confirmation(token)
+        res.status(200).json({
+            status: true,
+        })
+    }catch(e){
+        res.status(401).json({
+            status: false,
+            message: e.message || 'Unknown'
+        })
+    }
+}
+
 const logout = async (req, res) => {
     try{
         const cookies = req.cookies
         if (!cookies?.jwt) return res.status(204)
         res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true })
         res.status(204).json({
-            status: true,
+            status: true
         })
     }catch(e){
         res.status(401).json({
@@ -79,5 +94,6 @@ module.exports = {
     register,
     login,
     refresh,
+    confirmation,
     logout,
 }

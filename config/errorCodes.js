@@ -6,6 +6,7 @@ const BAD_REQUEST = {
 
 const UNAUTHORIZED = {
     INVALID_CREDENTIALS: 'Invalid Credentials',
+    INVALIDATE: 'User not verified',
     UNAUTHORIZED: 'Unauthorized'
 };
 
