@@ -5,12 +5,12 @@ const { body } = require('express-validator')
 
 
 router.post('/register',[
-    body('first_name')
+    body('firstName')
         .exists().withMessage('First name is required')
         .notEmpty().withMessage('First name is required')
         .isString().withMessage('First name must be a string')
         .isLength({ min: 2 }).withMessage('First name must be at least 2 characters long'),
-    body('last_name')
+    body('lastName')
         .exists().withMessage('Last name is required')
         .notEmpty().withMessage('Last name is required')
         .isString().withMessage('Last name must be a string')
@@ -23,7 +23,7 @@ router.post('/register',[
     body('password')
         .isLength({ min: 8 })
         .withMessage('Password must be at least 8 characters long'),
-    body('confirm_password')
+    body('confirmPassword')
         .isLength({ min: 8 })
         .withMessage('Confirm Password must be same as Password'),
 ], authController.register);

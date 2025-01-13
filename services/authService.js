@@ -28,10 +28,10 @@ const generateTokens = (user) => {
 
 // Function to register a new user
 const register = async (body) => {
-    const { first_name, last_name, email, password, confirm_password } = body;
+    const { firstName, lastName, email, password, confirmPassword } = body;
 
     // Check if passwords match
-    if (password !== confirm_password) {
+    if (password !== confirmPassword) {
         throw new Error(BAD_REQUEST.PASSWORD_MISMATCH);
     }
 
@@ -45,7 +45,7 @@ const register = async (body) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Insert user into database
-    const user = await pool.query('INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id, first_name, last_name, email', [first_name, last_name, email, hashedPassword]);
+    const user = await pool.query('INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id, first_name, last_name, email', [firstName, lastName, email, hashedPassword]);
     
     // Generate email verification token
     const token = jwt.sign({ id: user.rows[0].id }, process.env.EMAIL_TOKEN_SECRET, { expiresIn: '5m' });
