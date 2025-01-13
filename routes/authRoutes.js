@@ -5,15 +5,15 @@ const { body } = require('express-validator')
 
 
 router.post('/register',[
-    body('lastName')
+    body('firstName')
         .exists().withMessage('First name is required')
         .notEmpty().withMessage('First name is required')
         .isString().withMessage('First name must be a string')
         .isLength({ min: 2 }).withMessage('First name must be at least 2 characters long'),
     body('lastName')
-        .exists().withMessage('First name is required')
+        .exists().withMessage('Last name is required')
         .notEmpty().withMessage('Last name is required')
-        .isString().withMessage('First name must be a string')
+        .isString().withMessage('Last name must be a string')
         .isLength({ min: 2 }).withMessage('Last name must be at least 2 characters long'),
     body('email')
         .exists().withMessage('Email is required')
