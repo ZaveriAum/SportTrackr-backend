@@ -12,7 +12,7 @@ const authenticateToken = (req, res, next) => {
             token,
             process.env.ACCESS_TOKEN_SECRET,
             (err, decoded) => {
-                if (err) return res.status(403).json({ status: false, message: 'Forbidden' })
+                if (err) return res.status(403).json({ message: 'Forbidden' })
                 console.log(decoded)
                 req.user = {
                     id: decoded.id,
