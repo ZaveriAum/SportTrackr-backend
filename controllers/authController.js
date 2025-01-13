@@ -74,6 +74,35 @@ const confirmation = async (req, res)=>{
     }
 }
 
+const forgotPassword = async (req, res) => {
+    try{
+        await authService.forgotPassword(req.body.email);
+        res.status(200).json({
+            status: true,
+        })
+    }catch(e){
+        res.status(500).json({
+            status: false,
+            message: e.message || 'Unknown'
+        })
+    }
+}
+
+const resetPassword = async (req, res) => {
+    try{
+        
+        await authService.resetPassword(req.params.token, req.body);
+        res.status(200).json({
+            status: true,
+        })
+    }catch(e){
+        res.status(500).json({
+            status: false,
+            message: e.message || 'Unknown'
+        })
+    }
+}
+
 const logout = async (req, res) => {
     try{
         const cookies = req.cookies
@@ -95,5 +124,7 @@ module.exports = {
     login,
     refresh,
     confirmation,
+    forgotPassword,
+    resetPassword,
     logout,
 }

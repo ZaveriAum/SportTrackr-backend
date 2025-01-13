@@ -37,14 +37,12 @@ const register = async (body) => {
 
     // Check if user already exists and is verified
     const existing_user = await findUser(email, false);
-    console.log(existing_user)
     if (existing_user.rows[0] && existing_user.rows.length >= 2) {
         throw new Error(BAD_REQUEST.USER_EXISTS);
     }
 
     // Hash password
-    const salt = await bcrypt.genSalt(Number(process.env.SALT_ROUNDS) || 10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Insert user into database
     const user = await pool.query('INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id, first_name, last_name, email', [first_name, last_name, email, hashedPassword]);
@@ -113,9 +111,47 @@ const confirmation = async (token) => {
     }
 }
 
+const forgotPassword = async (email) => {
+    // Find the user by email
+    const user = (await findUser(email, true)).rows[0];
+
+    if (user) {
+        // Generate a reset token with a short expiration time
+        const resetToken = jwt.sign({ id: user.id }, process.env.RESET_PASSWORD_TOKEN_SECRET, { expiresIn: '5m' });
+
+        // Send the reset password email with the token
+        await mailService.sendResetPasswordEmail(user.email, resetToken);
+    } else {
+        // User not found, throw a bad request error
+        throw new Error(BAD_REQUEST.USER_NOT_EXISTS);
+    }
+}
+
+const resetPassword = async (resetToken, body) =>{
+
+    const { new_password, confirm_password } = body;
+
+    // Check if passwords match
+    if (new_password !== confirm_password) {
+        throw new Error(BAD_REQUEST.PASSWORD_MISMATCH);
+    }
+
+    // Verify the reset token
+    const decode = jwt.verify(resetToken, process.env.RESET_PASSWORD_TOKEN_SECRET);
+    const id = decode.id;
+    
+    // Hash password
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    // Update the password in the database
+    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, id]);
+}
+
 module.exports = {
     register,
     login,
     refresh,
-    confirmation
+    confirmation,
+    forgotPassword,
+    resetPassword
 }

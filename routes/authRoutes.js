@@ -11,9 +11,9 @@ router.post('/register',[
         .isString().withMessage('First name must be a string')
         .isLength({ min: 2 }).withMessage('First name must be at least 2 characters long'),
     body('last_name')
-        .exists().withMessage('First name is required')
+        .exists().withMessage('Last name is required')
         .notEmpty().withMessage('Last name is required')
-        .isString().withMessage('First name must be a string')
+        .isString().withMessage('Last name must be a string')
         .isLength({ min: 2 }).withMessage('Last name must be at least 2 characters long'),
     body('email')
         .exists().withMessage('Email is required')
@@ -40,6 +40,10 @@ router.post('/login',[
 router.get('/refresh', authController.refresh);
 
 router.get('/confirmation/:token', authController.confirmation)
+
+router.post('/forgot', authController.forgotPassword)
+
+router.post('/reset/:token', authController.resetPassword)
 
 router.post('/logout', authController.logout)
 
