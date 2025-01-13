@@ -41,6 +41,10 @@ router.get('/refresh', authController.refresh);
 
 router.get('/confirmation/:token', authController.confirmation)
 
+router.post('/forgot', authController.forgotPassword)
+
+router.post('/reset/:token', authController.resetPassword)
+
 router.post('/logout', authController.logout)
 
 module.exports = router;

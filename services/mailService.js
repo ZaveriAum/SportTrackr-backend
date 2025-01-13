@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+const { BAD_REQUEST } = require('../config/errorCodes');
 
 const sendVerificationEmail = async (email, token) => {
     try{
@@ -95,10 +96,46 @@ const sendVerificationEmail = async (email, token) => {
         await transporter.sendMail(mailOptions);
         return true;
     }catch(e){
-        console.log(e)
+        throw new Error(BAD_REQUEST.EMAIL_NOT_SEND);
     }
 }
 
+const sendResetPasswordEmail = async (email, resetToken) => {
+    try {
+        // Create a transporter object for sending emails
+        let transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+        });
+
+        // Mail options including recipient, subject, and HTML content with reset link
+        let mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'SportTrackr: Reset Your Password',
+            html: `
+                <html>
+                <body>
+                    <p>You requested a password reset for your SportTrackr account.</p>
+                    <p><a href="${process.env.FRONTEND_URL}/v1/auth/reset/${resetToken}">Reset Your Password</a></p>
+                    <p>If you did not request this, please ignore this email.</p>
+                </body>
+                </html>
+            `
+        };
+
+        // Send the email
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        // Handle email sending issues
+        throw new Error(BAD_REQUEST.EMAIL_NOT_SEND);
+    }
+};
+
 module.exports = {
-    sendVerificationEmail
+    sendVerificationEmail,
+    sendResetPasswordEmail
 }
