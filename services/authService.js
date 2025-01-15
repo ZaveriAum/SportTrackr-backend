@@ -14,6 +14,15 @@ const findUser = async (email, verified) => {
         throw new Error('Connection error');
     }
 }
+const findUserRoles = async(email) =>{
+    try{
+        const result = await pool.query('SELECT r.role_name FROM user_roles ur JOIN roles r ON ur.role_id = r.id JOIN users u on u.id = ur.user_id WHERE u.email=$1', [email]);
+        const roleNames = result.rows.map(row => row.role_name);
+        return roleNames
+    }catch(error){
+        throw new Error('Connection error');
+    }
+}
 
 // Function to generate access and refresh tokens
 const generateTokens = (user) => {
@@ -98,13 +107,15 @@ const refresh = async (cookies) => {
     try {
         const refreshToken = cookies.jwt;
         const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
         const user = (await findUser(decode.email, true)).rows[0];
+        const roles = await findUserRoles(decode.email);
 
         if (!user) {
             throw new AppError(UNAUTHORIZED.UNAUTHORIZED, 401);
         }
 
-        return jwt.sign({ id: user.id, email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+        return {token:jwt.sign({ id: user.id, email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' }),roles}
     } catch (error) {
         throw new AppError(UNAUTHORIZED.UNAUTHORIZED, 401);
     }
@@ -175,5 +186,6 @@ module.exports = {
     refresh,
     confirmation,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    findUserRoles
 }
