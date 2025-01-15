@@ -40,7 +40,7 @@ const sendVerificationEmail = async (email, token) => {
                         .header {
                             text-align: center;
                             padding: 15px 0;
-                            background-color: #007bff;
+                            background-color: #809D3C;
                             color: white;
                             border-radius: 10px 10px 0 0;
                             font-size: 24px;
@@ -49,6 +49,7 @@ const sendVerificationEmail = async (email, token) => {
                         .content {
                             padding: 20px;
                             text-align: center;
+                            background-color: #5D8736;
                         }
                         .content p {
                             margin: 10px 0;
@@ -56,7 +57,7 @@ const sendVerificationEmail = async (email, token) => {
                         .verification-link {
                             display: inline-block;
                             margin-top: 20px;
-                            background-color: #28a745;
+                            background-color: #F4FFC3;
                             color: white;
                             padding: 12px 25px;
                             text-decoration: none;
@@ -65,13 +66,14 @@ const sendVerificationEmail = async (email, token) => {
                             transition: background-color 0.3s ease;
                         }
                         .verification-link:hover {
-                            background-color: #218838;
+                            background-color: #F4FFC3;
                         }
                         .footer {
                             margin-top: 15px;
                             text-align: center;
                             color: #555;
                             font-size: 14px;
+                            background-color: #809D3C;
                         }
                     </style>
                 </head>
@@ -135,7 +137,106 @@ const sendResetPasswordEmail = async (email, resetToken) => {
     }
 };
 
+const sendWelcomeEmail = async (email, userName) => {
+    try {
+        let transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+        });
+
+        let mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: `Welcome to SportTrackr, ${userName}!`,
+            html: `
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: 'Helvetica', 'Arial', sans-serif;
+                            background-color: #e7f1fc;
+                            margin: 0;
+                            padding: 0;
+                            color: #333;
+                        }
+                        .container {
+                            max-width: 600px;
+                            margin: 0 auto;
+                            background-color: #ffffff;
+                            padding: 20px;
+                            border-radius: 10px;
+                            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+                        }
+                        .header {
+                            text-align: center;
+                            padding: 15px 0;
+                            background-color: #809D3C;
+                            color: white;
+                            border-radius: 10px 10px 0 0;
+                            font-size: 24px;
+                            font-weight: bold;
+                        }
+                        .content {
+                            padding: 20px;
+                            text-align: center;
+                            background-color: #5D8736;
+                        }
+                        .content p {
+                            margin: 10px 0;
+                        }
+                        .cta-link {
+                            display: inline-block;
+                            margin-top: 20px;
+                            background-color: #28a745;
+                            color: black;
+                            padding: 12px 25px;
+                            text-decoration: none;
+                            border-radius: 5px;
+                            font-size: 16px;
+                            transition: background-color 0.3s ease;
+                        }
+                        .cta-link:hover {
+                            background-color: #F4FFC3;
+                        }
+                        .footer {
+                            margin-top: 15px;
+                            text-align: center;
+                            color: #555;
+                            font-size: 14px;
+                            background-color: #809D3C;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            Welcome to SportTrackr, ${userName}!
+                        </div>
+                        <div class="content">
+                            <p>We're thrilled to have you on board!</p>
+                            <p>SportTrackr is designed to help you manage leagues, track performances, and connect with your community seamlessly.</p>
+                            <a href="${process.env.FRONTEND_URL}/dashboard" class="cta-link">Explore Your Dashboard</a> 
+                        </div>
+                        <div class="footer">
+                            <p>If you have any questions or need assistance, feel free to reach out to us!</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        throw new Error(BAD_REQUEST.EMAIL_NOT_SEND);
+    }
+};
+
 module.exports = {
     sendVerificationEmail,
-    sendResetPasswordEmail
+    sendResetPasswordEmail,
+    sendWelcomeEmail
 }

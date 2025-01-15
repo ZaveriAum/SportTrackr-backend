@@ -2,7 +2,9 @@ const express = require('express');
 const authController = require('../controllers/authController');
 const router = express.Router();
 const { body } = require('express-validator')
+const validator = require('../middlewares/validator')
 
+router.use(validator)
 
 router.post('/register',[
     body('firstName')
@@ -26,7 +28,7 @@ router.post('/register',[
     body('confirmPassword')
         .isLength({ min: 8 })
         .withMessage('Confirm Password must be same as Password'),
-], authController.register);
+],validator, authController.register);
 
 router.post('/login',[
     body('email')
@@ -35,7 +37,7 @@ router.post('/login',[
     body('password')
         .notEmpty()
         .withMessage('Password is required'),
-], authController.login);
+],validator, authController.login);
 
 router.get('/refresh', authController.refresh);
 

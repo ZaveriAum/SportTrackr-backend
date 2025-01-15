@@ -1,6 +1,6 @@
 const authService = require('../services/authService')
 
-const register = async (req, res) => {
+const register = async (req, res, next) => {
     try{
         const response = await authService.register(req.body);
         res.cookie("jwt", response.refreshToken, {
@@ -14,13 +14,12 @@ const register = async (req, res) => {
             token: response.accessToken
         })
     }catch(e){
-        res.status(400).json({
-            message: e.message || 'Registration failed. Please try again'
-        });
+        // Pass the error to the next middleware
+        next(e);
     }
 }
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
     try{
         const response = await authService.login(req.body);
         res.cookie("jwt", response.refreshToken, {
@@ -34,53 +33,48 @@ const login = async (req, res) => {
             token: response.accessToken
         })
     }catch(e){
-        res.status(401).json({
-            message: e.message || 'Login failed. Please try again'
-        })
+        // Pass the error to the next middleware
+        next(e);
     }
 }
 
-const refresh = async (req, res) => {
+const refresh = async (req, res, next) => {
     const accessToken = await authService.refresh(req.cookies)
     try{
         res.status(200).json({
             token: accessToken
         })
     }catch(e){
-        res.status(e.statusCode || 401).json({
-            message: e.message || 'Unuathorized'
-        })
+        // Pass the error to the next middleware
+        next(e);
     }
 }
 
-const confirmation = async (req, res)=>{
+const confirmation = async (req, res, next)=>{
     try{
         const token = req.params.token
         authService.confirmation(token)
         res.status(200).json({
         })
     }catch(e){
-        res.status(401).json({
-            message: e.message || 'Unknown'
-        })
+        // Pass the error to the next middleware
+        next(e);
     }
 }
 
-const forgotPassword = async (req, res) => {
+const forgotPassword = async (req, res, next) => {
     try{
         await authService.forgotPassword(req.body.email);
         res.status(200).json({
             status: true,
         })
     }catch(e){
-        res.status(500).json({
-            status: false,
-            message: e.message || 'Unknown'
-        })
+        // Pass the error to the next middleware
+        next(e);
     }
 }
 
-const resetPassword = async (req, res) => {
+const resetPassword = async (req, res, next) => {
     try{
         
         await authService.resetPassword(req.params.token, req.body);
@@ -88,14 +82,12 @@ const resetPassword = async (req, res) => {
             status: true,
         })
     }catch(e){
-        res.status(500).json({
-            status: false,
-            message: e.message || 'Unknown'
-        })
+        // Pass the error to the next middleware
+        next(e);
     }
 }
 
-const logout = async (req, res) => {
+const logout = async (req, res, next) => {
     try{
         const cookies = req.cookies
         if (!cookies?.jwt) return res.status(204)
@@ -103,9 +95,8 @@ const logout = async (req, res) => {
         res.status(204).json({
         })
     }catch(e){
-        res.status(401).json({
-            message: e.message || 'Unuathorized'
-        })
+        // Pass the error to the next middleware
+        next(e);
     }
 }
 
