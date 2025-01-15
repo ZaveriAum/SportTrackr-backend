@@ -116,6 +116,7 @@ const confirmation = async (token) => {
         const decode = jwt.verify(token, process.env.EMAIL_TOKEN_SECRET);
         // Update user's verified status to true
         await pool.query('UPDATE users SET verified = true WHERE id = $1', [decode.id]);
+        await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)', [decode.id, 1]);
         const result = await pool.query('SELECT first_name, last_name, email FROM users WHERE id = $1', [decode.id])
         mailService.sendWelcomeEmail(result.rows[0].email, `${result.rows[0].first_name}  ${result.rows[0].last_name}`);
     } catch (error) {
