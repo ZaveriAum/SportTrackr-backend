@@ -20,78 +20,110 @@ const sendVerificationEmail = async (email, token) => {
             subject: 'Welcome to SportTrackr: Verify Your Account',
             html: `
                 <html>
-                <head>
-                    <style>
-                        body {
-                            font-family: 'Helvetica', 'Arial', sans-serif;
-                            background-color: #e7f1fc;
-                            margin: 0;
-                            padding: 0;
-                            color: #333;
-                        }
-                        .container {
-                            max-width: 600px;
-                            margin: 0 auto;
-                            background-color: #ffffff;
-                            padding: 20px;
-                            border-radius: 10px;
-                            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-                        }
-                        .header {
-                            text-align: center;
-                            padding: 15px 0;
-                            background-color: #809D3C;
-                            color: white;
-                            border-radius: 10px 10px 0 0;
-                            font-size: 24px;
-                            font-weight: bold;
-                        }
-                        .content {
-                            padding: 20px;
-                            text-align: center;
-                            background-color: #5D8736;
-                        }
-                        .content p {
-                            margin: 10px 0;
-                        }
-                        .verification-link {
-                            display: inline-block;
-                            margin-top: 20px;
-                            background-color: #F4FFC3;
-                            color: white;
-                            padding: 12px 25px;
-                            text-decoration: none;
-                            border-radius: 5px;
-                            font-size: 16px;
-                            transition: background-color 0.3s ease;
-                        }
-                        .verification-link:hover {
-                            background-color: #F4FFC3;
-                        }
-                        .footer {
-                            margin-top: 15px;
-                            text-align: center;
-                            color: #555;
-                            font-size: 14px;
-                            background-color: #809D3C;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
+                    <head>
+                        <style>
+                            @import url('https://fonts.googleapis.com/css2?family=Jersey+20&display=swap');
+                        
+                            body {
+                                margin: 0;
+                                padding: 0;
+                                background-color: #f3f3f3;
+                                font-family: "Jersey 20", serif;
+                            }
+                        
+                            .container {
+                                max-width: 700px;
+                                margin: 30px auto;
+                                background-color: #ffffff;
+                                border-radius: 15px;
+                                overflow: hidden;
+                                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+                                border: 1px solid #dddddd;
+                            }
+                        
+                            .header {
+                                background: linear-gradient(90deg, #00a859, #004f2b);
+                                color: #ffffff;
+                                text-align: center;
+                                padding: 50px 20px;
+                            }
+                        
+                            .header h1 {
+                                font-size: 45px;
+                                margin: 0;
+                                font-weight: 800;
+                            }
+                        
+                            .content {
+                                padding: 30px 20px;
+                                text-align: center;
+                                background-color: #f7fff8;
+                                color: #070e05;
+                            }
+                        
+                            .content p {
+                                font-size: 18px;
+                                line-height: 1.8;
+                                margin-bottom: 20px;
+                            }
+                        
+                            .verification-link {
+                                display: inline-block;
+                                padding: 12px 30px;
+                                background-color: #00a859;
+                                color: #ffffff;
+                                font-size: 18px;
+                                font-weight: 600;
+                                text-decoration: none;
+                                border-radius: 8px;
+                                transition: background-color 0.3s ease;
+                            }
+                        
+                            .verification-link:hover {
+                                background-color: #02fa8a;
+                            }
+                        
+                            .footer {
+                                text-align: center;
+                                padding: 5px;
+                                font-size: 19px;
+                                color: #ffffff;
+                                background: linear-gradient(90deg, #00a859, #004f2b);
+                            }
+                        
+                            .footer a {
+                                color: #ffffff;
+                                text-decoration: none;
+                            }
+                        
+                            .footer a:hover {
+                                text-decoration: underline;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
                         <div class="header">
-                            SportTrackr Account Verification
+                            <h1>SportTrackr Account Verification</h1>
                         </div>
+                        
                         <div class="content">
                             <p>Welcome to SportTrackr! Ready to kick off your journey with us?</p>
-                            <p>Verify your email address to access exciting sports features and connect with your league. Expires in 5 minutes</p>
+                            <p>Verify your email address to access exciting sports features and connect with your league. This link expires in 5 minutes.</p>
                             <a href="${url}" class="verification-link">Verify My Account</a>
                         </div>
+                        
                         <div class="footer">
-                            <p>If you didn't request this, please ignore this email.</p>
+                            <p>Stay connected with us:</p>
+                            <p>
+                                <a href="https://facebook.com">Facebook</a> |
+                                <a href="https://twitter.com">Twitter</a> |
+                                <a href="https://instagram.com">Instagram</a>
+                            </p>
+                            <p>&copy; 2025 SportTrackr. All rights reserved.</p>
                         </div>
-                    </div>
-                </body>
+                        </div>
+                    </body>
                 </html>
             `
         };        
@@ -120,11 +152,112 @@ const sendResetPasswordEmail = async (email, resetToken) => {
             subject: 'SportTrackr: Reset Your Password',
             html: `
                 <html>
-                <body>
-                    <p>You requested a password reset for your SportTrackr account.</p>
-                    <p><a href="${process.env.FRONTEND_URL}/v1/auth/reset/${resetToken}">Reset Your Password</a></p>
-                    <p>If you did not request this, please ignore this email.</p>
-                </body>
+                    <head>
+                        <style>
+                            @import url('https://fonts.googleapis.com/css2?family=Jersey+20&display=swap');
+
+                            body {
+                                margin: 0;
+                                padding: 0;
+                                background-color: #f3f3f3;
+                                font-family: "Jersey 20", serif;
+                            }
+
+                            .email-container {
+                                max-width: 700px;
+                                margin: 30px auto;
+                                background-color: #ffffff;
+                                border-radius: 15px;
+                                overflow: hidden;
+                                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+                                border: 1px solid #dddddd;
+                            }
+
+                            .header {
+                                background: linear-gradient(90deg, #00a859, #004f2b);
+                                color: #ffffff;
+                                text-align: center;
+                                padding: 50px 20px;
+                            }
+                            
+                            .header h1 {
+                                font-size: 50px;
+                                margin: 0;
+                                font-weight: 800;
+                            }
+
+                            .content {
+                                padding: 30px 20px;
+                                text-align: left;
+                                color: #333333;
+                            }
+
+                            .content p {
+                                line-height: 1.8;
+                                margin-bottom: 20px;
+                                font-size: 20px;
+                                color: #070e05;
+                            }
+
+                            .content a {
+                                display: inline-block;
+                                padding: 2px 5px;
+                                background-color: #00a859;
+                                color: #ffffff;
+                                font-size: 18px;
+                                font-weight: 600;
+                                text-decoration: none;
+                                border-radius: 8px;
+                                transition: background-color 0.3s ease;
+                            }
+
+                            .content a:hover {
+                                background-color: #004f2b;
+                            }
+
+                            .footer {
+                                text-align: center;
+                                padding: 5px;
+                                font-size: 19px;
+                                color: #ffffff;
+                                background: linear-gradient(90deg, #00a859, #004f2b);
+                            }
+
+                            .footer a {
+                                color: #ffffff;
+                                text-decoration: none;
+                            }
+
+                            .footer a:hover {
+                                text-decoration: underline;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="email-container">
+                            <div class="header">
+                                <h1>Password Reset Request</h1>
+                            </div>
+
+                            <div class="content">
+                                <p>You requested a password reset for your SportTrackr account. Please click the button below to reset your password:</p>
+                                <p>
+                                <a href="${process.env.FRONTEND_URL}/v1/auth/reset/${resetToken}">Reset Your Password</a>
+                                </p>
+                                <p>If you did not request this, please ignore this email or contact our support team for assistance.</p>
+                            </div>
+
+                            <div class="footer">
+                                <p>Stay connected with us:</p>
+                                <p>
+                                    <a href="https://facebook.com">Facebook</a> |
+                                    <a href="https://twitter.com">Twitter</a> |
+                                    <a href="https://instagram.com">Instagram</a>
+                                </p>
+                                <p>&copy; 2025 SportTrackr. All rights reserved.</p>
+                            </div>
+                        </div>
+                    </body>
                 </html>
             `
         };
@@ -150,82 +283,175 @@ const sendWelcomeEmail = async (email, userName) => {
         let mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
-            subject: `Welcome to SportTrackr, ${userName}!`,
+            subject: 'Welcome to SportTrackr',
             html: `
                 <html>
                 <head>
                     <style>
-                        body {
-                            font-family: 'Helvetica', 'Arial', sans-serif;
-                            background-color: #e7f1fc;
-                            margin: 0;
-                            padding: 0;
-                            color: #333;
-                        }
-                        .container {
-                            max-width: 600px;
-                            margin: 0 auto;
-                            background-color: #ffffff;
-                            padding: 20px;
-                            border-radius: 10px;
-                            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-                        }
-                        .header {
-                            text-align: center;
-                            padding: 15px 0;
-                            background-color: #809D3C;
-                            color: white;
-                            border-radius: 10px 10px 0 0;
-                            font-size: 24px;
-                            font-weight: bold;
-                        }
-                        .content {
-                            padding: 20px;
-                            text-align: center;
-                            background-color: #5D8736;
-                        }
-                        .content p {
-                            margin: 10px 0;
-                        }
-                        .cta-link {
-                            display: inline-block;
-                            margin-top: 20px;
-                            background-color: #28a745;
-                            color: black;
-                            padding: 12px 25px;
-                            text-decoration: none;
-                            border-radius: 5px;
-                            font-size: 16px;
-                            transition: background-color 0.3s ease;
-                        }
-                        .cta-link:hover {
-                            background-color: #F4FFC3;
-                        }
-                        .footer {
-                            margin-top: 15px;
-                            text-align: center;
-                            color: #555;
-                            font-size: 14px;
-                            background-color: #809D3C;
-                        }
-                    </style>
+                    @import url('https://fonts.googleapis.com/css2?family=Jersey+20&display=swap');
+                
+                    body {
+                    margin: 0;
+                    padding: 0;
+                    background-color: #f3f3f3;
+                    font-family: "Jersey 20", serif;
+                    }
+                
+                    .email-container {
+                    max-width: 700px;
+                    margin: 30px auto;
+                    background-color: #ffffff;
+                    border-radius: 15px;
+                    overflow: hidden;
+                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+                    border: 1px solid #dddddd;
+                    }
+                
+                    .header {
+                    background: linear-gradient(90deg, #00a859, #004f2b);
+                    color: #ffffff;
+                    text-align: center;
+                    padding: 50px 20px;
+                    }
+                
+                    .header h1 {
+                    font-size: 60px;
+                    margin: 0;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    }
+                
+                    .header p {
+                    margin-top: 10px;
+                    font-size: 25px;
+                    color: #e0e0e0;
+                    }
+                
+                    .hero-image {
+                    width: 100%;
+                    max-height: 300px;
+                    object-fit: cover;
+                    display: block;
+                    }
+                
+                    .content {
+                    padding: 30px 20px;
+                    text-align: left;
+                    color: #333333;
+                    }
+                
+                    .content h2 {
+                    font-size: 30px;
+                    margin: 0 0 15px;
+                    color: #00a859;
+                    }
+                
+                    .content p {
+                    line-height: 1.8;
+                    margin-bottom: 20px;
+                    font-size: 20px;
+                    color: #070e05;
+                    }
+                
+                    .content h3 {
+                    font-size: 24px;
+                    margin: 0 0 15px;
+                    color: #000000;
+                    }
+                
+                    .content ul {
+                    padding-left: 20px;
+                    list-style: disc;
+                    margin: 20px 0;
+                    }
+                
+                    .content ul li {
+                    margin-bottom: 10px;
+                    font-size: 20px;
+                    color: black;
+                    }
+                
+                    .cta-buttons {
+                    text-align: center;
+                    /*margin: 30px 0 20px;*/
+                    }
+                
+                    .cta-buttons a {
+                    display: inline-block;
+                    margin: 10px 15px;
+                    padding: 15px 40px;
+                    background-color: #00a859;
+                    color: #ffffff;
+                    font-size: 18px;
+                    font-weight: 600;
+                    text-decoration: none;
+                    border-radius: 8px;
+                    transition: background-color 0.3s ease;
+                    }
+                
+                    .cta-buttons a:hover {
+                    background-color: #004f2b;
+                    }
+                
+                    .footer {
+                    text-align: center;
+                    padding: 20px;
+                    font-size: 20px;
+                    color: #FFFFFF;
+                    background: linear-gradient(90deg, #00a859, #004f2b);
+                    }
+                
+                    .footer a {
+                    color: #FFFFFF;
+                    text-decoration: none;
+                    }
+                
+                    .footer a:hover {
+                    text-decoration: underline;
+                    }
+                </style>
                 </head>
                 <body>
-                    <div class="container">
-                        <div class="header">
-                            Welcome to SportTrackr, ${userName}!
+                    <div class="email-container">
+                    <!-- Header Section -->
+                    <div class="header">
+                        <h1>Welcome to Sport Trackr</h1>
+                        <p>Your ultimate football league management tool</p>
+                    </div>
+                    
+                    <div class="content">
+                        <h2>Welcome, ${userName}!</h2>
+                        <p>We’re thrilled to have you join our growing football community! At Sport Trackr, we’re all about simplifying football league management, connecting players, and making every game count.</p>
+                    
+                        <h3>What you can do with Sport Trackr:</h3>
+                        <ul>
+                        <li>📊 Manage leagues effortlessly with intuitive tools.</li>
+                        <li>⚽ Track match results, stats, and player performances.</li>
+                        <li>🤝 Connect with other players and teams in your area.</li>
+                        <li>🏆 Create tournaments and crown champions.</li>
+                        <li>🔔 Get real-time updates on league standings and more!</li>
+                        </ul>
+                    
+                        <p>Sport Trackr is your all-in-one platform for managing, competing, and thriving in the football world. Let’s take your game to the next level!</p>
+                    
+                        <div class="cta-buttons">
+                            <a href="https://yourapp.com/download">Download the App</a>
+                            <a href="https://yourapp.com/explore">Explore More</a>
                         </div>
-                        <div class="content">
-                            <p>We're thrilled to have you on board!</p>
-                            <p>SportTrackr is designed to help you manage leagues, track performances, and connect with your community seamlessly.</p>
-                            <a href="${process.env.FRONTEND_URL}/dashboard" class="cta-link">Explore Your Dashboard</a> 
-                        </div>
+                    </div>
+                    
                         <div class="footer">
-                            <p>If you have any questions or need assistance, feel free to reach out to us!</p>
+                            <p>Stay connected with us:</p>
+                            <p>
+                            <a href="https://facebook.com">Facebook</a> |
+                            <a href="https://twitter.com">Twitter</a> |
+                            <a href="https://instagram.com">Instagram</a>
+                            </p>
+                            <p>&copy; 2025 Sport Trackr. All rights reserved.</p>
                         </div>
                     </div>
                 </body>
-                </html>
+            </html>
             `
         };
 
