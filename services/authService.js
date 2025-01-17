@@ -14,6 +14,15 @@ const findUser = async (email, verified) => {
         throw new Error('Connection error');
     }
 }
+const findUserRoles = async(email) =>{
+    try{
+        const result = await pool.query('SELECT r.role_name FROM user_roles ur JOIN roles r ON ur.role_id = r.id JOIN users u on u.id = ur.user_id WHERE u.email=$1', [email]);
+        const roleNames = result.rows.map(row => row.role_name);
+        return roleNames
+    }catch(error){
+        throw new Error('Connection error');
+    }
+}
 
 // Function to generate access and refresh tokens
 const generateTokens = (user) => {
@@ -99,13 +108,15 @@ const refresh = async (cookies) => {
     try {
         const refreshToken = cookies.jwt;
         const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
         const user = (await findUser(decode.email, true)).rows[0];
+        const roles = await findUserRoles(decode.email);
 
         if (!user) {
             throw new AppError(UNAUTHORIZED.UNAUTHORIZED, 401);
         }
 
-        return jwt.sign({ id: user.id, email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+        return {token:jwt.sign({ id: user.id, email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' }),roles}
     } catch (error) {
         throw new AppError(`${e.message}` || UNAUTHORIZED.UNAUTHORIZED, e.statusCode || 401);
     }
@@ -117,6 +128,7 @@ const confirmation = async (token) => {
         const decode = jwt.verify(token, process.env.EMAIL_TOKEN_SECRET);
         // Update user's verified status to true
         await pool.query('UPDATE users SET verified = true WHERE id = $1', [decode.id]);
+        await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)', [decode.id, 1]);
         const result = await pool.query('SELECT first_name, last_name, email FROM users WHERE id = $1', [decode.id])
         mailService.sendWelcomeEmail(result.rows[0].email, `${result.rows[0].first_name}  ${result.rows[0].last_name}`);
     } catch (error) {
@@ -175,5 +187,6 @@ module.exports = {
     refresh,
     confirmation,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    findUserRoles
 }
