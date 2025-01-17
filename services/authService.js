@@ -39,6 +39,7 @@ const register = async (body) => {
         // Check if user already exists and is verified
         const existing_user = await findUser(email, false);
         if (existing_user.rows[0] && existing_user.rows.length >= 2) {
+            console.log("In here")
             throw new AppError(BAD_REQUEST.USER_EXISTS, 400);
         }
 
@@ -56,7 +57,7 @@ const register = async (body) => {
 
         return generateTokens(user.rows[0]);
     }catch(e){
-        throw new AppError('Registration failed', 500)
+        throw new AppError(`${e.message}` || 'Registration failed', e.statusCode || 500)
     }
 }
 
@@ -83,7 +84,7 @@ const login = async (body) => {
             throw new AppError(BAD_REQUEST.USER_NOT_EXISTS, 400);
         }
     }catch(e){
-        throw new AppError('Login failed', 500)
+        throw new AppError(`${e.message}` || 'Login failed', e.statusCode || 500)
     }
 }
 
@@ -106,7 +107,7 @@ const refresh = async (cookies) => {
 
         return jwt.sign({ id: user.id, email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
     } catch (error) {
-        throw new AppError(UNAUTHORIZED.UNAUTHORIZED, 401);
+        throw new AppError(`${e.message}` || UNAUTHORIZED.UNAUTHORIZED, e.statusCode || 401);
     }
 }
 
@@ -119,7 +120,7 @@ const confirmation = async (token) => {
         const result = await pool.query('SELECT first_name, last_name, email FROM users WHERE id = $1', [decode.id])
         mailService.sendWelcomeEmail(result.rows[0].email, `${result.rows[0].first_name}  ${result.rows[0].last_name}`);
     } catch (error) {
-        throw new AppError('Email expried', 500);
+        throw new AppError(`${e.message}` || 'Email expried', e.statusCode || 500);
     }
 }
 
@@ -139,7 +140,7 @@ const forgotPassword = async (email) => {
             throw new Error(BAD_REQUEST.USER_NOT_EXISTS);
         }
     }catch(e){
-        throw new AppError(`${BAD_REQUEST.EMAIL_NOT_SEND}`, 500)
+        throw new AppError(`${e.message}` || `${BAD_REQUEST.EMAIL_NOT_SEND}`, e.statusCode || 500)
     }
     
 }
@@ -164,7 +165,7 @@ const resetPassword = async (resetToken, body) =>{
         // Update the password in the database
         await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, id]);
     }catch(e){
-        throw new AppError(`${BAD_REQUEST.UNABLE_TO_RESET}`, 500)
+        throw new AppError(`${e.message}` || `${BAD_REQUEST.UNABLE_TO_RESET}`, e.statusCode || 500)
     }
 }
 
