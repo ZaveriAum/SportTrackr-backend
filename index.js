@@ -9,5 +9,5 @@ app.get('/', (req, res) => {
 
 // listing at port 5000
 app.listen(SERVER_PORT, () => {
-    console.log(`Server listining to http://localhost:${SERVER_PORT}`)
+    console.log(`Server listening to http://localhost:${SERVER_PORT}`)
 })

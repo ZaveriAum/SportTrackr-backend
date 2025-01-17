@@ -3,6 +3,7 @@ const authService = require('../services/authService')
 const register = async (req, res, next) => {
     try{
         const response = await authService.register(req.body);
+        const roles = await authService.findUserRoles(req.body.email)
         res.cookie("jwt", response.refreshToken, {
             httpOnly: true,
             domain: undefined,
@@ -11,7 +12,8 @@ const register = async (req, res, next) => {
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
         });
         res.status(201).json({
-            token: response.accessToken
+            token: response.accessToken,
+            roles
         })
     }catch(e){
         // Pass the error to the next middleware
@@ -22,6 +24,7 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
     try{
         const response = await authService.login(req.body);
+        const roles = await authService.findUserRoles(req.body.email)
         res.cookie("jwt", response.refreshToken, {
             httpOnly: true,
             domain: undefined,
@@ -30,7 +33,8 @@ const login = async (req, res, next) => {
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
         });
         res.status(200).json({
-            token: response.accessToken
+            token: response.accessToken,
+            roles
         })
     }catch(e){
         // Pass the error to the next middleware
@@ -39,10 +43,12 @@ const login = async (req, res, next) => {
 }
 
 const refresh = async (req, res, next) => {
-    const accessToken = await authService.refresh(req.cookies)
+    const refreshContent = await authService.refresh(req.cookies)
+    
     try{
         res.status(200).json({
-            token: accessToken
+            token: refreshContent.token,
+            roles:refreshContent.roles
         })
     }catch(e){
         // Pass the error to the next middleware

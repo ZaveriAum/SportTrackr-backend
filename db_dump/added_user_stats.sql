@@ -67,6 +67,50 @@ CREATE TABLE public.user_roles (
 ALTER TABLE public.user_roles OWNER TO postgres;
 
 --
+-- Name: user_stats; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.user_stats (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    year_of_stats integer NOT NULL,
+    goals integer DEFAULT 0,
+    attempts_at_goal integer DEFAULT 0,
+    assists integer DEFAULT 0,
+    saves integer DEFAULT 0,
+    interceptions integer DEFAULT 0,
+    matches_played integer DEFAULT 0,
+    yellow_cards integer DEFAULT 0,
+    red_cards integer DEFAULT 0,
+    prefered_position character varying(30)
+);
+
+
+ALTER TABLE public.user_stats OWNER TO postgres;
+
+--
+-- Name: user_stats_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.user_stats_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.user_stats_id_seq OWNER TO postgres;
+
+--
+-- Name: user_stats_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.user_stats_id_seq OWNED BY public.user_stats.id;
+
+
+--
 -- Name: users; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -114,6 +158,13 @@ ALTER TABLE ONLY public.roles ALTER COLUMN id SET DEFAULT nextval('public.roles_
 
 
 --
+-- Name: user_stats id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_stats ALTER COLUMN id SET DEFAULT nextval('public.user_stats_id_seq'::regclass);
+
+
+--
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -135,7 +186,15 @@ COPY public.roles (id, role_name) FROM stdin;
 --
 
 COPY public.user_roles (user_id, role_id) FROM stdin;
+\.
 
+
+--
+-- Data for Name: user_stats; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.user_stats (id, user_id, year_of_stats, goals, attempts_at_goal, assists, saves, interceptions, matches_played, yellow_cards, red_cards, prefered_position) FROM stdin;
+\.
 
 
 --
@@ -143,6 +202,8 @@ COPY public.user_roles (user_id, role_id) FROM stdin;
 --
 
 COPY public.users (id, first_name, last_name, email, password, verified, picture_url, created_at) FROM stdin;
+34	Elio	Fezollari	fezollarielio@gmail.com	$2b$10$pvRG6JERqRwch1sB0Y4u7eTlT5kJ2axLN2ayFh/NmfvjAKncg/bH.	f	\N	2025-01-15 23:18:06.448868
+\.
 
 
 --
@@ -153,10 +214,17 @@ SELECT pg_catalog.setval('public.roles_id_seq', 2, true);
 
 
 --
+-- Name: user_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.user_stats_id_seq', 1, false);
+
+
+--
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 10, true);
+SELECT pg_catalog.setval('public.users_id_seq', 34, true);
 
 
 --
@@ -168,11 +236,27 @@ ALTER TABLE ONLY public.roles
 
 
 --
+-- Name: user_stats uq_user_year; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_stats
+    ADD CONSTRAINT uq_user_year UNIQUE (user_id, year_of_stats);
+
+
+--
 -- Name: user_roles user_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.user_roles
     ADD CONSTRAINT user_roles_pkey PRIMARY KEY (user_id, role_id);
+
+
+--
+-- Name: user_stats user_stats_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_stats
+    ADD CONSTRAINT user_stats_pkey PRIMARY KEY (id);
 
 
 --
@@ -189,6 +273,14 @@ ALTER TABLE ONLY public.users
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_stats fk_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_stats
+    ADD CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
