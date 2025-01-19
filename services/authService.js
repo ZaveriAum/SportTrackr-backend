@@ -14,6 +14,7 @@ const findUser = async (email, verified) => {
         throw new Error('Connection error');
     }
 }
+
 const findUserRoles = async(email) =>{
     try{
         const result = await pool.query('SELECT r.role_name FROM user_roles ur JOIN roles r ON ur.role_id = r.id JOIN users u on u.id = ur.user_id WHERE u.email=$1', [email]);
@@ -25,10 +26,12 @@ const findUserRoles = async(email) =>{
 }
 
 // Function to generate access and refresh tokens
-const generateTokens = (user) => {
+const generateTokens = async (user) => {
+    const roles = await findUserRoles(user.email)
     const payload = {
         id: user.id,
-        email: user.email
+        email: user.email,
+        roles: roles
     };
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
@@ -57,7 +60,6 @@ const register = async (body) => {
 
         // Insert user into database
         const user = await pool.query('INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id, first_name, last_name, email', [firstName, lastName, email, hashedPassword]);
-        
         // Generate email verification token
         const token = jwt.sign({ id: user.rows[0].id }, process.env.EMAIL_TOKEN_SECRET, { expiresIn: '5m' });
 
@@ -117,7 +119,7 @@ const refresh = async (cookies) => {
         }
 
         return {token:jwt.sign({ id: user.id, email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' }),roles}
-    } catch (error) {
+    } catch (e) {
         throw new AppError(`${e.message}` || UNAUTHORIZED.UNAUTHORIZED, e.statusCode || 401);
     }
 }
@@ -126,15 +128,22 @@ const refresh = async (cookies) => {
 const confirmation = async (token) => {
     try {
         const decode = jwt.verify(token, process.env.EMAIL_TOKEN_SECRET);
-        // Update user's verified status to true
+        
+        if (decode.exp < Date.now() / 1000) {
+            throw new AppError('Email token has expired', 401);
+        }
         await pool.query('UPDATE users SET verified = true WHERE id = $1', [decode.id]);
         await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)', [decode.id, 1]);
-        const result = await pool.query('SELECT first_name, last_name, email FROM users WHERE id = $1', [decode.id])
-        mailService.sendWelcomeEmail(result.rows[0].email, `${result.rows[0].first_name}  ${result.rows[0].last_name}`);
-    } catch (error) {
-        throw new AppError(`${e.message}` || 'Email expried', e.statusCode || 500);
+        const result = await pool.query('SELECT first_name, last_name, email FROM users WHERE id = $1', [decode.id]);
+        mailService.sendWelcomeEmail(result.rows[0].email, `${result.rows[0].first_name} ${result.rows[0].last_name}`);
+        
+    } catch (e) {
+        if (e.name === 'TokenExpiredError') {
+            throw new AppError('Email token has expired', 401);
+        }
+        throw new AppError(`${e.message}` || 'An error occurred', e.statusCode || 500);
     }
-}
+};
 
 const forgotPassword = async (email) => {
     // Find the user by email

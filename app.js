@@ -1,5 +1,6 @@
 const express = require('express');
 const authRoutes = require('./routes/authRoutes');
+const leagueRoutes = require('./routes/leagueRoutes')
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const { requestLogger, errorLogger } = require('./middlewares/loggingMiddleware');
@@ -19,6 +20,7 @@ app.use(requestLogger);
 
 // Routes
 app.use('/v1/auth', authRoutes);
+app.use('/v1/league', leagueRoutes)
 
 // Error Logging Middleware
 app.use(errorLogger);

@@ -59,7 +59,7 @@ const refresh = async (req, res, next) => {
 const confirmation = async (req, res, next)=>{
     try{
         const token = req.params.token
-        authService.confirmation(token)
+        await authService.confirmation(token)
         res.status(200).json({
         })
     }catch(e){
