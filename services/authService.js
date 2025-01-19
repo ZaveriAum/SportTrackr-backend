@@ -117,6 +117,7 @@ const refresh = async (cookies) => {
 
         return {token:jwt.sign({ id: user.id, email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' }),roles}
     } catch (error) {
+        console.log("Hello"+error)
         throw new AppError(UNAUTHORIZED.UNAUTHORIZED, 401);
     }
 }
@@ -131,7 +132,8 @@ const confirmation = async (token) => {
         const result = await pool.query('SELECT first_name, last_name, email FROM users WHERE id = $1', [decode.id])
         mailService.sendWelcomeEmail(result.rows[0].email, `${result.rows[0].first_name}  ${result.rows[0].last_name}`);
     } catch (error) {
-        throw new AppError('Email expried', 500);
+        console.log(error)
+        throw new AppError('Email expired', 500);
     }
 }
 
