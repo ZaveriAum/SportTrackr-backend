@@ -12,7 +12,7 @@ const sendVerificationEmail = async (email, token) => {
             }
         });
 
-        const url = `http://localhost:5000/v1/auth/confirmation/${token}`
+        const url = `${process.env.FRONTEND_URL}/register/${token}`
 
         let mailOptions = {
             from: process.env.EMAIL_USER,
@@ -145,6 +145,8 @@ const sendResetPasswordEmail = async (email, resetToken) => {
             }
         });
 
+        const url = `${process.env.FRONTEND_URL}/reset/${resetToken}`
+
         // Mail options including recipient, subject, and HTML content with reset link
         let mailOptions = {
             from: process.env.EMAIL_USER,
@@ -242,7 +244,7 @@ const sendResetPasswordEmail = async (email, resetToken) => {
                             <div class="content">
                                 <p>You requested a password reset for your SportTrackr account. Please click the button below to reset your password:</p>
                                 <p>
-                                <a href="${process.env.FRONTEND_URL}/v1/auth/reset/${resetToken}">Reset Your Password</a>
+                                <a href="${url}">Reset Your Password</a>
                                 </p>
                                 <p>If you did not request this, please ignore this email or contact our support team for assistance.</p>
                             </div>

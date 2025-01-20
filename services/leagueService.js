@@ -38,7 +38,7 @@ const createLeague = async (user, data, file) => {
         const league = await pool.query('INSERT INTO public.leagues( league_name, organizer, team_starter_size, price, max_team_size, game_amount, current_season, logo_url) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;', values);
         return league.rows[0];
     }catch(e){
-        throw new AppError(`${e.message}` || "Unknow Error",e.statusCode || 500)
+        throw new AppError(`${e.message}` || "Unknown Error",e.statusCode || 500)
     }
 }
 

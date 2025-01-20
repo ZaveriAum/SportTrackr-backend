@@ -6,9 +6,9 @@ const { BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, AppError } = require('../config/er
 const mailService = require('./mailService');
 
 // Helper function to find user by email
-const findUser = async (email, verified) => {
+const findUser = async (email) => {
     try {
-        const result = await pool.query('SELECT id, first_name, last_name, email, password, verified FROM users WHERE email = $1 AND verified = $2', [email, verified]);
+        const result = await pool.query('SELECT id, first_name, last_name, email, password FROM users WHERE email = $1', [email]);
         return result;
     } catch (error) {
         throw new Error('Connection error');
@@ -39,19 +39,30 @@ const generateTokens = async (user) => {
 }
 
 // Function to register a new user
-const register = async (body) => {
-    const { firstName, lastName, email, password, confirmPassword } = body;
-
-    // Check if passwords match
-    if (password !== confirmPassword) {
-        throw new AppError(BAD_REQUEST.PASSWORD_MISMATCH, 400);
-    }
+const register = async (body, token) => {
 
     try{
-        // Check if user already exists and is verified
-        const existing_user = await findUser(email, false);
-        if (existing_user.rows[0] && existing_user.rows.length >= 2) {
-            console.log("In here")
+
+        const { firstName, lastName, email, password, confirmPassword } = body;
+
+        // Check if passwords match
+        if (password !== confirmPassword) {
+            throw new AppError(BAD_REQUEST.PASSWORD_MISMATCH, 400);
+        }
+
+        const decode = jwt.verify(token, process.env.EMAIL_TOKEN_SECRET);
+
+        // Check if the email during registration is same as verified email
+        if (decode.email !== email)
+            throw new AppError('The provided email does not match the verified record', 400);
+
+        // check if the email is verified
+        if (!decode.verified)
+            throw new AppError('Please verify your email before registration', 401)
+
+        // Check if user already exists
+        const existing_user = await findUser(email);
+        if (existing_user.rows[0]) {
             throw new AppError(BAD_REQUEST.USER_EXISTS, 400);
         }
 
@@ -59,14 +70,15 @@ const register = async (body) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Insert user into database
-        const user = await pool.query('INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id, first_name, last_name, email', [firstName, lastName, email, hashedPassword]);
-        // Generate email verification token
-        const token = jwt.sign({ id: user.rows[0].id }, process.env.EMAIL_TOKEN_SECRET, { expiresIn: '5m' });
+        const user = await pool.query('INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id', [firstName, lastName, email, hashedPassword]);
 
-        // Send verification email
-        mailService.sendVerificationEmail(user.rows[0].email, token);
+        // Adding "user" role to first time users
+        await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)', [user.rows[0].id, 1]);
 
-        return generateTokens(user.rows[0]);
+        // Send welcome email
+        mailService.sendWelcomeEmail(email, firstName, lastName);
+
+        return generateTokens(email);
     }catch(e){
         throw new AppError(`${e.message}` || 'Registration failed', e.statusCode || 500)
     }
@@ -75,13 +87,9 @@ const register = async (body) => {
 // Function to login a user
 const login = async (body) => {
     const { email, password } = body;
-    const user = (await findUser(email, true)).rows[0];
+    const user = (await findUser(email)).rows[0];
     try{
         if (user) {
-            // Check if user is verified
-            if (!user.verified) {
-                throw new AppError(UNAUTHORIZED.INVALIDATE , 400);
-            }
 
             // Compare passwords
             const isMatch = await bcrypt.compare(password, user.password);
@@ -111,7 +119,7 @@ const refresh = async (cookies) => {
         const refreshToken = cookies.jwt;
         const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
-        const user = (await findUser(decode.email, true)).rows[0];
+        const user = (await findUser(decode.email)).rows[0];
         const roles = await findUserRoles(decode.email);
 
         if (!user) {
@@ -124,30 +132,20 @@ const refresh = async (cookies) => {
     }
 }
 
-// Function to confirm email verification
-const confirmation = async (token) => {
-    try {
-        const decode = jwt.verify(token, process.env.EMAIL_TOKEN_SECRET);
-        
-        if (decode.exp < Date.now() / 1000) {
-            throw new AppError('Email token has expired', 401);
-        }
-        await pool.query('UPDATE users SET verified = true WHERE id = $1', [decode.id]);
-        await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)', [decode.id, 1]);
-        const result = await pool.query('SELECT first_name, last_name, email FROM users WHERE id = $1', [decode.id]);
-        mailService.sendWelcomeEmail(result.rows[0].email, `${result.rows[0].first_name} ${result.rows[0].last_name}`);
-        
-    } catch (e) {
-        if (e.name === 'TokenExpiredError') {
-            throw new AppError('Email token has expired', 401);
-        }
-        throw new AppError(`${e.message}` || 'An error occurred', e.statusCode || 500);
+const verifyEmail = async (email)=>{
+    try{
+        const token = jwt.sign({ email: email, verified: true }, process.env.EMAIL_TOKEN_SECRET, { expiresIn: '30m' });
+
+        // Send verification email
+        mailService.sendVerificationEmail(email, token);
+    }catch(e){
+        throw new AppError(`${e.message}` || BAD_REQUEST.EMAIL_NOT_SEND, e.statusCode || 401)
     }
-};
+}
 
 const forgotPassword = async (email) => {
     // Find the user by email
-    const user = (await findUser(email, true)).rows[0];
+    const user = (await findUser(email)).rows[0];
 
     try{
         if (user) {
@@ -194,7 +192,7 @@ module.exports = {
     register,
     login,
     refresh,
-    confirmation,
+    verifyEmail,
     forgotPassword,
     resetPassword,
     findUserRoles
