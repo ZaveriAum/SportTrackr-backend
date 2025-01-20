@@ -137,7 +137,11 @@ CREATE TABLE public.leagues (
     team_starter_size smallint NOT NULL,
     price integer NOT NULL,
     max_team_size smallint NOT NULL,
-    game_amount smallint NOT NULL
+    game_amount smallint NOT NULL,
+    start_time timestamp without time zone,
+    end_time timestamp without time zone,
+    league_name character varying(15),
+    logo_url character varying(255)
 );
 
 
@@ -348,7 +352,6 @@ CREATE TABLE public.users (
     last_name character varying(255) NOT NULL,
     email character varying(255) NOT NULL,
     password character varying(255) NOT NULL,
-    verified boolean DEFAULT false,
     picture_url text,
     created_at timestamp without time zone DEFAULT now()
 );
@@ -469,7 +472,7 @@ COPY public.league_roles (id, role_name) FROM stdin;
 -- Data for Name: leagues; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.leagues (id, organizer_id, team_starter_size, price, max_team_size, game_amount) FROM stdin;
+COPY public.leagues (id, organizer_id, team_starter_size, price, max_team_size, game_amount, start_time, end_time, league_name, logo_url) FROM stdin;
 \.
 
 
@@ -520,8 +523,8 @@ COPY public.user_stats (id, user_id, match_id, goals, shots, assists, saves, int
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.users (id, first_name, last_name, email, password, verified, picture_url, created_at) FROM stdin;
-36	Elio	Fezollari	fezollarielio@gmail.com	$2b$10$glNolTO21.GbnFYAOeZ1yesrVC1dihkWSqEJHXkBDM1s9edSxEOF6	t	\N	2025-01-17 00:35:26.004207
+COPY public.users (id, first_name, last_name, email, password, picture_url, created_at) FROM stdin;
+36	Elio	Fezollari	fezollarielio@gmail.com	$2b$10$glNolTO21.GbnFYAOeZ1yesrVC1dihkWSqEJHXkBDM1s9edSxEOF6	\N	2025-01-17 00:35:26.004207
 \.
 
 
