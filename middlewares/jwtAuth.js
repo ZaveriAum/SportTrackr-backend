@@ -18,6 +18,7 @@ const authenticateToken = (req, res, next) => {
                     email: decoded.email,
                     roles: decoded.roles
                 }
+                
                 next()
             }
         )

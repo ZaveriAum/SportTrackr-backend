@@ -13,10 +13,10 @@ const getAllLeagues = async (req, res, next) => {
 
 const createLeague = async (req, res, next) => {
     try{
-        console.log(req.user)
-        const leagues = await leagueService.createLeague(req.user, req.body, req.file);
+        const league = await leagueService.createLeague(req.user, req.body, req.file);
         res.status(201).json({
-            message : "League Created Successfully"
+            message : "League Created Successfully",
+            league: league
         });
     }catch(e){
         next(e);

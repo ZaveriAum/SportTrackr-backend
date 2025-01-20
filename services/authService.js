@@ -11,7 +11,7 @@ const findUser = async (email) => {
         const result = await pool.query('SELECT id, first_name, last_name, email, password FROM users WHERE email = $1', [email]);
         return result;
     } catch (error) {
-        throw new Error('Connection error');
+        throw new Error(error);
     }
 }
 
@@ -25,13 +25,26 @@ const findUserRoles = async(email) =>{
     }
 }
 
+const findLeagueRoles = async(email) =>{
+    try{
+        const result = await pool.query('SELECT lr.role_name FROM users u JOIN league_emp le ON u.id = le.user_id JOIN public.league_roles lr ON le.league_role_id = lr.id WHERE u.email = $1', [email])
+        if (result.rows.length > 0){
+            const roleName = result.rows[0].role_name
+            return roleName
+        }
+    }catch(e){
+        throw new Error(e);
+    }
+}
+
 // Function to generate access and refresh tokens
 const generateTokens = async (user) => {
     const roles = await findUserRoles(user.email)
+    const league_role = await findLeagueRoles(user.email)
     const payload = {
         id: user.id,
         email: user.email,
-        roles: roles
+        roles: [...roles, league_role] 
     };
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
@@ -189,6 +202,7 @@ const resetPassword = async (resetToken, body) =>{
 }
 
 module.exports = {
+    findLeagueRoles,
     register,
     login,
     refresh,
