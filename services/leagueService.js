@@ -25,18 +25,19 @@ const getAllLeagues = async (user) => {
 
 const createLeague = async (user, data, file) => {
     try{
-        const { leagueName, teamStarterSize, price, maxTeamSize, gameAmount, currentSeason } = data;
-        
-        let leagueLogoUrl = null;
-        if (file) {
-        const fileBuffer = await sharp(file.buffer)
-            .resize({ height: 1080, width: 1080, fit: "contain" })
-            .toBuffer();
-            leagueLogoUrl = await uploadFile(fileBuffer, leagueName, file.mimetype);
+        if("leagueOwner" === user.roles[0]){
+            const { leagueName, teamStarterSize, price, maxTeamSize, gameAmount, currentSeason } = data;
+            
+            let leagueLogoUrl = null;
+            if (file) {
+                leagueLogoUrl = await uploadFile(file.buffer, leagueName, file.mimetype);
+            }
+            const values = [leagueName, user.id, teamStarterSize, price, maxTeamSize, gameAmount, currentSeason, leagueLogoUrl];
+            const league = await pool.query('INSERT INTO public.leagues( league_name, organizer, team_starter_size, price, max_team_size, game_amount, current_season, logo_url) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;', values);
+            return league.rows[0];
+        }else{
+            throw new AppError(`${UNAUTHORIZED.ACCESS_DENIED}`, 401)
         }
-        const values = [leagueName, user.id, teamStarterSize, price, maxTeamSize, gameAmount, currentSeason, leagueLogoUrl];
-        const league = await pool.query('INSERT INTO public.leagues( league_name, organizer, team_starter_size, price, max_team_size, game_amount, current_season, logo_url) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;', values);
-        return league.rows[0];
     }catch(e){
         throw new AppError(`${e.message}` || "Unknown Error",e.statusCode || 500)
     }
