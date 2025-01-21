@@ -11,6 +11,22 @@ const getAllLeagues = async (req, res, next) => {
     }
 }
 
+const getLeague = async (req, res, next) => {
+    try {
+        const leagueId = req.params.id;
+        const league = await leagueService.getLeague(leagueId); 
+        
+        console.log(league)
+        if (!league) {
+            return res.status(404).json({ message: "League not found" });
+        }
+        
+        res.status(200).json({ league });
+    } catch (e) {
+        next(e);
+    }
+};
+
 const createLeague = async (req, res, next) => {
     try{
         const league = await leagueService.createLeague(req.user, req.body, req.file);
@@ -25,5 +41,6 @@ const createLeague = async (req, res, next) => {
 
 module.exports = {
     getAllLeagues,
+    getLeague,
     createLeague
 }
