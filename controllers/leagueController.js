@@ -16,7 +16,6 @@ const getLeague = async (req, res, next) => {
         const leagueId = req.params.id;
         const league = await leagueService.getLeague(leagueId); 
         
-        console.log(league)
         if (!league) {
             return res.status(404).json({ message: "League not found" });
         }
