@@ -5,19 +5,18 @@ const {uploadFile, deleteFile, getObjectSignedUrl} = require('./s3Service')
 
 const getAllLeagues = async (user) => {
     try{
-        if("owner" === user.roles[0]){
-            let response = await pool.query('SELECT id, league_name, team_starter_size, price, max_team_size, game_amount, start_time, end_time, logo_url from leagues WHERE organizer_id = $1', [user.id]);
+            let response = await pool.query('SELECT id, league_name, team_starter_size, price, max_team_size, game_amount, start_time, end_time, logo_url from leagues');
             let leagues = response.rows;
             await Promise.all(
                 leagues.map(async (league) => {
+                    league.start_time = new Date(league.start_time).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+                    league.end_time = new Date(league.end_time).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+    
                     league.logo_url = await getObjectSignedUrl(league.logo_url);
                     return league;
                 })
             );
             return leagues;
-        }else{
-            throw new AppError(`${UNAUTHORIZED.ACCESS_DENIED}`, 401)
-        }
     }catch(e){
         throw new AppError(`${e.message}` || "Unknow Error",e.statusCode || 500)
     }
