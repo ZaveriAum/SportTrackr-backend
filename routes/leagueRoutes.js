@@ -1,7 +1,6 @@
 const express = require('express');
 const leagueController = require('../controllers/leagueController');
 const router = express.Router();
-const { body } = require('express-validator');
 const validator = require('../middlewares/validator');
 const authenticateToken = require('../middlewares/jwtAuth')
 const multer = require('multer')

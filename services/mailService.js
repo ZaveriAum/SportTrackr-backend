@@ -28,7 +28,7 @@ const sendVerificationEmail = async (email, token) => {
                                 margin: 0;
                                 padding: 0;
                                 background-color: #f3f3f3;
-                                font-family: "Jersey 20", serif;
+                                font-family: "Jersey 20",Arial, serif;
                             }
                         
                             .container {
@@ -42,6 +42,7 @@ const sendVerificationEmail = async (email, token) => {
                             }
                         
                             .header {
+                                background-color: #00a859;
                                 background: linear-gradient(90deg, #00a859, #004f2b);
                                 color: #ffffff;
                                 text-align: center;
@@ -109,7 +110,7 @@ const sendVerificationEmail = async (email, token) => {
                         
                         <div class="content">
                             <p>Welcome to SportTrackr! Ready to kick off your journey with us?</p>
-                            <p>Verify your email address to access exciting sports features and connect with your league. This link expires in 5 minutes.</p>
+                            <p>Verify your email address to access exciting sports features and connect with your league. This link expires in 30 minutes.</p>
                             <a href="${url}" class="verification-link">Verify My Account</a>
                         </div>
                         

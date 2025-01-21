@@ -2,6 +2,7 @@ const express = require('express');
 const authRoutes = require('./routes/authRoutes');
 const leagueRoutes = require('./routes/leagueRoutes')
 const employeeRoutes = require('./routes/employeeRoutes')
+const userRoutes = require('./routes/userRoutes')
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const { requestLogger, errorLogger } = require('./middlewares/loggingMiddleware');
@@ -23,7 +24,7 @@ app.use(requestLogger);
 app.use('/v1/auth', authRoutes);
 app.use('/v1/league', leagueRoutes)
 app.use('/v1/league/emp', employeeRoutes)
-
+app.use('/v1/user', userRoutes)
 // Error Logging Middleware
 app.use(errorLogger);
 

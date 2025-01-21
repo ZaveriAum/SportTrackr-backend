@@ -29,7 +29,7 @@ const createLeague = async (user, data, file) => {
             
             let leagueLogoUrl = null;
             if (file) {
-                leagueLogoUrl = await uploadFile(file.buffer, leagueName, file.mimetype);
+                leagueLogoUrl = await uploadFile(file.buffer, leagueName, file.mimetype, 'league-logos');
             }
             const values = [leagueName, user.id, teamStarterSize, price, maxTeamSize, gameAmount, startTime, endTime, leagueLogoUrl];
             const league = await pool.query('INSERT INTO public.leagues( league_name, organizer_id, team_starter_size, price, max_team_size, game_amount, start_time, end_time , logo_url) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;', values);
