@@ -123,12 +123,12 @@ const login = async (body) => {
 // Function to refresh access token
 const refresh = async (cookies) => {
     
-    
-    if (!cookies?.jwt) {
-        throw new Error(FORBIDDEN.FORBIDDEN);
-    }
-    
     try {
+        
+        if (!cookies?.jwt) {
+            throw new Error(FORBIDDEN.FORBIDDEN);
+        }
+    
         const refreshToken = cookies.jwt;
         const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 

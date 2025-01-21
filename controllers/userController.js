@@ -1,0 +1,52 @@
+const userService = require('../services/userService')
+
+const getUserProfile = async (req, res, next) => {
+    try{
+        const user_profile = await userService.getUserProfile(req.user.id);
+        res.status(200).json({
+            user: user_profile
+        })
+    }catch(e){
+        next(e)
+    }
+}
+
+const updateUserProfile = async(req, res, next) => {
+    try{
+        await userService.updateUserProfile(req.user.id, req.body.firstName, req.body.lastName);
+        res.status(200).json({
+            message: "Profile Updated"
+        })
+    }catch(e){
+        next(e)
+    }
+}
+
+const updateUserPassword = async(req, res, next) => {
+    try{
+        await userService.updateUserPassword(req.user.id, req.body);
+        res.status(200).json({
+            message: "Password updated"
+        })
+    }catch(e){
+        next(e)
+    }
+}
+
+const uploadProfilePhoto = async(req, res, next) => {
+    try{
+        await userService.uploadProfilePhoto(req.user.id, req.file);
+        res.status(200).json({
+            message: "Profile Photo Added"
+        })
+    }catch(e){
+        next(e)
+    }
+}
+
+module.exports = {
+    getUserProfile,
+    updateUserProfile,
+    updateUserPassword,
+    uploadProfilePhoto
+}

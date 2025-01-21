@@ -2,21 +2,26 @@ const { PutObjectCommand, DeleteObjectCommand, GetObjectCommand} = require('@aws
 const { v4: uuidv4 } = require('uuid');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const s3Client = require('../config/s3Client')
+const {AppError, BAD_REQUEST} = require('../config/errorCodes')
 require('dotenv').config();
 
-const uploadFile = async (fileBuffer, fileName, mimeType) => {
+const uploadFile = async (fileBuffer, fileName, mimeType, folder) => {
     
-    const key = `league-logos/${uuidv4()}-${fileName}`
+    try{
+        const key = `${folder}/${uuidv4()}-${fileName}`
 
-    const command = new PutObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Body: fileBuffer,
-        Key: key,
-        ContentType: mimeType
-    });
+        const command = new PutObjectCommand({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Body: fileBuffer,
+            Key: key,
+            ContentType: mimeType
+        });
 
-    await s3Client.send(command);
-    return key;
+        await s3Client.send(command);
+        return key;
+    }catch(e){
+        throw new AppError(BAD_REQUEST.UNABLE_TO_UPLOAD, 401)
+    }
 
 }
 

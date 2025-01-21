@@ -3,7 +3,8 @@ const BAD_REQUEST = {
     USER_EXISTS: 'User already exists',
     USER_NOT_EXISTS: 'User does not exist',
     EMAIL_NOT_SEND: 'Unable to send email. Veryfiy the email',
-    UNABLE_TO_RESET: 'Unable to resent password'
+    UNABLE_TO_RESET: 'Unable to resent password',
+    UNABLE_TO_UPLOAD: 'Unable to upload'
 };
 
 const UNAUTHORIZED = {
