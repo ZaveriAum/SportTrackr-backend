@@ -6,7 +6,7 @@ const validator = require('../middlewares/validator')
 
 router.use(validator)
 
-router.post('/register',[
+router.post('/register/:token',[
     body('firstName')
         .exists().withMessage('First name is required')
         .notEmpty().withMessage('First name is required')
@@ -41,7 +41,7 @@ router.post('/login',[
 
 router.get('/refresh', authController.refresh);
 
-router.get('/confirmation/:token', authController.confirmation)
+router.post('/verify', authController.verifyEmail)
 
 router.post('/forgot', authController.forgotPassword)
 

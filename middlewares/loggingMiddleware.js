@@ -6,7 +6,7 @@ const requestLogger = async (req, res, next) => {
         // Log basic info about the request
         await dbLog('info', `Request received: ${req.method} ${req.url}`, req.method, res.statusCode);
     } catch (err) {
-        console.error("Failed to log request:", err.message);
+        // console.error("Failed to log request:", err.message);
     }
     next();
 };
@@ -17,7 +17,7 @@ const errorLogger = async (err, req, res, next) => {
         // Log error details
         await dbLog('error', `Error: ${err.message}`, req.method, err.statusCode);
     } catch (logErr) {
-        console.error("Failed to log error:", logErr.message);
+        // console.error("Failed to log error:", logErr.message);
     }
     next(err); // Pass the error to the next middleware
 };

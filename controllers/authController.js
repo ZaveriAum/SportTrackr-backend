@@ -2,8 +2,7 @@ const authService = require('../services/authService')
 
 const register = async (req, res, next) => {
     try{
-        const response = await authService.register(req.body);
-        const roles = await authService.findUserRoles(req.body.email)
+        const response = await authService.register(req.body, req.params.token);
         res.cookie("jwt", response.refreshToken, {
             httpOnly: true,
             domain: undefined,
@@ -12,8 +11,7 @@ const register = async (req, res, next) => {
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
         });
         res.status(201).json({
-            token: response.accessToken,
-            roles
+            token: response.accessToken
         })
     }catch(e){
         // Pass the error to the next middleware
@@ -24,7 +22,6 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
     try{
         const response = await authService.login(req.body);
-        const roles = await authService.findUserRoles(req.body.email)
         res.cookie("jwt", response.refreshToken, {
             httpOnly: true,
             domain: undefined,
@@ -33,8 +30,7 @@ const login = async (req, res, next) => {
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
         });
         res.status(200).json({
-            token: response.accessToken,
-            roles
+            token: response.accessToken
         })
     }catch(e){
         // Pass the error to the next middleware
@@ -56,14 +52,14 @@ const refresh = async (req, res, next) => {
     }
 }
 
-const confirmation = async (req, res, next)=>{
+
+const verifyEmail = async (req, res, next) => {
     try{
-        const token = req.params.token
-        authService.confirmation(token)
+        await authService.verifyEmail(req.body.email);
         res.status(200).json({
+            message: "Verification Email Sent"
         })
     }catch(e){
-        // Pass the error to the next middleware
         next(e);
     }
 }
@@ -72,7 +68,7 @@ const forgotPassword = async (req, res, next) => {
     try{
         await authService.forgotPassword(req.body.email);
         res.status(200).json({
-            status: true,
+            message: "true",
         })
     }catch(e){
         // Pass the error to the next middleware
@@ -110,7 +106,7 @@ module.exports = {
     register,
     login,
     refresh,
-    confirmation,
+    verifyEmail,
     forgotPassword,
     resetPassword,
     logout,

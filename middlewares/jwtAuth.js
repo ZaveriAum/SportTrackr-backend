@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 require('dotenv').config()
 
 const authenticateToken = (req, res, next) => {
@@ -15,8 +15,10 @@ const authenticateToken = (req, res, next) => {
                 if (err) return res.status(403).json({ message: 'Forbidden' })
                 req.user = {
                     id: decoded.id,
-                    email: decoded.email
+                    email: decoded.email,
+                    roles: decoded.roles
                 }
+                
                 next()
             }
         )
@@ -26,6 +28,4 @@ const authenticateToken = (req, res, next) => {
     }
 }
 
-module.exports = {
-    authenticateToken
-}
+module.exports = authenticateToken
