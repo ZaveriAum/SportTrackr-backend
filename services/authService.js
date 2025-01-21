@@ -56,7 +56,7 @@ const register = async (body, token) => {
 
     try{
 
-        const { firstName, lastName, email, password, confirmPassword } = body;
+        const { firstName, lastName, password, confirmPassword } = body;
 
         // Check if passwords match
         if (password !== confirmPassword) {
@@ -65,16 +65,12 @@ const register = async (body, token) => {
 
         const decode = jwt.verify(token, process.env.EMAIL_TOKEN_SECRET);
 
-        // Check if the email during registration is same as verified email
-        if (decode.email !== email)
-            throw new AppError('The provided email does not match the verified record', 400);
-
         // check if the email is verified
         if (!decode.verified)
             throw new AppError('Please verify your email before registration', 401)
 
         // Check if user already exists
-        const existing_user = await findUser(email);
+        const existing_user = await findUser(decode.email);
         if (existing_user.rows[0]) {
             throw new AppError(BAD_REQUEST.USER_EXISTS, 400);
         }
@@ -83,15 +79,15 @@ const register = async (body, token) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Insert user into database
-        const user = await pool.query('INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id', [firstName, lastName, email, hashedPassword]);
+        const user = await pool.query('INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id', [firstName, lastName, decode.email, hashedPassword]);
 
         // Adding "user" role to first time users
         await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)', [user.rows[0].id, 1]);
 
         // Send welcome email
-        mailService.sendWelcomeEmail(email, firstName, lastName);
+        mailService.sendWelcomeEmail(decode.email, firstName, lastName);
 
-        return generateTokens(email);
+        return generateTokens(decode.email);
     }catch(e){
         throw new AppError(`${e.message}` || 'Registration failed', e.statusCode || 500)
     }
