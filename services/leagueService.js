@@ -1,6 +1,7 @@
 require("dotenv").config();
 const pool = require("../config/db");
 const { AppError, UNAUTHORIZED } = require("../config/errorCodes");
+const { toCamelCase } = require("../utilities/utilities");
 const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
 
 const getAllLeagues = async (user) => {
@@ -24,7 +25,7 @@ const getAllLeagues = async (user) => {
         return league;
       })
     );
-    return leagues;
+    return leagues.map(toCamelCase);
   } catch (e) {
     throw new AppError(`${e.message}` || "Unknown Error", e.statusCode || 500);
   }
@@ -56,9 +57,8 @@ const getLeague = async (id) => {
       [id]
     );
     const league = query.rows[0];
-    console.log(league.logo_url);
     league.logo_url = await getObjectSignedUrl(league.logo_url);
-    return league;
+    return toCamelCase(league) ;
   } catch (e) {
     throw new AppError(`${e.message}` || "Unknown Error", e.statusCode || 500);
   }
