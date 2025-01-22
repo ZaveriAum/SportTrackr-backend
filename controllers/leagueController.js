@@ -23,6 +23,10 @@ const createLeague = async (req, res, next) => {
     }
 }
 
+const updateLeague = async (req, res, next) => {
+    
+}
+
 module.exports = {
     getAllLeagues,
     createLeague

@@ -24,7 +24,7 @@ const getAllLeagues = async (user) => {
 
 const createLeague = async (user, data, file) => {
     try{
-        if("owner" === user.roles[0]){
+        if(user.roles.includes('owner')){
             const { leagueName, teamStarterSize, price, maxTeamSize, gameAmount, startTime, endTime } = data;
             
             let leagueLogoUrl = null;
@@ -42,7 +42,32 @@ const createLeague = async (user, data, file) => {
     }
 }
 
+const updateLeague = async(user, leagueId, body) => {
+    try{
+
+        const { leagueName, teamStarterSize, price, maxTeamSize, gameAmount, startTime, endTime } = body;
+
+        // Check if league exists
+        const league = await pool.query('Select league_name FROM leagues WHERE id = $1', [leagueId]);
+
+        if(league.rows.length === 0){
+            throw new AppError("League does not exists", 400)
+        }
+
+        const values = [leagueName, teamStarterSize, price, maxTeamSize, gameAmount, startTime, endTime, leagueId]
+
+        await pool.query('UPDATE public.leagues SET league_name=$1, team_starter_size=$2, price=$3, max_team_size=$4, game_amount=$5, start_time=$6, end_time=$7  WHERE id = $8', [values])
+
+
+    }catch(e){
+        throw new AppError('Unable to update league', 400)
+    }
+    const { leagueName, teamStarterSize, price, maxTeamSize, gameAmount, startTime, endTime } = data;
+
+}
+
 module.exports = {
     getAllLeagues,
-    createLeague
+    createLeague,
+    updateLeague
 }

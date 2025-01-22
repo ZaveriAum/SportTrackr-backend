@@ -27,11 +27,13 @@ const findUserRoles = async(email) =>{
 
 const findLeagueRoles = async(email) =>{
     try{
-        const result = await pool.query('SELECT lr.role_name FROM users u JOIN league_emp le ON u.id = le.user_id JOIN public.league_roles lr ON le.league_role_id = lr.id WHERE u.email = $1', [email])
+        const result = await pool.query('SELECT lr.role_name FROM users u JOIN league_emp le ON u.id = le.user_id JOIN employee_roles er ON le.id = er.employee_id JOIN league_roles lr ON er.role_id = lr.id WHERE u.email = $1', [email])
         if (result.rows.length > 0){
-            const roleName = result.rows[0].role_name
+            console.log(result)
+            const roleName = result.rows.map(role=> role.role_name)
             return roleName
         }
+        return []
     }catch(e){
         throw new Error(e);
     }
@@ -40,11 +42,11 @@ const findLeagueRoles = async(email) =>{
 // Function to generate access and refresh tokens
 const generateTokens = async (user) => {
     const roles = await findUserRoles(user.email)
-    const league_role = await findLeagueRoles(user.email)
+    const league_roles = await findLeagueRoles(user.email)
     const payload = {
         id: user.id,
         email: user.email,
-        roles: [...roles, league_role] 
+        roles: [...roles, ...league_roles] 
     };
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
