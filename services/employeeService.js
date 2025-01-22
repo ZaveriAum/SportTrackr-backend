@@ -1,6 +1,6 @@
 require('dotenv').config();
 const pool = require('../config/db');
-const {AppError, UNAUTHORIZED} = require('../config/errorCodes')
+const {AppError, UNAUTHORIZED, BAD_REQUEST} = require('../config/errorCodes')
 const {findLeagueRoles} = require('./authService')
 
 const getEmployees = async (user, leagueId) => {
@@ -43,21 +43,32 @@ const assignEmployeeToLeague = async (email, role, leagueId) => {
             throw new AppError('Role does not exist.', 404);
         }
 
-        // Check if employee already exists in league_emp
-        const existingEmployee = await pool.query(
-            'SELECT * FROM league_emp WHERE user_id = (SELECT id FROM users WHERE email = $1) AND league_id = $2',
-            [email, leagueId]
-        );
-
-        if (existingEmployee.rows.length > 0) {
-            throw new AppError('Employee already exists in the league.', 400);
-        }
-
         const userId = await pool.query('SELECT id FROM users WHERE email = $1', [email])
 
-        // Add employee to league_emp
-        await pool.query('INSERT INTO league_emp (user_id, league_id, league_role_id) VALUES ($1, $2, $3)', [userId.rows[0].id, leagueId, roleId.rows[0].id] );
+        if (!userId){
+            throw new AppError(BAD_REQUEST.USER_NOT_EXISTS, 400)
+        }
+        
+        // get the userId from the email given
 
+        const leagueEmpResult = await pool.query(
+            `
+            INSERT INTO league_emp (user_id, league_id)
+            VALUES ($1, $2)
+            RETURNING id;
+            `,
+            [userId.rows[0].id, leagueId]
+        );
+    
+        const leagueEmpId = leagueEmpResult.rows[0].id;
+    
+        await pool.query(
+            `
+            INSERT INTO employee_roles (role_id, employee_id)
+            VALUES ($1, $2);
+            `,
+            [roleId.rows[0].id, leagueEmpId]
+        );
     } catch (e) {
         throw new AppError(e.message || 'Unknown Error', e.statusCode || 500);
     }

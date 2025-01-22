@@ -15,6 +15,7 @@ const assignEmployeeToLeague = async (req, res, next) => {
     try{
         await employeeService.assignEmployeeToLeague(req.body.email, req.body.role, req.params.leagueId);
         res.status(200).json({
+            message : "Employee Assigned Successfully"
         });
     }catch(e){
         next(e);
