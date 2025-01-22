@@ -12,6 +12,7 @@ router.use(validator)
 router.use(authenticateToken)
 
 router.get('/', leagueController.getAllLeagues);
+router.get("/:id",leagueController.getLeague)
 router.post('/', upload.single('file'), leagueController.createLeague)
 
 module.exports = router;
