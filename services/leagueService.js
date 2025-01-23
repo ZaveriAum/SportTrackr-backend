@@ -24,7 +24,7 @@ const getAllLeagues = async (user) => {
 
         const url = league.logo_url
             ? await getObjectSignedUrl(league.logo_url)
-            : await getObjectSignedUrl(league.DEFAULT_LEAGUE_LOGO)
+            : await getObjectSignedUrl(DEFAULT_LEAGUE_LOGO)
         
         league.logo_url = url
         return league;

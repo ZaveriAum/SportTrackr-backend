@@ -29,7 +29,6 @@ const findLeagueRoles = async(email) =>{
     try{
         const result = await pool.query('SELECT lr.role_name FROM users u JOIN league_emp le ON u.id = le.user_id JOIN employee_roles er ON le.id = er.employee_id JOIN league_roles lr ON er.role_id = lr.id WHERE u.email = $1', [email])
         if (result.rows.length > 0){
-            console.log(result)
             const roleName = result.rows.map(role=> role.role_name)
             return roleName
         }
