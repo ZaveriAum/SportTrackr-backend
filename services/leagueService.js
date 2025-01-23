@@ -71,7 +71,8 @@ const getLeague = async (id) => {
 
 const createLeague = async (user, data, file) => {
   try {
-    if ("owner" === user.roles[0]) {
+    console.log(user.roles)
+    if (user.roles.includes('owner')) {
       const {
         leagueName,
         teamStarterSize,
