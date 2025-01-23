@@ -13,6 +13,7 @@ router.use(authenticateToken)
 
 router.get('/', leagueController.getAllLeagues);
 
+router.get("/:id",leagueController.getLeague)
 router.post('/', upload.single('file'), [
     check('leagueName')
         .notEmpty().withMessage('League name is required')
