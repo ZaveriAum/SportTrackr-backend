@@ -145,6 +145,13 @@ const refresh = async (cookies) => {
 
 const verifyEmail = async (email)=>{
     try{
+
+        // Check if user already exists
+        const existing_user = await findUser(email);
+        if (existing_user.rows[0]) {
+            throw new AppError(BAD_REQUEST.USER_EXISTS, 400);
+        }
+
         const token = jwt.sign({ email: email, verified: true }, process.env.EMAIL_TOKEN_SECRET, { expiresIn: '30m' });
 
         // Send verification email

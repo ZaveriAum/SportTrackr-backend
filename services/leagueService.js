@@ -1,7 +1,8 @@
 require('dotenv').config();
 const pool = require('../config/db');
-const {AppError, UNAUTHORIZED} = require('../config/errorCodes')
+const {AppError, UNAUTHORIZED, BAD_REQUEST} = require('../config/errorCodes')
 const {uploadFile, deleteFile, getObjectSignedUrl} = require('./s3Service')
+const DEFAULT_LEAGUE_PHOTO = 'defualts/default_league_photo.png'
 
 const getAllLeagues = async (user) => {
     try{
@@ -12,7 +13,10 @@ const getAllLeagues = async (user) => {
                     league.start_time = new Date(league.start_time).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
                     league.end_time = new Date(league.end_time).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
     
-                    league.logo_url = await getObjectSignedUrl(league.logo_url);
+                    league.logo_url =  league.logo_url
+                    ? await getObjectSignedUrl(league.logo_url)
+                    : await getObjectSignedUrl(DEFAULT_LEAGUE_PHOTO);
+    
                     return league;
                 })
             );
@@ -45,29 +49,83 @@ const createLeague = async (user, data, file) => {
 const updateLeague = async(user, leagueId, body) => {
     try{
 
-        const { leagueName, teamStarterSize, price, maxTeamSize, gameAmount, startTime, endTime } = body;
+        if (user.roles.includes('owner') || user.roles.includes('admin')){
 
-        // Check if league exists
-        const league = await pool.query('Select league_name FROM leagues WHERE id = $1', [leagueId]);
+            const { leagueName, teamStarterSize, price, maxTeamSize, gameAmount, startTime, endTime } = body;
 
-        if(league.rows.length === 0){
-            throw new AppError("League does not exists", 400)
+            // Check if league exists
+            const league = await pool.query('Select league_name FROM leagues WHERE id = $1', [leagueId]);
+
+            if(league.rows.length === 0){
+                throw new AppError("League does not exists", 400)
+            }
+
+            const values = [leagueName, teamStarterSize, price, maxTeamSize, gameAmount, startTime, endTime, leagueId]
+
+            await pool.query('UPDATE public.leagues SET league_name=$1, team_starter_size=$2, price=$3, max_team_size=$4, game_amount=$5, start_time=$6, end_time=$7  WHERE id = $8', [...values])
+        }else{
+            throw new AppError(BAD_REQUEST.ACCESS_DENIED, 400)
         }
 
-        const values = [leagueName, teamStarterSize, price, maxTeamSize, gameAmount, startTime, endTime, leagueId]
-
-        await pool.query('UPDATE public.leagues SET league_name=$1, team_starter_size=$2, price=$3, max_team_size=$4, game_amount=$5, start_time=$6, end_time=$7  WHERE id = $8', [values])
-
-
     }catch(e){
-        throw new AppError('Unable to update league', 400)
+        throw new AppError(e.message || 'Unable to update league',e.statusCode || 400)
     }
-    const { leagueName, teamStarterSize, price, maxTeamSize, gameAmount, startTime, endTime } = data;
-
 }
 
+const uploadLeagueLogo = async (user, file, leagueId) => {
+    try{
+        if (user.roles.includes('owner') || user.roles.includes('admin')){
+
+            if(!file){
+                throw new AppError('No file uploaded', 400);
+            }
+
+            const { buffer, originalname, mimetype } = file;
+
+            const key = await uploadFile(buffer, originalname, mimetype, 'league-logos');
+            await pool.query('UPDATE leagues SET logo_url = $1 WHERE id = $2', [key, leagueId]);
+        }else{
+            throw new AppError(BAD_REQUEST.ACCESS_DENIED, 400)
+        }
+    }catch(e){
+        throw new AppError(e.message || 'Unable to upload League Logo', e.statusCode || 400)
+    }
+}
+
+const deleteLeague = async (user, leagueId) => {
+
+    try{
+        if (user.roles.includes('owner')){
+            await pool.query('BEGIN');
+                    
+            // Delete employee roles for employees linked to the league
+            await pool.query(`DELETE FROM employee_roles WHERE employee_id IN (SELECT id FROM league_emp WHERE league_id = $1)`,[leagueId]);
+        
+            // Delete employees linked to the league
+            await pool.query(`DELETE FROM league_emp WHERE league_id = $1`,[leagueId]);
+        
+            // Delete teams linked to the league
+            await pool.query(`DELETE FROM teams WHERE league_id = $1`,[leagueId]);
+        
+            // Delete the league
+            const result = await pool.query( `DELETE FROM leagues WHERE id = $1 RETURNING logo_url`,[leagueId]);
+
+            // Deleting the league logo
+            deleteFile(result.rows[0].logo_url)
+
+            await pool.query('COMMIT');
+        }else{
+            throw new AppError(BAD_REQUEST.ACCESS_DENIED, 400)
+        }
+    }catch(e){
+        await pool.query('ROLLBACK');
+        throw new AppError(e.message || 'Error deleting the league',e.statusCode || 401)
+    }
+}
 module.exports = {
     getAllLeagues,
     createLeague,
-    updateLeague
+    updateLeague,
+    uploadLeagueLogo,
+    deleteLeague
 }
