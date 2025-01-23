@@ -299,19 +299,12 @@ CREATE TABLE public.teams (
     name character varying(255) NOT NULL,
     league_id integer NOT NULL,
     description text,
-    primary_color character varying(50) NOT NULL,
-    secondary_color character varying(50) NOT NULL,
     owner_id integer NOT NULL,
     captain_id integer NOT NULL,
-    wins smallint DEFAULT 0 NOT NULL,
-    losses smallint DEFAULT 0 NOT NULL,
-    draws smallint DEFAULT 0 NOT NULL,
-    points integer DEFAULT 0 NOT NULL,
-    goals_scored integer DEFAULT 0 NOT NULL,
-    goals_conceded integer DEFAULT 0 NOT NULL,
-    games_played smallint DEFAULT 0 NOT NULL,
-    primary_color_temp public.color_enum,
-    secondary_color_temp public.color_enum
+    home_color public.color_enum,
+    away_color public.color_enum,
+    logo_url character varying(255),
+    team_visibility boolean DEFAULT false
 );
 
 
@@ -558,8 +551,8 @@ COPY public.roles (id, role_name) FROM stdin;
 -- Data for Name: teams; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.teams (id, name, league_id, description, primary_color, secondary_color, owner_id, captain_id, wins, losses, draws, points, goals_scored, goals_conceded, games_played, primary_color_temp, secondary_color_temp) FROM stdin;
-1	Bayern Munich	8	Professional soccer team	red	white	39	46	10	10	1	31	9	12	21	\N	\N
+COPY public.teams (id, name, league_id, description, owner_id, captain_id, home_color, away_color, logo_url, team_visibility) FROM stdin;
+1	Bayern Munich	8	\N	50	50	red	white	league-logos/85ea633b-f932-463b-bfed-da8d6e7e392b-Bayern Munich	f
 \.
 
 
@@ -658,7 +651,7 @@ SELECT pg_catalog.setval('public.roles_id_seq', 1, false);
 -- Name: teams_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.teams_id_seq', 1, false);
+SELECT pg_catalog.setval('public.teams_id_seq', 14, true);
 
 
 --

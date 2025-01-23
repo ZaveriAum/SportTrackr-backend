@@ -11,7 +11,7 @@ const upload = multer({ storage: storage })
 router.use(validator)
 router.use(authenticateToken)
 
-router.post('/', teamController.createTeam);
+router.post('/',upload.single("logo") ,teamController.createTeam);
 
 
 module.exports = router;

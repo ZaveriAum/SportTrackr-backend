@@ -74,6 +74,7 @@ const createLeague = async (user, data, file) => {
         gameAmount,
         startTime,
         endTime,
+        description
       } = data;
 
       let leagueLogoUrl = null;
@@ -95,9 +96,10 @@ const createLeague = async (user, data, file) => {
         startTime,
         endTime,
         leagueLogoUrl,
+        description
       ];
       const league = await pool.query(
-        "INSERT INTO public.leagues( league_name, organizer_id, team_starter_size, price, max_team_size, game_amount, start_time, end_time , logo_url) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;",
+        "INSERT INTO public.leagues( league_name, organizer_id, team_starter_size, price, max_team_size, game_amount, start_time, end_time , logo_url,description) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9,$10) RETURNING *;",
         values
       );
       return league.rows[0];
