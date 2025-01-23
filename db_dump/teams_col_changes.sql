@@ -16,9 +16,67 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
+--
+
+-- *not* creating schema, since initdb creates it
+
+
+ALTER SCHEMA public OWNER TO postgres;
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
+--
+
+COMMENT ON SCHEMA public IS '';
+
+
+--
+-- Name: color_enum; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.color_enum AS ENUM (
+    'red',
+    'blue',
+    'green',
+    'yellow',
+    'purple',
+    'orange',
+    'black',
+    'white',
+    'gray',
+    'brown',
+    'pink',
+    'cyan',
+    'magenta',
+    'lime',
+    'teal',
+    'beige',
+    'cream',
+    'turquoise',
+    'peach',
+    'lavender'
+);
+
+
+ALTER TYPE public.color_enum OWNER TO postgres;
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- Name: employee_roles; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.employee_roles (
+    role_id smallint NOT NULL,
+    employee_id bigint NOT NULL
+);
+
+
+ALTER TABLE public.employee_roles OWNER TO postgres;
 
 --
 -- Name: highlights; Type: TABLE; Schema: public; Owner: postgres
@@ -64,8 +122,7 @@ ALTER SEQUENCE public.highlights_id_seq OWNED BY public.highlights.id;
 CREATE TABLE public.league_emp (
     id integer NOT NULL,
     user_id integer NOT NULL,
-    league_id integer NOT NULL,
-    league_role_id integer NOT NULL
+    league_id integer NOT NULL
 );
 
 
@@ -149,25 +206,17 @@ CREATE TABLE public.leagues (
 ALTER TABLE public.leagues OWNER TO postgres;
 
 --
--- Name: league_table_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: leagues_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.league_table_id_seq
-    AS integer
+ALTER TABLE public.leagues ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.leagues_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.league_table_id_seq OWNER TO postgres;
-
---
--- Name: league_table_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.league_table_id_seq OWNED BY public.leagues.id;
+    CACHE 1
+);
 
 
 --
@@ -250,17 +299,12 @@ CREATE TABLE public.teams (
     name character varying(255) NOT NULL,
     league_id integer NOT NULL,
     description text,
-    primary_color character varying(50) NOT NULL,
-    secondary_color character varying(50) NOT NULL,
     owner_id integer NOT NULL,
     captain_id integer NOT NULL,
-    wins smallint DEFAULT 0 NOT NULL,
-    losses smallint DEFAULT 0 NOT NULL,
-    draws smallint DEFAULT 0 NOT NULL,
-    points integer DEFAULT 0 NOT NULL,
-    goals_scored integer DEFAULT 0 NOT NULL,
-    goals_conceded integer DEFAULT 0 NOT NULL,
-    games_played smallint DEFAULT 0 NOT NULL
+    home_color public.color_enum,
+    away_color public.color_enum,
+    logo_url character varying(255),
+    team_visibility boolean DEFAULT false
 );
 
 
@@ -405,13 +449,6 @@ ALTER TABLE ONLY public.league_roles ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
--- Name: leagues id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.leagues ALTER COLUMN id SET DEFAULT nextval('public.league_table_id_seq'::regclass);
-
-
---
 -- Name: matches id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -447,6 +484,14 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 
 
 --
+-- Data for Name: employee_roles; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.employee_roles (role_id, employee_id) FROM stdin;
+\.
+
+
+--
 -- Data for Name: highlights; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -458,7 +503,7 @@ COPY public.highlights (id, match_id, highlight_url, highlight_type, highlight_f
 -- Data for Name: league_emp; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.league_emp (id, user_id, league_id, league_role_id) FROM stdin;
+COPY public.league_emp (id, user_id, league_id) FROM stdin;
 \.
 
 
@@ -506,8 +551,8 @@ COPY public.roles (id, role_name) FROM stdin;
 -- Data for Name: teams; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.teams (id, name, league_id, description, primary_color, secondary_color, owner_id, captain_id, wins, losses, draws, points, goals_scored, goals_conceded, games_played) FROM stdin;
-1	Bayern Munich	8	Professional soccer team	red	white	39	46	10	10	1	31	9	12	21
+COPY public.teams (id, name, league_id, description, owner_id, captain_id, home_color, away_color, logo_url, team_visibility) FROM stdin;
+1	Bayern Munich	8	\N	50	50	red	white	league-logos/85ea633b-f932-463b-bfed-da8d6e7e392b-Bayern Munich	f
 \.
 
 
@@ -582,10 +627,10 @@ SELECT pg_catalog.setval('public.league_roles_id_seq', 1, false);
 
 
 --
--- Name: league_table_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: leagues_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.league_table_id_seq', 14, true);
+SELECT pg_catalog.setval('public.leagues_id_seq', 1, false);
 
 
 --
@@ -599,14 +644,14 @@ SELECT pg_catalog.setval('public.matches_id_seq', 1, false);
 -- Name: roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.roles_id_seq', 2, true);
+SELECT pg_catalog.setval('public.roles_id_seq', 1, false);
 
 
 --
 -- Name: teams_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.teams_id_seq', 1, true);
+SELECT pg_catalog.setval('public.teams_id_seq', 14, true);
 
 
 --
@@ -620,7 +665,15 @@ SELECT pg_catalog.setval('public.user_stats_id_seq', 1, false);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 50, true);
+SELECT pg_catalog.setval('public.users_id_seq', 1, false);
+
+
+--
+-- Name: employee_roles employee_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.employee_roles
+    ADD CONSTRAINT employee_roles_pkey PRIMARY KEY (role_id, employee_id);
 
 
 --
@@ -637,14 +690,6 @@ ALTER TABLE ONLY public.highlights
 
 ALTER TABLE ONLY public.league_emp
     ADD CONSTRAINT league_emp_pkey PRIMARY KEY (id);
-
-
---
--- Name: league_emp league_emp_user_id_league_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.league_emp
-    ADD CONSTRAINT league_emp_user_id_league_id_key UNIQUE (user_id, league_id);
 
 
 --
@@ -744,6 +789,14 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: employee_roles employee_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.employee_roles
+    ADD CONSTRAINT employee_id FOREIGN KEY (employee_id) REFERENCES public.league_emp(id) NOT VALID;
+
+
+--
 -- Name: users fk_team_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -776,14 +829,6 @@ ALTER TABLE ONLY public.league_emp
 
 
 --
--- Name: league_emp league_emp_league_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.league_emp
-    ADD CONSTRAINT league_emp_league_role_id_fkey FOREIGN KEY (league_role_id) REFERENCES public.league_roles(id) ON DELETE RESTRICT;
-
-
---
 -- Name: league_emp league_emp_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -813,6 +858,14 @@ ALTER TABLE ONLY public.matches
 
 ALTER TABLE ONLY public.matches
     ADD CONSTRAINT matches_home_team_id_fkey FOREIGN KEY (home_team_id) REFERENCES public.teams(id) ON DELETE CASCADE;
+
+
+--
+-- Name: employee_roles role_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.employee_roles
+    ADD CONSTRAINT role_id FOREIGN KEY (role_id) REFERENCES public.league_roles(id) NOT VALID;
 
 
 --
@@ -869,6 +922,13 @@ ALTER TABLE ONLY public.user_stats
 
 ALTER TABLE ONLY public.user_stats
     ADD CONSTRAINT user_stats_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: postgres
+--
+
+REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 
 
 --

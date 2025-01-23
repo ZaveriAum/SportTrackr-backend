@@ -8,7 +8,7 @@ const mailService = require('./mailService');
 // Helper function to find user by email
 const findUser = async (email) => {
     try {
-        const result = await pool.query('SELECT id, first_name, last_name, email, password FROM users WHERE email = $1', [email]);
+        const result = await pool.query('SELECT id, first_name, last_name, email,team_id, password FROM users WHERE email = $1', [email]);
         return result;
     } catch (error) {
         throw new Error(error);
@@ -45,7 +45,8 @@ const generateTokens = async (user) => {
     const payload = {
         id: user.id,
         email: user.email,
-        roles: [...roles, ...league_roles] 
+        roles: [...roles, ...league_roles],
+        teamId: user.team_id || null
     };
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
@@ -100,7 +101,6 @@ const login = async (body) => {
     const user = (await findUser(email)).rows[0];
     try{
         if (user) {
-
             // Compare passwords
             const isMatch = await bcrypt.compare(password, user.password);
             
