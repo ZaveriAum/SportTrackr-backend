@@ -5,7 +5,7 @@ const { toCamelCase } = require("../utilities/utilities");
 const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
 const DEFAULT_LEAGUE_LOGO = 'defualts/default_league_photo.png'
 
-const getAllLeagues = async (user) => {
+const getAllLeagues = async () => {
   try {
     let response = await pool.query(
       "SELECT id, league_name, start_time, logo_url from leagues"
@@ -61,8 +61,13 @@ const getLeague = async (id) => {
     `,
       [id]
     );
+
     const league = query.rows[0];
-    league.logo_url = await getObjectSignedUrl(league.logo_url);
+    const url = league.logo_url
+            ? await getObjectSignedUrl(league.logo_url)
+            : await getObjectSignedUrl(DEFAULT_LEAGUE_LOGO)
+        
+    league.logo_url = url
     return toCamelCase(league) ;
   } catch (e) {
     throw new AppError(`${e.message}` || "Unknown Error", e.statusCode || 500);
@@ -71,7 +76,6 @@ const getLeague = async (id) => {
 
 const createLeague = async (user, data, file) => {
   try {
-    console.log(user.roles)
     if (user.roles.includes('owner')) {
       const {
         leagueName,

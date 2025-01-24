@@ -2,7 +2,7 @@ const leagueService = require('../services/leagueService')
 
 const getAllLeagues = async (req, res, next) => {
     try{
-        const leagues = await leagueService.getAllLeagues(req.user);
+        const leagues = await leagueService.getAllLeagues();
         res.status(200).json({
             leagues:leagues
         });
