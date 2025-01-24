@@ -63,7 +63,6 @@ const createTeam = async (user, data, file) => {
     );
 
     team.rows[0].logoUrl = await getObjectSignedUrl(team.rows[0].logo_url);
-    console.log(team.logoUrl);
     return toCamelCase(team.rows[0]);
   } catch (e) {
     if (
