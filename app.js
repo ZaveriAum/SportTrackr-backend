@@ -11,7 +11,7 @@ const { requestLogger, errorLogger } = require('./middlewares/loggingMiddleware'
 const app = express();
 
 app.use(cors({
-    origin: "http://localhost:5173", // frontend
+    origin: "http://localhost:5174", // frontend
     credentials: true,
 }));
 app.use(cookieParser());

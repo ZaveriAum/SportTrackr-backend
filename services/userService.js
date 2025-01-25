@@ -2,7 +2,7 @@ const { body } = require('express-validator');
 const pool = require('../config/db')
 const DEFAULT_PROFILE_PICTURE='defualts/default_profile_photo.jpeg'
 const {AppError, BAD_REQUEST} = require('../config/errorCodes')
-const {getObjectSignedUrl, uploadFile} = require('./s3Service')
+const {getObjectSignedUrl, uploadFile, deleteFile} = require('./s3Service')
 const bcrypt = require('bcrypt')
 
 const getUserProfile = async (userId) => { 
@@ -67,10 +67,16 @@ const uploadProfilePhoto = async(userId, file) => {
         if(!file){
             throw new AppError('No file uploaded', 400);
         }
+        const user = await pool.query('SELECT picture_url FROM users WHERE id=$1', [user.id])
 
         const { buffer, originalname, mimetype } = file;
 
         const key = await uploadFile(buffer, originalname, mimetype, 'profile-photo');
+
+        // If there is a picture url then delete the image from s3
+        if(user.rows[0].picture_url){
+            await deleteFile(user.rows[0].picture_url)
+        }
 
         await pool.query('UPDATE users SET picture_url = $1 WHERE id = $2', [key, userId]);
 

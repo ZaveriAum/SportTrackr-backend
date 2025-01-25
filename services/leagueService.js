@@ -1,6 +1,6 @@
 require("dotenv").config();
 const pool = require("../config/db");
-const { AppError, UNAUTHORIZED } = require("../config/errorCodes");
+const { AppError, UNAUTHORIZED, BAD_REQUEST } = require("../config/errorCodes");
 const { toCamelCase } = require("../utilities/utilities");
 const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
 const DEFAULT_LEAGUE_LOGO = 'defualts/default_league_photo.png'
@@ -122,44 +122,55 @@ const createLeague = async (user, data, file) => {
   }
 };
 
+// only give option to update name
 const updateLeague = async(user, leagueId, body) => {
     try{
 
         if (user.roles.includes('owner') || user.roles.includes('admin')){
-
-            const { leagueName, teamStarterSize, price, maxTeamSize, gameAmount, startTime, endTime } = body;
-
             // Check if league exists
-            const league = await pool.query('Select league_name FROM leagues WHERE id = $1', [leagueId]);
+            const league = await pool.query('Select organizer_id, league_name FROM leagues WHERE id = $1', [leagueId]);
+
+            const {leagueName} = body;
 
             if(league.rows.length === 0){
                 throw new AppError("League does not exists", 400)
             }
 
-            const values = [leagueName, teamStarterSize, price, maxTeamSize, gameAmount, startTime, endTime, leagueId]
+            if(league.rows[0].organizer_id !== user.id){
+              throw new AppError(BAD_REQUEST.ACCESS_DENIED, 401)
+            }
 
-            await pool.query('UPDATE public.leagues SET league_name=$1, team_starter_size=$2, price=$3, max_team_size=$4, game_amount=$5, start_time=$6, end_time=$7  WHERE id = $8', [...values])
+            await pool.query('UPDATE public.leagues SET league_name=$1 WHERE id = $2', [leagueName, leagueId])
         }else{
             throw new AppError(BAD_REQUEST.ACCESS_DENIED, 400)
         }
 
     }catch(e){
-        throw new AppError(e.message || 'Unable to update league',e.statusCode || 400)
+      throw new AppError(e.message || 'Unable to update league',e.statusCode || 400)
     }
 };
 
+// delete the previous logo
 const uploadLeagueLogo = async (user, file, leagueId) => {
     try{
         if (user.roles.includes('owner') || user.roles.includes('admin')){
 
-            if(!file){
-                throw new AppError('No file uploaded', 400);
-            }
+          const league = await pool.query('SELECT organizer_id, logo_url FROM leagues WHERE id=$1', [leagueId])
+          const employee = await pool.query('SELECT id FROM league_emp WHERE user_id=$1 and league_id=$2', [user.id, leagueId])
+          if(!file){
+              throw new AppError('No file uploaded', 400);
+          }
 
-            const { buffer, originalname, mimetype } = file;
+          if(league.rows[0].organizer_id !== user.id && employee.rows.length === 0){
+            throw new AppError(BAD_REQUEST.ACCESS_DENIED, 401)
+          }
 
-            const key = await uploadFile(buffer, originalname, mimetype, 'league-logos');
-            await pool.query('UPDATE leagues SET logo_url = $1 WHERE id = $2', [key, leagueId]);
+          const { buffer, originalname, mimetype } = file;
+          // Delete the previous logo.
+          await deleteFile(league.rows[0].logo_url)
+          // Upload the new logo
+          const key = await uploadFile(buffer, originalname, mimetype, 'league-logos');
+          await pool.query('UPDATE leagues SET logo_url = $1 WHERE id = $2', [key, leagueId]);
         }else{
             throw new AppError(BAD_REQUEST.ACCESS_DENIED, 400)
         }
