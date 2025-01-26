@@ -4,7 +4,8 @@ const BAD_REQUEST = {
     USER_NOT_EXISTS: 'User does not exist',
     EMAIL_NOT_SEND: 'Unable to send email. Veryfiy the email',
     UNABLE_TO_RESET: 'Unable to resent password',
-    UNABLE_TO_UPLOAD: 'Unable to upload'
+    UNABLE_TO_UPLOAD: 'Unable to upload',
+    TEAM_NOT_EXISTS:"Team does not exist"
 };
 
 const UNAUTHORIZED = {
