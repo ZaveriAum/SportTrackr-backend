@@ -19,113 +19,235 @@ const sendVerificationEmail = async (email, token) => {
             to: email,
             subject: 'Welcome to SportTrackr: Verify Your Account',
             html: `
-                <html>
-                    <head>
-                        <style>
-                            @import url('https://fonts.googleapis.com/css2?family=Jersey+20&display=swap');
-                        
-                            body {
-                                margin: 0;
-                                padding: 0;
-                                background-color: #f3f3f3;
-                                font-family: "Jersey 20",Arial, serif;
-                            }
-                        
-                            .container {
-                                max-width: 700px;
-                                margin: 30px auto;
-                                background-color: #ffffff;
-                                border-radius: 15px;
-                                overflow: hidden;
-                                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-                                border: 1px solid #dddddd;
-                            }
-                        
-                            .header {
-                                background-color: #00a859;
-                                background: linear-gradient(90deg, #00a859, #004f2b);
-                                color: #ffffff;
-                                text-align: center;
-                                padding: 50px 20px;
-                            }
-                        
-                            .header h1 {
-                                font-size: 45px;
-                                margin: 0;
-                                font-weight: 800;
-                            }
-                        
-                            .content {
-                                padding: 30px 20px;
-                                text-align: center;
-                                background-color: #f7fff8;
-                                color: #070e05;
-                            }
-                        
-                            .content p {
-                                font-size: 18px;
-                                line-height: 1.8;
-                                margin-bottom: 20px;
-                            }
-                        
-                            .verification-link {
-                                display: inline-block;
-                                padding: 12px 30px;
-                                background-color: #00a859;
-                                color: #ffffff;
-                                font-size: 18px;
-                                font-weight: 600;
-                                text-decoration: none;
-                                border-radius: 8px;
-                                transition: background-color 0.3s ease;
-                            }
-                        
-                            .verification-link:hover {
-                                background-color: #02fa8a;
-                            }
-                        
-                            .footer {
-                                text-align: center;
-                                padding: 5px;
-                                font-size: 19px;
-                                color: #ffffff;
-                                background: linear-gradient(90deg, #00a859, #004f2b);
-                            }
-                        
-                            .footer a {
-                                color: #ffffff;
-                                text-decoration: none;
-                            }
-                        
-                            .footer a:hover {
-                                text-decoration: underline;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                        <div class="header">
-                            <h1>SportTrackr Account Verification</h1>
-                        </div>
-                        
-                        <div class="content">
-                            <p>Welcome to SportTrackr! Ready to kick off your journey with us?</p>
-                            <p>Verify your email address to access exciting sports features and connect with your league. This link expires in 30 minutes.</p>
-                            <a href="${url}" class="verification-link">Verify My Account</a>
-                        </div>
-                        
-                        <div class="footer">
-                            <p>Stay connected with us:</p>
-                            <p>
-                                <a href="https://facebook.com">Facebook</a> |
-                                <a href="https://twitter.com">Twitter</a> |
-                                <a href="https://instagram.com">Instagram</a>
-                            </p>
-                            <p>&copy; 2025 SportTrackr. All rights reserved.</p>
-                        </div>
-                        </div>
-                    </body>
-                </html>
+<!doctype html>
+<html lang="und" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <title></title>
+  <!--[if !mso]><!-->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!--<![endif]-->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    #outlook a {
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+
+    table,
+    td {
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+    }
+
+    p {
+      display: block;
+      margin: 13px 0;
+    }
+
+  </style>
+  <!--[if mso]>
+    <noscript>
+    <xml>
+    <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    </noscript>
+    <![endif]-->
+  <!--[if lte mso 11]>
+    <style type="text/css">
+      .mj-outlook-group-fix { width:100% !important; }
+    </style>
+    <![endif]-->
+  <!--[if !mso]><!-->
+  <link href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700" rel="stylesheet" type="text/css">
+  <style type="text/css">
+    @import url(https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700);
+
+  </style>
+  <!--<![endif]-->
+  <style type="text/css">
+    @media only screen and (min-width:480px) {
+      .mj-column-per-100 {
+        width: 100% !important;
+        max-width: 100%;
+      }
+    }
+
+  </style>
+  <style media="screen and (min-width:480px)">
+    .moz-text-html .mj-column-per-100 {
+      width: 100% !important;
+      max-width: 100%;
+    }
+
+  </style>
+  <style type="text/css">
+    @media only screen and (max-width:479px) {
+      table.mj-full-width-mobile {
+        width: 100% !important;
+      }
+
+      td.mj-full-width-mobile {
+        width: auto !important;
+      }
+    }
+
+  </style>
+  <style type="text/css">
+    @import url('https://fonts.googleapis.com/css2?family=Jersey+20&display=swap');
+
+  </style>
+</head>
+
+<body style="word-spacing:normal;background-color:#F0F0F0;padding:10px;">
+  <div style="background-color:#F0F0F0;" lang="und" dir="auto">
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#31363F" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#31363F;background-color:#31363F;margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#31363F;background-color:#31363F;width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px 0;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:middle;width:600px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:middle;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:middle;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="right" style="font-size:0px;padding:0;padding-right:20px;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td style="width:70px;">
+                                <img alt="" src="https://cdn.discordapp.com/attachments/1158431507124330566/1332910691451142165/Logo3.png?ex=6796f951&is=6795a7d1&hm=9455d87931bd47587ea8b8b8a7707df95a4c5bd19b053d66885a1f73fab70b22&" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="70" height="auto" />
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:0;padding-top:20px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:600px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:'Jersey 20', sans-serif;font-size:30px;line-height:1;text-align:left;color:#555555;">SportTrackr Account Verification</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:16px;line-height:1;text-align:left;color:#696C72;">Welcome to SportTrackr! Ready to kick off your journey with us?</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:16px;line-height:1;text-align:left;color:#696C72;">Verify your email address to access exciting sports features and connect with your league. This link expires in 30 minutes.</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:10px 25px;padding-top:30px;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;width:200px;line-height:100%;">
+                          <tbody>
+                            <tr>
+                              <td align="center" bgcolor="#31363F" role="presentation" style="border:none;border-radius:3px;cursor:auto;mso-padding-alt:10px 25px;background:#31363F;" valign="middle">
+                                <a href=`+url+` style="display:inline-block;width:150px;background:#31363F;color:#ffffff;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:3px;"> Verify Account </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:center;color:#555555;"></div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:0;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:600px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <p style="border-top:solid 2px #000000;font-size:1px;margin:0px auto;width:100%;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #000000;font-size:1px;margin:0px auto;width:550px;" role="presentation" width="550px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:center;color:#555555;">This is an auto-generated email. Please do not reply to this message. For help with any questions about your SportTrackr account, please contact us here.</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:center;color:#555555;">© 2025 SportTrackr. All rights reserved.</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+  </div>
+</body>
+
+</html>
+
             `
         };        
         await transporter.sendMail(mailOptions);
