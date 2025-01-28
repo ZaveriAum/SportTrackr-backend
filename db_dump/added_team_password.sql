@@ -304,7 +304,8 @@ CREATE TABLE public.teams (
     home_color public.color_enum,
     away_color public.color_enum,
     logo_url character varying(255),
-    team_visibility boolean DEFAULT false
+    team_visibility boolean DEFAULT false,
+    password character varying(255)
 );
 
 
@@ -551,8 +552,8 @@ COPY public.roles (id, role_name) FROM stdin;
 -- Data for Name: teams; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.teams (id, name, league_id, description, owner_id, captain_id, home_color, away_color, logo_url, team_visibility) FROM stdin;
-1	Bayern Munich	8	\N	50	50	red	white	league-logos/85ea633b-f932-463b-bfed-da8d6e7e392b-Bayern Munich	f
+COPY public.teams (id, name, league_id, description, owner_id, captain_id, home_color, away_color, logo_url, team_visibility, password) FROM stdin;
+1	Bayer Leverkusen	8	\N	50	50	white	red	team-logos/75955c14-1331-4386-b7a5-3288f624ed56-league-8-Bayer Leverkusen	t	\N
 \.
 
 
