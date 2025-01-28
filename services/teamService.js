@@ -52,7 +52,7 @@ const createTeam = async (user, data, file) => {
       );
     }
 
-    if (teamVisibility && !password) {
+    if (teamVisibility==true && !password) {
       throw new AppError("Private teams require a password.", 400);
     }
 
@@ -62,7 +62,7 @@ const createTeam = async (user, data, file) => {
     if (file) {
       teamLogoUrl = await uploadFile(
         file.buffer,
-        `league-${teamToUpdate.leagueId}-${name}`,
+        `league-${leagueId}-${name}`,
         file.mimetype,
         "team-logos"
       );

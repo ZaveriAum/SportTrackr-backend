@@ -4,6 +4,7 @@ const leagueRoutes = require('./routes/leagueRoutes')
 const employeeRoutes = require('./routes/employeeRoutes')
 const userRoutes = require('./routes/userRoutes')
 const teamRoutes = require ('./routes/teamRoutes')
+const matchRoutes = require ('./routes/matchRoutes')
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const { requestLogger, errorLogger } = require('./middlewares/loggingMiddleware');
@@ -27,6 +28,7 @@ app.use('/v1/league', leagueRoutes)
 app.use('/v1/league/emp', employeeRoutes)
 app.use('/v1/user', userRoutes)
 app.use('/v1/team', teamRoutes)
+app.use('/v1/match', matchRoutes)
 // Error Logging Middleware
 app.use(errorLogger);
 
