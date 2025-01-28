@@ -2,7 +2,7 @@ const connectAccountService = require('../services/connectAccountService')
 
 const createConnectAccountLink = async (req, res, next) => {
     try{
-        const {url, accountId} = await connectAccountService.createConnectAccountLink();
+        const {url, accountId} = await connectAccountService.createConnectAccountLink(req.user);
         res.status(200).json({
             url: url,
             accountId: accountId
@@ -12,16 +12,6 @@ const createConnectAccountLink = async (req, res, next) => {
     }
 }
 
-const accountAuthorizedWebhook = async (req, res, next) => {
-    try{
-        await connectAccountService.accountAuthorizedWebhook(req.body, req.body);
-        res.status(200).json({})
-    }catch(e){
-        next(e);
-    }
-}
-
 module.exports = {
     createConnectAccountLink,
-    accountAuthorizedWebhook
 }
