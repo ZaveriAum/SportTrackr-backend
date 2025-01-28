@@ -5,7 +5,8 @@ const BAD_REQUEST = {
     EMAIL_NOT_SEND: 'Unable to send email. Veryfiy the email',
     UNABLE_TO_RESET: 'Unable to resent password',
     UNABLE_TO_UPLOAD: 'Unable to upload',
-    UNKNOWN_ERROR: 'Unknown Error'
+    UNKNOWN_ERROR: 'Unknown Error',
+    TEAM_NOT_EXISTS:"Team does not exist"
 };
 
 const UNAUTHORIZED = {
