@@ -2,6 +2,7 @@ require("dotenv").config();
 const pool = require("../config/db");
 const { AppError, UNAUTHORIZED, BAD_REQUEST } = require("../config/errorCodes");
 const { toCamelCase } = require("../utilities/utilities");
+const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
 
 const updateMatch = async (user, data) => {
     try {
@@ -17,7 +18,6 @@ const updateMatch = async (user, data) => {
         }
         const leagueId = result.rows[0].league_id;
         
-
         const players = [...homeTeam.players, ...awayTeam.players];
 
         for (const player of players) {
@@ -28,10 +28,8 @@ const updateMatch = async (user, data) => {
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             `;
             const insertValues = [id, matchId, goals, shots, assists, saves, interceptions, yellowCards, redCard];
-
             await pool.query(insertQuery, insertValues);
         }
-
         return leagueId;
     } catch (error) {
         throw error;
