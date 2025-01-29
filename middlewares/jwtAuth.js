@@ -14,7 +14,6 @@ const authenticateToken = (req, res, next) => {
             (err, decoded) => {
                 if (err) return res.status(403).json({ message: 'Forbidden' })
                 req.user = {
-                    id: decoded.id,
                     email: decoded.email,
                     roles: decoded.roles,
                     teamId:decoded.teamId

@@ -17,9 +17,12 @@ const findUser = async (email) => {
 
 const findUserRoles = async(email) =>{
     try{
-        const result = await pool.query('SELECT r.role_name FROM user_roles ur JOIN roles r ON ur.role_id = r.id JOIN users u on u.id = ur.user_id WHERE u.email=$1', [email]);
-        const roleNames = result.rows.map(row => row.role_name);
-        return roleNames
+        let user_roles = ['user'];
+        const result = await pool.query('SELECT owner_status FROM users WHERE email=$1', [email]);
+        if (result.rows[0].owner_status)
+            user_roles.push('owner')
+
+        return user_roles
     }catch(error){
         throw new Error('Connection error');
     }
@@ -81,7 +84,7 @@ const register = async (body, token) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Insert user into database
-        const user = await pool.query('INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id', [firstName, lastName, decode.email, hashedPassword]);
+        const user = await pool.query('INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING *', [firstName, lastName, decode.email, hashedPassword]);
 
         // Adding "user" role to first time users
         await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)', [user.rows[0].id, 1]);
@@ -89,7 +92,7 @@ const register = async (body, token) => {
         // Send welcome email
         mailService.sendWelcomeEmail(decode.email, firstName, lastName);
 
-        return generateTokens(decode.email);
+        return generateTokens(user.rows[0]);
     }catch(e){
         throw new AppError(`${e.message}` || 'Registration failed', e.statusCode || 500)
     }

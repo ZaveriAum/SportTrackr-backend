@@ -400,9 +400,24 @@ CREATE TABLE public.users (
     password character varying(255) NOT NULL,
     picture_url text,
     created_at timestamp without time zone DEFAULT now(),
-    team_id integer
+    team_id integer,
+    account_id text,
+    owner_status boolean DEFAULT false
 );
 
+-- CREATE TABLE public.user_stats (
+--     id integer NOT NULL,
+--     user_id integer NOT NULL,
+--     match_id integer NOT NULL,
+--     goals integer DEFAULT 0 NOT NULL,
+--     shots integer DEFAULT 0 NOT NULL,
+--     assists integer DEFAULT 0 NOT NULL,
+--     saves integer DEFAULT 0 NOT NULL,
+--     interceptions integer DEFAULT 0 NOT NULL,
+--     yellow_card integer DEFAULT 0 NOT NULL,
+--     red_card integer DEFAULT 0 NOT NULL,
+--     position_played character varying(50)
+-- );
 
 ALTER TABLE public.users OWNER TO postgres;
 
@@ -590,19 +605,19 @@ COPY public.user_stats (id, user_id, match_id, goals, shots, assists, saves, int
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.users (id, first_name, last_name, email, password, picture_url, created_at, team_id) FROM stdin;
-50	Elio	Fezollari	fezollarielio@gmail.com	$2b$10$cfj3akmM1.hYurIM2.2rZ./SqNevGg6XjF.5pEIDvKLWbiqEBYoRy	\N	2025-01-20 21:14:59.290939	\N
-42	Eric	Dier	ericdier@gmail.com	$2b$10$ruNH.w4TwQRVd6mW1z18TevCbhFRjxJvGcyFo/RXbT4za2pL6bT4C	\N	2025-01-20 21:06:16.91512	1
-43	Alphonso	Davies	alphonsodavies@gmail.com	$2b$10$pvGkaoNcaTH2wHibHrkht.KTjFkssVlzdibaM4sofe0vV2ADIYOCW	\N	2025-01-20 21:06:38.995511	1
-44	Aleksandar	Pavlović	aleksandarpavlovic@gmail.com	$2b$10$SZ.e5PMD2rWxvY9UoYe48OJF76PyAC.iXJY1HOidqX1p1DSJb0PfG	\N	2025-01-20 21:08:17.015221	1
-45	Leon	Goretzka	leongoretzka@gmail.com	$2b$10$e1ohhToKOpwpDuCE7b6EZOg/GYfR1FVjFl7eRG1wxzbqUei3l.NPi	\N	2025-01-20 21:10:44.457261	1
-46	Joshua	Kimmich	joshuakimmich@gmail.com	$2b$10$Fh5CA6bF6HRusWZYpZnaQey8ujwO5mHH8EaJrxWjayZxTKDosbTkm	\N	2025-01-20 21:11:12.671125	1
-47	Kingsley	Coman	kingsleycoman@gmail.com	$2b$10$lt7GuhiQrWO5CIEtjKNfGO7B8N/22cPZ/69I8Ghi4uOb5252fsVWi	\N	2025-01-20 21:11:43.759303	1
-48	Leroy	Sane	leroysane@gmail.com	$2b$10$WX32rraIA5LVYqGyxUcfUudYkFLV2q9zam4cv2ZoyxmVXpvHiPjya	\N	2025-01-20 21:12:13.786828	1
-49	Serge	Gnabry	sergegnabry@gmail.com	$2b$10$EJKdoU4m6s/h2RwtFXXpCes7y3Tjky4N0TUwRbgz6g1gyawJV13Iq	\N	2025-01-20 21:12:35.933816	1
-39	Jamal	Musiala	jamalmusiala@gmail.com	$2b$10$Z.zQf1HO5pxZTtSTBPethewXXAaCm6uysfpc0xgsSq9eGd5B9cXyW	\N	2025-01-20 21:00:34.109821	1
-40	Manuel	Neuer	manuelneuer@gmail.com	$2b$10$8ecs4c1ECEqrk/puV8jvY.orO2hl9/ZjrA8hF0nvFWlMinQQ2PNri	\N	2025-01-20 21:04:12.690056	1
-41	Dayot	Upamecano	dayotupamecano@gmail.com	$2b$10$NkS0jnmGbURVQWfXkSZEQ.VrJAR0U5eKLjT3kbx7vE2nOseFMZDSu	\N	2025-01-20 21:05:09.693307	1
+COPY public.users (id, first_name, last_name, email, password, picture_url, created_at, team_id, account_id, owner_status) FROM stdin;
+50	Elio	Fezollari	fezollarielio@gmail.com	$2b$10$cfj3akmM1.hYurIM2.2rZ./SqNevGg6XjF.5pEIDvKLWbiqEBYoRy	\N	2025-01-20 21:14:59.290939	\N	acct_1QmKwJRunFkMbJtY	true
+42	Eric	Dier	ericdier@gmail.com	$2b$10$ruNH.w4TwQRVd6mW1z18TevCbhFRjxJvGcyFo/RXbT4za2pL6bT4C	\N	2025-01-20 21:06:16.91512	1	acct_1QmLUARv0Ud3G2cP	false
+43	Alphonso	Davies	alphonsodavies@gmail.com	$2b$10$pvGkaoNcaTH2wHibHrkht.KTjFkssVlzdibaM4sofe0vV2ADIYOCW	\N	2025-01-20 21:06:38.995511	1	acct_1QmLQWRrqBSWHse0	false
+44	Aleksandar	Pavlović	aleksandarpavlovic@gmail.com	$2b$10$SZ.e5PMD2rWxvY9UoYe48OJF76PyAC.iXJY1HOidqX1p1DSJb0PfG	\N	2025-01-20 21:08:17.015221	1	acct_1QmLX1RxYgByxzle	false
+45	Leon	Goretzka	leongoretzka@gmail.com	$2b$10$e1ohhToKOpwpDuCE7b6EZOg/GYfR1FVjFl7eRG1wxzbqUei3l.NPi	\N	2025-01-20 21:10:44.457261	1	acct_1Qm9EH2Kb1BKZnMk	false
+46	Joshua	Kimmich	joshuakimmich@gmail.com	$2b$10$Fh5CA6bF6HRusWZYpZnaQey8ujwO5mHH8EaJrxWjayZxTKDosbTkm	\N	2025-01-20 21:11:12.671125	1	acct_1Qm8Jw2N6mV3XHlH	false
+47	Kingsley	Coman	kingsleycoman@gmail.com	$2b$10$lt7GuhiQrWO5CIEtjKNfGO7B8N/22cPZ/69I8Ghi4uOb5252fsVWi	\N	2025-01-20 21:11:43.759303	1	acct_1Qm7cQRxpdF3cOR9	false
+48	Leroy	Sane	leroysane@gmail.com	$2b$10$WX32rraIA5LVYqGyxUcfUudYkFLV2q9zam4cv2ZoyxmVXpvHiPjya	\N	2025-01-20 21:12:13.786828	1	acct_1Qm7YGRsgFaPAEfh	false
+49	Serge	Gnabry	sergegnabry@gmail.com	$2b$10$EJKdoU4m6s/h2RwtFXXpCes7y3Tjky4N0TUwRbgz6g1gyawJV13Iq	\N	2025-01-20 21:12:35.933816	1	acct_1Qm6m02Ko0Pc1TLf	false
+39	Jamal	Musiala	jamalmusiala@gmail.com	$2b$10$Z.zQf1HO5pxZTtSTBPethewXXAaCm6uysfpc0xgsSq9eGd5B9cXyW	\N	2025-01-20 21:00:34.109821	1	acct_1Qm3lc2KuRfs3OTZ	false
+40	Manuel	Neuer	manuelneuer@gmail.com	$2b$10$8ecs4c1ECEqrk/puV8jvY.orO2hl9/ZjrA8hF0nvFWlMinQQ2PNri	\N	2025-01-20 21:04:12.690056	1	acct_1Qm6Y72NIjp1YceJ	false
+41	Dayot	Upamecano	dayotupamecano@gmail.com	$2b$10$NkS0jnmGbURVQWfXkSZEQ.VrJAR0U5eKLjT3kbx7vE2nOseFMZDSu	\N	2025-01-20 21:05:09.693307	1	acct_1Qm7YGRsgFaPAEfh	false
 \.
 
 
