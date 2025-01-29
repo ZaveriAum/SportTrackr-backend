@@ -4,6 +4,7 @@ const router = express.Router();
 const { body } = require('express-validator')
 const validator = require('../middlewares/validator')
 
+
 router.use(validator)
 
 router.post('/register/:token',[
@@ -27,8 +28,7 @@ router.post('/register/:token',[
 
 router.post('/login',[
     body('email')
-        .isEmail()
-        .withMessage('Invalid email format'),
+        .isEmail().withMessage('Invalid email format'),
     body('password')
         .notEmpty()
         .withMessage('Password is required'),

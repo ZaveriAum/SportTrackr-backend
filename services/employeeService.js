@@ -36,6 +36,9 @@ const getEmployees = async (user, leagueId) => {
 
 const assignEmployeeToLeague = async (email, role, leagueId) => {
     try {
+
+        await pool.query('BEGIN');
+
         // Fetch role_id from league_roles where role_name matches user input role
         const roleId = await pool.query('SELECT id FROM league_roles WHERE role_name = $1', [role]);
 
@@ -49,6 +52,7 @@ const assignEmployeeToLeague = async (email, role, leagueId) => {
             throw new AppError(BAD_REQUEST.USER_NOT_EXISTS, 400)
         }
         
+
         // get the userId from the email given
 
         const leagueEmpResult = await pool.query(
@@ -69,7 +73,10 @@ const assignEmployeeToLeague = async (email, role, leagueId) => {
             `,
             [roleId.rows[0].id, leagueEmpId]
         );
+
+        await pool.query('COMMIT');
     } catch (e) {
+        await pool.query('ROLLBACK');
         throw new AppError(e.message || 'Unknown Error', e.statusCode || 500);
     }
 };

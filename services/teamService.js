@@ -106,7 +106,7 @@ const createTeam = async (user, data, file) => {
   }
 };
 
-const updateTeam = async (user, data, file, teamId) => {
+const updateTeam = async (userEmail, data, file, teamId) => {
   try {
     const teamQuery = "SELECT * FROM teams WHERE id=$1";
     const teamResults = await pool.query(teamQuery, [teamId]);
@@ -115,6 +115,10 @@ const updateTeam = async (user, data, file, teamId) => {
     if (teamResults.rowCount < 1) {
       throw new AppError(`${BAD_REQUEST.TEAM_NOT_EXISTS}`, 404);
     }
+
+    // Checking if the owner is accesssing the team
+    const query = await pool.query('SELECT id from users WHERE email=$1', [userEmail])
+    const user = query.rows[0]
 
     if (user.id !== teamToUpdate.ownerId) {
       throw new AppError(`${UNAUTHORIZED.ACCESS_DENIED}`, 401);

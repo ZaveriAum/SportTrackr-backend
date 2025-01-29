@@ -2,7 +2,7 @@ const leagueService = require('../services/leagueService')
 
 const getAllLeagues = async (req, res, next) => {
     try{
-        const leagues = await leagueService.getAllLeagues(req.user);
+        const leagues = await leagueService.getAllLeagues();
         res.status(200).json({
             leagues:leagues
         });
@@ -39,11 +39,47 @@ const createLeague = async (req, res, next) => {
 }
 
 const updateLeague = async (req, res, next) => {
-    
+    try{
+
+        await leagueService.updateLeague(req.user, req.params.leagueId, req.body);
+        res.status(201).json({
+            message : "League Updated Successfully",
+        });
+
+    }catch(e){
+        next(e);
+    }
+}
+
+const uploadLeagueLogo = async (req, res, next) => {
+    try{
+
+        await leagueService.uploadLeagueLogo(req.user, req.file, req.params.leagueId);
+        res.status(200).json({
+            message : "League Logo Updated Successfully",
+        });
+
+    }catch(e){
+        next(e);
+    }
+}
+
+const deleteLeague = async (req, res, next) => {
+    try{
+        await leagueService.deleteLeague(req.user, req.params.leagueId);
+        res.status(200).json({
+            message: "League Delete Successfully"
+        })
+    }catch(e){
+        next(e);
+    }
 }
 
 module.exports = {
     getAllLeagues,
     getLeague,
-    createLeague
+    createLeague,
+    updateLeague,
+    uploadLeagueLogo,
+    deleteLeague,
 }
