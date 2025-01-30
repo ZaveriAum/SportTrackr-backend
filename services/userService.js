@@ -1,7 +1,7 @@
 const { body } = require('express-validator');
 const pool = require('../config/db')
 const DEFAULT_PROFILE_PICTURE='defualts/default_profile_photo.jpeg'
-const {AppError, BAD_REQUEST} = require('../config/errorCodes')
+const {AppError, BAD_REQUEST} = require('../utilities/errorCodes')
 const {getObjectSignedUrl, uploadFile, deleteFile} = require('./s3Service')
 const bcrypt = require('bcrypt')
 

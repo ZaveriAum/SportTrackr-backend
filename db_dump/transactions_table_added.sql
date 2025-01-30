@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 16.3
--- Dumped by pg_dump version 16.3
+-- Dumped from database version 16.6
+-- Dumped by pg_dump version 16.6
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -334,6 +334,36 @@ ALTER SEQUENCE public.teams_id_seq OWNED BY public.teams.id;
 
 
 --
+-- Name: transactions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.transactions (
+    id bigint NOT NULL,
+    team_id bigint NOT NULL,
+    charge_id bigint NOT NULL,
+    intent_id bigint NOT NULL,
+    payment_status character varying(20) NOT NULL,
+    amount bigint NOT NULL
+);
+
+
+ALTER TABLE public.transactions OWNER TO postgres;
+
+--
+-- Name: transactions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.transactions ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.transactions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
 -- Name: user_roles; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -407,7 +437,6 @@ CREATE TABLE public.users (
 
 
 ALTER TABLE public.users OWNER TO postgres;
-
 
 --
 -- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -556,7 +585,15 @@ COPY public.roles (id, role_name) FROM stdin;
 --
 
 COPY public.teams (id, name, league_id, description, owner_id, captain_id, home_color, away_color, logo_url, team_visibility, password) FROM stdin;
-1	Bayer Leverkusen	8	\N	50	50	white	red	team-logos/75955c14-1331-4386-b7a5-3288f624ed56-league-8-Bayer Leverkusen	t	\N
+1	Bayer Leverkusen	8	\N	8	50	white	red	team-logos/75955c14-1331-4386-b7a5-3288f624ed56-league-8-Bayer Leverkusen	t	\N
+\.
+
+
+--
+-- Data for Name: transactions; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.transactions (id, team_id, charge_id, intent_id, payment_status, amount) FROM stdin;
 \.
 
 
@@ -578,6 +615,7 @@ COPY public.user_roles (user_id, role_id) FROM stdin;
 49	1
 50	1
 50	2
+8	1
 \.
 
 
@@ -594,18 +632,19 @@ COPY public.user_stats (id, user_id, match_id, goals, shots, assists, saves, int
 --
 
 COPY public.users (id, first_name, last_name, email, password, picture_url, created_at, team_id, account_id, owner_status) FROM stdin;
-50	Elio	Fezollari	fezollarielio@gmail.com	$2b$10$cfj3akmM1.hYurIM2.2rZ./SqNevGg6XjF.5pEIDvKLWbiqEBYoRy	\N	2025-01-20 21:14:59.290939	\N	acct_1QmKwJRunFkMbJtY	true
-42	Eric	Dier	ericdier@gmail.com	$2b$10$ruNH.w4TwQRVd6mW1z18TevCbhFRjxJvGcyFo/RXbT4za2pL6bT4C	\N	2025-01-20 21:06:16.91512	1	acct_1QmLUARv0Ud3G2cP	false
-43	Alphonso	Davies	alphonsodavies@gmail.com	$2b$10$pvGkaoNcaTH2wHibHrkht.KTjFkssVlzdibaM4sofe0vV2ADIYOCW	\N	2025-01-20 21:06:38.995511	1	acct_1QmLQWRrqBSWHse0	false
-44	Aleksandar	Pavlović	aleksandarpavlovic@gmail.com	$2b$10$SZ.e5PMD2rWxvY9UoYe48OJF76PyAC.iXJY1HOidqX1p1DSJb0PfG	\N	2025-01-20 21:08:17.015221	1	acct_1QmLX1RxYgByxzle	false
-45	Leon	Goretzka	leongoretzka@gmail.com	$2b$10$e1ohhToKOpwpDuCE7b6EZOg/GYfR1FVjFl7eRG1wxzbqUei3l.NPi	\N	2025-01-20 21:10:44.457261	1	acct_1Qm9EH2Kb1BKZnMk	false
-46	Joshua	Kimmich	joshuakimmich@gmail.com	$2b$10$Fh5CA6bF6HRusWZYpZnaQey8ujwO5mHH8EaJrxWjayZxTKDosbTkm	\N	2025-01-20 21:11:12.671125	1	acct_1Qm8Jw2N6mV3XHlH	false
-47	Kingsley	Coman	kingsleycoman@gmail.com	$2b$10$lt7GuhiQrWO5CIEtjKNfGO7B8N/22cPZ/69I8Ghi4uOb5252fsVWi	\N	2025-01-20 21:11:43.759303	1	acct_1Qm7cQRxpdF3cOR9	false
-48	Leroy	Sane	leroysane@gmail.com	$2b$10$WX32rraIA5LVYqGyxUcfUudYkFLV2q9zam4cv2ZoyxmVXpvHiPjya	\N	2025-01-20 21:12:13.786828	1	acct_1Qm7YGRsgFaPAEfh	false
-49	Serge	Gnabry	sergegnabry@gmail.com	$2b$10$EJKdoU4m6s/h2RwtFXXpCes7y3Tjky4N0TUwRbgz6g1gyawJV13Iq	\N	2025-01-20 21:12:35.933816	1	acct_1Qm6m02Ko0Pc1TLf	false
-39	Jamal	Musiala	jamalmusiala@gmail.com	$2b$10$Z.zQf1HO5pxZTtSTBPethewXXAaCm6uysfpc0xgsSq9eGd5B9cXyW	\N	2025-01-20 21:00:34.109821	1	acct_1Qm3lc2KuRfs3OTZ	false
-40	Manuel	Neuer	manuelneuer@gmail.com	$2b$10$8ecs4c1ECEqrk/puV8jvY.orO2hl9/ZjrA8hF0nvFWlMinQQ2PNri	\N	2025-01-20 21:04:12.690056	1	acct_1Qm6Y72NIjp1YceJ	false
-41	Dayot	Upamecano	dayotupamecano@gmail.com	$2b$10$NkS0jnmGbURVQWfXkSZEQ.VrJAR0U5eKLjT3kbx7vE2nOseFMZDSu	\N	2025-01-20 21:05:09.693307	1	acct_1Qm7YGRsgFaPAEfh	false
+50	Elio	Fezollari	fezollarielio@gmail.com	$2b$10$cfj3akmM1.hYurIM2.2rZ./SqNevGg6XjF.5pEIDvKLWbiqEBYoRy	\N	2025-01-20 21:14:59.290939	\N	acct_1QmKwJRunFkMbJtY	t
+42	Eric	Dier	ericdier@gmail.com	$2b$10$ruNH.w4TwQRVd6mW1z18TevCbhFRjxJvGcyFo/RXbT4za2pL6bT4C	\N	2025-01-20 21:06:16.91512	1	acct_1QmLUARv0Ud3G2cP	f
+43	Alphonso	Davies	alphonsodavies@gmail.com	$2b$10$pvGkaoNcaTH2wHibHrkht.KTjFkssVlzdibaM4sofe0vV2ADIYOCW	\N	2025-01-20 21:06:38.995511	1	acct_1QmLQWRrqBSWHse0	f
+44	Aleksandar	Pavlović	aleksandarpavlovic@gmail.com	$2b$10$SZ.e5PMD2rWxvY9UoYe48OJF76PyAC.iXJY1HOidqX1p1DSJb0PfG	\N	2025-01-20 21:08:17.015221	1	acct_1QmLX1RxYgByxzle	f
+45	Leon	Goretzka	leongoretzka@gmail.com	$2b$10$e1ohhToKOpwpDuCE7b6EZOg/GYfR1FVjFl7eRG1wxzbqUei3l.NPi	\N	2025-01-20 21:10:44.457261	1	acct_1Qm9EH2Kb1BKZnMk	f
+46	Joshua	Kimmich	joshuakimmich@gmail.com	$2b$10$Fh5CA6bF6HRusWZYpZnaQey8ujwO5mHH8EaJrxWjayZxTKDosbTkm	\N	2025-01-20 21:11:12.671125	1	acct_1Qm8Jw2N6mV3XHlH	f
+47	Kingsley	Coman	kingsleycoman@gmail.com	$2b$10$lt7GuhiQrWO5CIEtjKNfGO7B8N/22cPZ/69I8Ghi4uOb5252fsVWi	\N	2025-01-20 21:11:43.759303	1	acct_1Qm7cQRxpdF3cOR9	f
+48	Leroy	Sane	leroysane@gmail.com	$2b$10$WX32rraIA5LVYqGyxUcfUudYkFLV2q9zam4cv2ZoyxmVXpvHiPjya	\N	2025-01-20 21:12:13.786828	1	acct_1Qm7YGRsgFaPAEfh	f
+49	Serge	Gnabry	sergegnabry@gmail.com	$2b$10$EJKdoU4m6s/h2RwtFXXpCes7y3Tjky4N0TUwRbgz6g1gyawJV13Iq	\N	2025-01-20 21:12:35.933816	1	acct_1Qm6m02Ko0Pc1TLf	f
+39	Jamal	Musiala	jamalmusiala@gmail.com	$2b$10$Z.zQf1HO5pxZTtSTBPethewXXAaCm6uysfpc0xgsSq9eGd5B9cXyW	\N	2025-01-20 21:00:34.109821	1	acct_1Qm3lc2KuRfs3OTZ	f
+40	Manuel	Neuer	manuelneuer@gmail.com	$2b$10$8ecs4c1ECEqrk/puV8jvY.orO2hl9/ZjrA8hF0nvFWlMinQQ2PNri	\N	2025-01-20 21:04:12.690056	1	acct_1Qm6Y72NIjp1YceJ	f
+41	Dayot	Upamecano	dayotupamecano@gmail.com	$2b$10$NkS0jnmGbURVQWfXkSZEQ.VrJAR0U5eKLjT3kbx7vE2nOseFMZDSu	\N	2025-01-20 21:05:09.693307	1	acct_1Qm7YGRsgFaPAEfh	f
+8	Aum	Zaveri	aumzaveri06@gmail.com	$2b$10$KHqAQBDwxgUVs0BTqUYIv.x3OqgzsJ80FacdxBoYTcH5dWF.rEwlK	profile-photo/4dff638c-abdc-46ad-992d-0a86a5090e2a-WhatsApp Image 2021-09-20 at 12.46.36 PM.jpeg	2025-01-29 10:35:11.701691	\N	acct_1QmnGc2K9wpSDFwj	t
 \.
 
 
@@ -659,6 +698,13 @@ SELECT pg_catalog.setval('public.teams_id_seq', 14, true);
 
 
 --
+-- Name: transactions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.transactions_id_seq', 1, false);
+
+
+--
 -- Name: user_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -669,7 +715,7 @@ SELECT pg_catalog.setval('public.user_stats_id_seq', 1, false);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 1, false);
+SELECT pg_catalog.setval('public.users_id_seq', 8, true);
 
 
 --
@@ -750,6 +796,14 @@ ALTER TABLE ONLY public.teams
 
 ALTER TABLE ONLY public.teams
     ADD CONSTRAINT teams_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: transactions transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.transactions
+    ADD CONSTRAINT transactions_pkey PRIMARY KEY (id);
 
 
 --
@@ -870,6 +924,14 @@ ALTER TABLE ONLY public.matches
 
 ALTER TABLE ONLY public.employee_roles
     ADD CONSTRAINT role_id FOREIGN KEY (role_id) REFERENCES public.league_roles(id) NOT VALID;
+
+
+--
+-- Name: transactions team_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.transactions
+    ADD CONSTRAINT team_id FOREIGN KEY (team_id) REFERENCES public.teams(id);
 
 
 --

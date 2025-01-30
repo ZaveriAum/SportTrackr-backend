@@ -1,5 +1,5 @@
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const {AppError, BAD_REQUEST} = require('../config/errorCodes')
+const stripe = require('../config/stripe');
+const {AppError, BAD_REQUEST} = require('../utilities/errorCodes')
 const pool = require('../config/db')
 
 

@@ -1,6 +1,6 @@
 require('dotenv').config();
 const pool = require('../config/db');
-const {AppError, UNAUTHORIZED, BAD_REQUEST} = require('../config/errorCodes')
+const {AppError, UNAUTHORIZED, BAD_REQUEST} = require('../utilities/errorCodes')
 const {findLeagueRoles} = require('./authService')
 
 const getEmployees = async (user, leagueId) => {

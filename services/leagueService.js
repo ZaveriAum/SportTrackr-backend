@@ -1,6 +1,6 @@
 require("dotenv").config();
 const pool = require("../config/db");
-const { AppError, UNAUTHORIZED, BAD_REQUEST } = require("../config/errorCodes");
+const { AppError, UNAUTHORIZED, BAD_REQUEST } = require("../utilities/errorCodes");
 const { toCamelCase } = require("../utilities/utilities");
 const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
 const DEFAULT_LEAGUE_LOGO = 'defualts/default_league_photo.png'

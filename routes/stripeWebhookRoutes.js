@@ -1,5 +1,5 @@
 require("dotenv").config();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('../config/stripe');
 const endpointSecret = process.env.WEBHOOK_SECRET;
 const express = require('express');
 const router = express.Router();
@@ -64,6 +64,51 @@ router.post('/connect_account_webhook', express.raw({ type: 'application/json' }
       }
       break;
 
+    default:
+      console.log(`Unhandled event type: ${event.type}`);
+  }
+
+  response.send();
+});
+
+router.post('/payment_webhook', express.raw({ type: 'application/json' }), async (request, response, next) => {
+  let event = request.body;
+
+  if (endpointSecret) {
+    const signature = request.headers['stripe-signature'];
+    try {
+      event = stripe.webhooks.constructEvent(request.body, signature, endpointSecret);
+    } catch (e) {
+      return response.status(400).json({
+        message: e.message
+      });
+    }
+  }
+  switch (event.type) {
+    case 'checkout.session.completed': {
+      const session = event.data.object;
+      console.log("Comepleted")
+      // await client.query('UPDATE transactions SET status = $1, intent_id = $2 WHERE charge_session_id = $3', ['success', session.payment_intent, session.id]);
+      break;
+    }
+    case 'checkout.session.async_payment_failed': {
+      const session = event.data.object;
+      console.log("Failed")
+      // await client.query('UPDATE transactions SET status = $1 WHERE charge_session_id = $2', ['failed', session.id]);
+      break;
+    }
+    case 'charge.refunded': {
+      console.log("Refunded")
+      const charge = event.data.object;
+      // await client.query('UPDATE transactions SET status = $1 WHERE intent_id = $2', ['refunded', charge.payment_intent]);
+      break;
+    }
+    case 'charge.dispute.created': {
+      console.log("Disputed")
+      const dispute = event.data.object;
+      // await client.query('UPDATE transactions SET status = $1 WHERE intent_id = $2', ['disputed', dispute.payment_intent]);
+      break;
+    }
     default:
       console.log(`Unhandled event type: ${event.type}`);
   }

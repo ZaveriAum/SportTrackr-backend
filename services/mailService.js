@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
-const { BAD_REQUEST } = require('../config/errorCodes');
+const { BAD_REQUEST } = require('../utilities/errorCodes');
 
 const sendVerificationEmail = async (email, token) => {
     try{

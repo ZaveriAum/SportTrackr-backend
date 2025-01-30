@@ -1,16 +1,19 @@
 require("dotenv").config();
 const pool = require("../config/db");
-const { AppError, UNAUTHORIZED, BAD_REQUEST } = require("../config/errorCodes");
+const { AppError, UNAUTHORIZED, BAD_REQUEST } = require("../utilities/errorCodes");
 const { toCamelCase } = require("../utilities/utilities");
 const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
+const { checkoutSession } = require('./paymentService')
 const bcrypt = require("bcrypt");
 
 const createTeam = async (user, data, file) => {
   try {
+    pool.query('BEGIN')
     if (user.teamId !== null) {
       throw new AppError(`${UNAUTHORIZED.ACCESS_DENIED}`, 401);
     }
     const teamInfo = JSON.parse(data.teamInfo);
+
     const {
       name,
       homeColor,
@@ -89,10 +92,12 @@ const createTeam = async (user, data, file) => {
       RETURNING *;`,
       values
     );
-
-    team.rows[0].logoUrl = await getObjectSignedUrl(team.rows[0].logo_url);
-    return toCamelCase(team.rows[0]);
+    const query = await pool.query('SELECT price FROM leagues WHERE id=$1', [leagueId])
+    await checkoutSession(team.rows[0].id, team.rows[0].name, query.rows[0].price);
+    pool.query('COMMIT')
   } catch (e) {
+    pool.query('ROLLBACK')
+
     if (
       e.code === "22P02" ||
       e.message.includes("invalid input value for enum")

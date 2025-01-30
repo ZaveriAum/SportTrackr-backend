@@ -2,7 +2,7 @@ require('dotenv').config();
 const pool = require('../config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, AppError } = require('../config/errorCodes');
+const { BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, AppError } = require('../utilities/errorCodes');
 const mailService = require('./mailService');
 
 // Helper function to find user by email
