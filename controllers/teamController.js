@@ -15,7 +15,7 @@ const createTeam = async (req, res, next) => {
 const updateTeam = async(req,res,next)=>{
     const teamId = req.params.id
     try{
-        const team = await teamService.updateTeam(req.user, req.body, req.file,teamId)
+        const team = await teamService.updateTeam(req.user.email, req.body, req.file,teamId)
         res.status(201).json({
             message : "Team Updated Successfully",
             team: team
