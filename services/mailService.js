@@ -275,116 +275,268 @@ const sendResetPasswordEmail = async (email, resetToken) => {
             from: process.env.EMAIL_USER,
             to: email,
             subject: 'SportTrackr: Reset Your Password',
-            html: `
-                <html>
-                    <head>
-                        <style>
-                            @import url('https://fonts.googleapis.com/css2?family=Jersey+20&display=swap');
+            html: `<!doctype html>
+<html lang="und" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 
-                            body {
-                                margin: 0;
-                                padding: 0;
-                                background-color: #f3f3f3;
-                                font-family: "Jersey 20", serif;
-                            }
+<head>
+  <title></title>
+  <!--[if !mso]><!-->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!--<![endif]-->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    #outlook a {
+      padding: 0;
+    }
 
-                            .email-container {
-                                max-width: 700px;
-                                margin: 30px auto;
-                                background-color: #ffffff;
-                                border-radius: 15px;
-                                overflow: hidden;
-                                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-                                border: 1px solid #dddddd;
-                            }
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
 
-                            .header {
-                                background: linear-gradient(90deg, #00a859, #004f2b);
-                                color: #ffffff;
-                                text-align: center;
-                                padding: 50px 20px;
-                            }
-                            
-                            .header h1 {
-                                font-size: 50px;
-                                margin: 0;
-                                font-weight: 800;
-                            }
+    table,
+    td {
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
 
-                            .content {
-                                padding: 30px 20px;
-                                text-align: left;
-                                color: #333333;
-                            }
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+    }
 
-                            .content p {
-                                line-height: 1.8;
-                                margin-bottom: 20px;
-                                font-size: 20px;
-                                color: #070e05;
-                            }
+    p {
+      display: block;
+      margin: 13px 0;
+    }
 
-                            .content a {
-                                display: inline-block;
-                                padding: 2px 5px;
-                                background-color: #00a859;
-                                color: #ffffff;
-                                font-size: 18px;
-                                font-weight: 600;
-                                text-decoration: none;
-                                border-radius: 8px;
-                                transition: background-color 0.3s ease;
-                            }
+  </style>
+  <!--[if mso]>
+    <noscript>
+    <xml>
+    <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    </noscript>
+    <![endif]-->
+  <!--[if lte mso 11]>
+    <style type="text/css">
+      .mj-outlook-group-fix { width:100% !important; }
+    </style>
+    <![endif]-->
+  <!--[if !mso]><!-->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,700" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700" rel="stylesheet" type="text/css">
+  <style type="text/css">
+    @import url(https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,700);
+    @import url(https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700);
 
-                            .content a:hover {
-                                background-color: #004f2b;
-                            }
+  </style>
+  <!--<![endif]-->
+  <style type="text/css">
+    @media only screen and (min-width:480px) {
+      .mj-column-per-100 {
+        width: 100% !important;
+        max-width: 100%;
+      }
+    }
 
-                            .footer {
-                                text-align: center;
-                                padding: 5px;
-                                font-size: 19px;
-                                color: #ffffff;
-                                background: linear-gradient(90deg, #00a859, #004f2b);
-                            }
+  </style>
+  <style media="screen and (min-width:480px)">
+    .moz-text-html .mj-column-per-100 {
+      width: 100% !important;
+      max-width: 100%;
+    }
 
-                            .footer a {
-                                color: #ffffff;
-                                text-decoration: none;
-                            }
+  </style>
+  <style type="text/css">
+    @media only screen and (max-width:479px) {
+      table.mj-full-width-mobile {
+        width: 100% !important;
+      }
 
-                            .footer a:hover {
-                                text-decoration: underline;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="email-container">
-                            <div class="header">
-                                <h1>Password Reset Request</h1>
-                            </div>
+      td.mj-full-width-mobile {
+        width: auto !important;
+      }
+    }
 
-                            <div class="content">
-                                <p>You requested a password reset for your SportTrackr account. Please click the button below to reset your password:</p>
-                                <p>
-                                <a href="${url}">Reset Your Password</a>
-                                </p>
-                                <p>If you did not request this, please ignore this email or contact our support team for assistance.</p>
-                            </div>
+  </style>
+</head>
 
-                            <div class="footer">
-                                <p>Stay connected with us:</p>
-                                <p>
-                                    <a href="https://facebook.com">Facebook</a> |
-                                    <a href="https://twitter.com">Twitter</a> |
-                                    <a href="https://instagram.com">Instagram</a>
-                                </p>
-                                <p>&copy; 2025 SportTrackr. All rights reserved.</p>
-                            </div>
-                        </div>
-                    </body>
-                </html>
-            `
+<body style="word-spacing:normal;background-color:#F4F4F4;">
+  <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">Password Reset Request - SportTrackr</div>
+  <div style="padding:10px;background-color:#F4F4F4;" lang="und" dir="auto">
+    <!-- HEADER -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#31363F" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#31363F;background-color:#31363F;margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#31363F;background-color:#31363F;width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px 0;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:600px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td style="width:80px;">
+                                <img alt="SportTrackr Logo" src="./Logo3.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="80" height="auto">
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- HERO TEXT -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:30px 20px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:560px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:'Jersey 20', sans-serif;font-size:30px;line-height:1;text-align:center;color:#333333;">Password Reset Request</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:'Open Sans', sans-serif;font-size:16px;line-height:1;text-align:center;color:#777777;">You requested a password reset for your SportTrackr account. Please click the button below to reset your password:</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- BUTTON -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px 0;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:600px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:15px 30px;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
+                          <tbody>
+                            <tr>
+                              <td align="center" bgcolor="#31363F" role="presentation" style="border:none;border-radius:5px;cursor:auto;mso-padding-alt:10px 25px;background:#31363F;" valign="middle">
+                                <a href="${url}" style="display:inline-block;background:#31363F;color:#ffffff;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:16px;font-weight:600;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:5px;" target="_blank"> Reset Your Password </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- DISCLAIMER -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px 20px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:560px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:'Open Sans', sans-serif;font-size:14px;line-height:1;text-align:center;color:#696C72;">If you did not request this, please ignore this email or contact our support team for assistance.</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- FOOTER -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#31363F" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#31363F;background-color:#31363F;margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#31363F;background-color:#31363F;width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:560px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:'Open Sans', sans-serif;font-size:12px;line-height:1;text-align:center;color:#aaaaaa;">This is an auto-generated email. Please do not reply to this message. For help with any questions about your SportTrackr account, please contact us here.</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:'Open Sans', sans-serif;font-size:12px;line-height:1;text-align:center;color:#aaaaaa;">&copy; 2025 SportTrackr. All rights reserved.</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+  </div>
+</body>
+
+</html>
+`
         };
 
         // Send the email
@@ -410,174 +562,325 @@ const sendWelcomeEmail = async (email, userName) => {
             to: email,
             subject: 'Welcome to SportTrackr',
             html: `
-                <html>
-                <head>
-                    <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Jersey+20&display=swap');
-                
-                    body {
-                    margin: 0;
-                    padding: 0;
-                    background-color: #f3f3f3;
-                    font-family: "Jersey 20", serif;
-                    }
-                
-                    .email-container {
-                    max-width: 700px;
-                    margin: 30px auto;
-                    background-color: #ffffff;
-                    border-radius: 15px;
-                    overflow: hidden;
-                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-                    border: 1px solid #dddddd;
-                    }
-                
-                    .header {
-                    background: linear-gradient(90deg, #00a859, #004f2b);
-                    color: #ffffff;
-                    text-align: center;
-                    padding: 50px 20px;
-                    }
-                
-                    .header h1 {
-                    font-size: 60px;
-                    margin: 0;
-                    font-weight: 800;
-                    text-transform: uppercase;
-                    }
-                
-                    .header p {
-                    margin-top: 10px;
-                    font-size: 25px;
-                    color: #e0e0e0;
-                    }
-                
-                    .hero-image {
-                    width: 100%;
-                    max-height: 300px;
-                    object-fit: cover;
-                    display: block;
-                    }
-                
-                    .content {
-                    padding: 30px 20px;
-                    text-align: left;
-                    color: #333333;
-                    }
-                
-                    .content h2 {
-                    font-size: 30px;
-                    margin: 0 0 15px;
-                    color: #00a859;
-                    }
-                
-                    .content p {
-                    line-height: 1.8;
-                    margin-bottom: 20px;
-                    font-size: 20px;
-                    color: #070e05;
-                    }
-                
-                    .content h3 {
-                    font-size: 24px;
-                    margin: 0 0 15px;
-                    color: #000000;
-                    }
-                
-                    .content ul {
-                    padding-left: 20px;
-                    list-style: disc;
-                    margin: 20px 0;
-                    }
-                
-                    .content ul li {
-                    margin-bottom: 10px;
-                    font-size: 20px;
-                    color: black;
-                    }
-                
-                    .cta-buttons {
-                    text-align: center;
-                    /*margin: 30px 0 20px;*/
-                    }
-                
-                    .cta-buttons a {
-                    display: inline-block;
-                    margin: 10px 15px;
-                    padding: 15px 40px;
-                    background-color: #00a859;
-                    color: #ffffff;
-                    font-size: 18px;
-                    font-weight: 600;
-                    text-decoration: none;
-                    border-radius: 8px;
-                    transition: background-color 0.3s ease;
-                    }
-                
-                    .cta-buttons a:hover {
-                    background-color: #004f2b;
-                    }
-                
-                    .footer {
-                    text-align: center;
-                    padding: 20px;
-                    font-size: 20px;
-                    color: #FFFFFF;
-                    background: linear-gradient(90deg, #00a859, #004f2b);
-                    }
-                
-                    .footer a {
-                    color: #FFFFFF;
-                    text-decoration: none;
-                    }
-                
-                    .footer a:hover {
-                    text-decoration: underline;
-                    }
-                </style>
-                </head>
-                <body>
-                    <div class="email-container">
-                    <!-- Header Section -->
-                    <div class="header">
-                        <h1>Welcome to Sport Trackr</h1>
-                        <p>Your ultimate football league management tool</p>
-                    </div>
-                    
-                    <div class="content">
-                        <h2>Welcome, ${userName}!</h2>
-                        <p>We’re thrilled to have you join our growing football community! At Sport Trackr, we’re all about simplifying football league management, connecting players, and making every game count.</p>
-                    
-                        <h3>What you can do with Sport Trackr:</h3>
-                        <ul>
-                        <li>📊 Manage leagues effortlessly with intuitive tools.</li>
-                        <li>⚽ Track match results, stats, and player performances.</li>
-                        <li>🤝 Connect with other players and teams in your area.</li>
-                        <li>🏆 Create tournaments and crown champions.</li>
-                        <li>🔔 Get real-time updates on league standings and more!</li>
-                        </ul>
-                    
-                        <p>Sport Trackr is your all-in-one platform for managing, competing, and thriving in the football world. Let’s take your game to the next level!</p>
-                    
-                        <div class="cta-buttons">
-                            <a href="https://yourapp.com/download">Download the App</a>
-                            <a href="https://yourapp.com/explore">Explore More</a>
+                <!doctype html>
+<html lang="und" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <title></title>
+  <!--[if !mso]><!-->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!--<![endif]-->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    #outlook a {
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+
+    table,
+    td {
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+    }
+
+    p {
+      display: block;
+      margin: 13px 0;
+    }
+
+  </style>
+  <!--[if mso]>
+    <noscript>
+    <xml>
+    <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    </noscript>
+    <![endif]-->
+  <!--[if lte mso 11]>
+    <style type="text/css">
+      .mj-outlook-group-fix { width:100% !important; }
+    </style>
+    <![endif]-->
+  <!--[if !mso]><!-->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,700" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700" rel="stylesheet" type="text/css">
+  <style type="text/css">
+    @import url(https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,700);
+    @import url(https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700);
+
+  </style>
+  <!--<![endif]-->
+  <style type="text/css">
+    @media only screen and (min-width:480px) {
+      .mj-column-per-100 {
+        width: 100% !important;
+        max-width: 100%;
+      }
+
+      .mj-column-per-50 {
+        width: 50% !important;
+        max-width: 50%;
+      }
+    }
+
+  </style>
+  <style media="screen and (min-width:480px)">
+    .moz-text-html .mj-column-per-100 {
+      width: 100% !important;
+      max-width: 100%;
+    }
+
+    .moz-text-html .mj-column-per-50 {
+      width: 50% !important;
+      max-width: 50%;
+    }
+
+  </style>
+  <style type="text/css">
+    @media only screen and (max-width:479px) {
+      table.mj-full-width-mobile {
+        width: 100% !important;
+      }
+
+      td.mj-full-width-mobile {
+        width: auto !important;
+      }
+    }
+
+  </style>
+</head>
+
+<body style="word-spacing:normal;background-color:#F4F4F4;">
+  <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">Welcome to SportTrackr - Your Ultimate Football Management Tool</div>
+  <div style="padding:10px;background-color:#F4F4F4;" lang="und" dir="auto">
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#31363F" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#31363F;background-color:#31363F;margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#31363F;background-color:#31363F;width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px 0;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:600px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td style="width:80px;">
+                                <img alt="SportTrackr Logo" src="./Logo3.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="80" height="auto">
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:30px 20px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:560px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:'Jersey 20', sans-serif;font-size:30px;line-height:1;text-align:center;color:#333333;">Welcome to SportTrackr</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:'Open Sans', sans-serif;font-size:16px;line-height:1;text-align:center;color:#777777;">Your ultimate football management tool</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- PERSONALIZED WELCOME -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px 20px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:560px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:'Open Sans', sans-serif;font-size:18px;font-weight:600;line-height:1;text-align:left;color:#333333;">Welcome, ${userName}!</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:'Open Sans', sans-serif;font-size:14px;line-height:1;text-align:left;color:#696C72;">We're thrilled to have you join our growing football community! At SportTrackr, we’re all about simplifying football league management, connecting players, and making every game count.</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:'Open Sans', sans-serif;font-size:18px;font-weight:600;line-height:1;text-align:left;color:#333333;">What you can do with SportTrackr:</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:'Open Sans', sans-serif;font-size:14px;line-height:1;text-align:left;color:#555555;">
+                          <ul style="list-style-type: disc; padding-left: 20px">
+                            <li style="margin-bottom: 10px"> 📊 Manage leagues effortlessly with intuitive tools. </li>
+                            <li style="margin-bottom: 10px"> ⚽ Track match results, stats, and player performances. </li>
+                            <li style="margin-bottom: 10px"> 🤝 Connect with other players and teams in your area. </li>
+                            <li style="margin-bottom: 10px"> 🏆 Create tournaments and crown champions. </li>
+                            <li style="margin-bottom: 10px"> 🔔 Get real-time updates on league standings and more! </li>
+                          </ul>
                         </div>
-                    </div>
-                    
-                        <div class="footer">
-                            <p>Stay connected with us:</p>
-                            <p>
-                            <a href="https://facebook.com">Facebook</a> |
-                            <a href="https://twitter.com">Twitter</a> |
-                            <a href="https://instagram.com">Instagram</a>
-                            </p>
-                            <p>&copy; 2025 Sport Trackr. All rights reserved.</p>
-                        </div>
-                    </div>
-                </body>
-            </html>
-            `
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" style="font-size:0px;padding:10px 25px;padding-top:10px;word-break:break-word;">
+                        <div style="font-family:'Open Sans', sans-serif;font-size:14px;line-height:1;text-align:left;color:#555555;">SportTrackr is your all-in-one platform for managing, competing, and thriving in the football world. Let’s take your game to the next level!</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- CALL TO ACTION -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:30px 0;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="width:600px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0;line-height:0;text-align:left;display:inline-block;width:100%;direction:ltr;">
+                <!--[if mso | IE]><table border="0" cellpadding="0" cellspacing="0" role="presentation" ><tr><td style="vertical-align:top;width:300px;" ><![endif]-->
+                <div class="mj-column-per-50 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:50%;">
+                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                    <tbody>
+                      <tr>
+                        <td align="center" style="font-size:0px;padding:15px 30px;word-break:break-word;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
+                            <tbody>
+                              <tr>
+                                <td align="center" bgcolor="#31363F" role="presentation" style="border:none;border-radius:5px;cursor:auto;mso-padding-alt:10px 25px;background:#31363F;" valign="middle">
+                                  <a href="https://sporttrackr.com" style="display:inline-block;background:#31363F;color:#ffffff;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:16px;font-weight:600;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:5px;" target="_blank"> Download The App </a>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <!--[if mso | IE]></td><td style="vertical-align:top;width:300px;" ><![endif]-->
+                <div class="mj-column-per-50 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:50%;">
+                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                    <tbody>
+                      <tr>
+                        <td align="center" style="font-size:0px;padding:15px 30px;word-break:break-word;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
+                            <tbody>
+                              <tr>
+                                <td align="center" bgcolor="#31363F" role="presentation" style="border:none;border-radius:5px;cursor:auto;mso-padding-alt:10px 25px;background:#31363F;" valign="middle">
+                                  <a href="https://sporttrackr.com" style="display:inline-block;background:#31363F;color:#ffffff;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:16px;font-weight:600;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:5px;" target="_blank"> Explore More </a>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <!--[if mso | IE]></td></tr></table><![endif]-->
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#31363F" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#31363F;background-color:#31363F;margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#31363F;background-color:#31363F;width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:560px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:'Open Sans', sans-serif;font-size:12px;line-height:1;text-align:center;color:#aaaaaa;">This is an auto-generated email. Please do not reply to this message. For help with any questions about your SportTrackr account, please contact us here.</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <div style="font-family:'Open Sans', sans-serif;font-size:12px;line-height:1;text-align:center;color:#aaaaaa;">&copy; 2025 SportTrackr. All rights reserved.</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+  </div>
+</body>
+
+</html>
+`
         };
 
         await transporter.sendMail(mailOptions);

@@ -171,7 +171,7 @@ const forgotPassword = async (email) => {
         if (user) {
             // Generate a reset token with a short expiration time
             const resetToken = jwt.sign({ id: user.id }, process.env.RESET_PASSWORD_TOKEN_SECRET, { expiresIn: '5m' });
-    
+            console.log(user)
             // Send the reset password email with the token
             await mailService.sendResetPasswordEmail(user.email, resetToken);
         } else {
@@ -179,6 +179,7 @@ const forgotPassword = async (email) => {
             throw new Error(BAD_REQUEST.USER_NOT_EXISTS);
         }
     }catch(e){
+        
         throw new AppError(`${e.message}` || `${BAD_REQUEST.EMAIL_NOT_SEND}`, e.statusCode || 500)
     }
     
