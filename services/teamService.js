@@ -8,7 +8,6 @@ const bcrypt = require("bcrypt");
 
 const createTeam = async (user, data, file) => {
   try {
-    pool.query('BEGIN')
     if (user.teamId !== null) {
       throw new AppError(`${UNAUTHORIZED.ACCESS_DENIED}`, 401);
     }
@@ -71,12 +70,14 @@ const createTeam = async (user, data, file) => {
       );
     }
 
+    const userId = await pool.query('SELECT id FROM users WHERE email=$1', [user.email])
+
     const values = [
       name,
       leagueId,
       description,
-      user.id,
-      user.id,
+      userId.rows[0].id,
+      userId.rows[0].id,
       homeColor,
       awayColor,
       teamLogoUrl,
@@ -92,12 +93,14 @@ const createTeam = async (user, data, file) => {
       RETURNING *;`,
       values
     );
-    const query = await pool.query('SELECT price FROM leagues WHERE id=$1', [leagueId])
-    await checkoutSession(team.rows[0].id, team.rows[0].name, query.rows[0].price);
-    pool.query('COMMIT')
-  } catch (e) {
-    pool.query('ROLLBACK')
+    
+    const query = await pool.query('SELECT price, organizer_id FROM leagues WHERE id=$1', [leagueId])
 
+    const account_id = await pool.query('SELECT account_id FROM users WHERE id=$1', [query.rows[0].organizer_id])
+
+    return await checkoutSession(account_id.rows[0].account_id, team.rows[0].id, team.rows[0].name, query.rows[0].price);
+
+  } catch (e) {
     if (
       e.code === "22P02" ||
       e.message.includes("invalid input value for enum")

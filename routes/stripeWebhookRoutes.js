@@ -87,14 +87,23 @@ router.post('/payment_webhook', express.raw({ type: 'application/json' }), async
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object;
-      console.log("Comepleted")
-      // await client.query('UPDATE transactions SET status = $1, intent_id = $2 WHERE charge_session_id = $3', ['success', session.payment_intent, session.id]);
+      const paymentIntentId = session.payment_intent;
+      const sessionId = session.id;
+      const teamId = session.metadata.teamId;
+
+      await pool.query('UPDATE transactions SET status = $1, intent_id = $2 WHERE team_id = $3', ['success', paymentIntentId, teamId]);
       break;
     }
+    case 'checkout.session.expired':
     case 'checkout.session.async_payment_failed': {
       const session = event.data.object;
-      console.log("Failed")
-      // await client.query('UPDATE transactions SET status = $1 WHERE charge_session_id = $2', ['failed', session.id]);
+      const teamId = session.metadata.teamId;
+
+      // Delete the transaction first
+      await pool.query('DELETE FROM transactions WHERE team_id = $1', [teamId]);
+      
+      // Delete the team
+      await pool.query('DELETE FROM public.teams WHERE id = $1', [teamId]);
       break;
     }
     case 'charge.refunded': {

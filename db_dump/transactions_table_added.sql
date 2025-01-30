@@ -340,10 +340,12 @@ ALTER SEQUENCE public.teams_id_seq OWNED BY public.teams.id;
 CREATE TABLE public.transactions (
     id bigint NOT NULL,
     team_id bigint NOT NULL,
-    charge_id bigint NOT NULL,
-    intent_id bigint NOT NULL,
-    payment_status character varying(20) NOT NULL,
-    amount bigint NOT NULL
+    status character varying(50) NOT NULL,
+    amount bigint NOT NULL,
+    intent_id character varying(255),
+    created_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT now(),
+    charge_id character varying(255) NOT NULL
 );
 
 
@@ -585,7 +587,7 @@ COPY public.roles (id, role_name) FROM stdin;
 --
 
 COPY public.teams (id, name, league_id, description, owner_id, captain_id, home_color, away_color, logo_url, team_visibility, password) FROM stdin;
-1	Bayer Leverkusen	8	\N	8	50	white	red	team-logos/75955c14-1331-4386-b7a5-3288f624ed56-league-8-Bayer Leverkusen	t	\N
+43	Team 5	8	\N	8	8	white	gray	team-logos/c3e8e799-a89e-461b-a2e5-e36381e4c271-league-8-Team 5	f	\N
 \.
 
 
@@ -593,7 +595,8 @@ COPY public.teams (id, name, league_id, description, owner_id, captain_id, home_
 -- Data for Name: transactions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.transactions (id, team_id, charge_id, intent_id, payment_status, amount) FROM stdin;
+COPY public.transactions (id, team_id, status, amount, intent_id, created_at, updated_at, charge_id) FROM stdin;
+11	43	success	1000	pi_3QmtNWRwq83ArHb90ZkLIE62	2025-01-30 03:43:53.656445	2025-01-30 03:43:53.656445	cs_test_a18sEW7vmAu6cIM9KCeHxcZdpLWAKorcYN2xh052IggFkCeuXS8L704hra
 \.
 
 
@@ -633,18 +636,18 @@ COPY public.user_stats (id, user_id, match_id, goals, shots, assists, saves, int
 
 COPY public.users (id, first_name, last_name, email, password, picture_url, created_at, team_id, account_id, owner_status) FROM stdin;
 50	Elio	Fezollari	fezollarielio@gmail.com	$2b$10$cfj3akmM1.hYurIM2.2rZ./SqNevGg6XjF.5pEIDvKLWbiqEBYoRy	\N	2025-01-20 21:14:59.290939	\N	acct_1QmKwJRunFkMbJtY	t
-42	Eric	Dier	ericdier@gmail.com	$2b$10$ruNH.w4TwQRVd6mW1z18TevCbhFRjxJvGcyFo/RXbT4za2pL6bT4C	\N	2025-01-20 21:06:16.91512	1	acct_1QmLUARv0Ud3G2cP	f
-43	Alphonso	Davies	alphonsodavies@gmail.com	$2b$10$pvGkaoNcaTH2wHibHrkht.KTjFkssVlzdibaM4sofe0vV2ADIYOCW	\N	2025-01-20 21:06:38.995511	1	acct_1QmLQWRrqBSWHse0	f
-44	Aleksandar	Pavlović	aleksandarpavlovic@gmail.com	$2b$10$SZ.e5PMD2rWxvY9UoYe48OJF76PyAC.iXJY1HOidqX1p1DSJb0PfG	\N	2025-01-20 21:08:17.015221	1	acct_1QmLX1RxYgByxzle	f
-45	Leon	Goretzka	leongoretzka@gmail.com	$2b$10$e1ohhToKOpwpDuCE7b6EZOg/GYfR1FVjFl7eRG1wxzbqUei3l.NPi	\N	2025-01-20 21:10:44.457261	1	acct_1Qm9EH2Kb1BKZnMk	f
-46	Joshua	Kimmich	joshuakimmich@gmail.com	$2b$10$Fh5CA6bF6HRusWZYpZnaQey8ujwO5mHH8EaJrxWjayZxTKDosbTkm	\N	2025-01-20 21:11:12.671125	1	acct_1Qm8Jw2N6mV3XHlH	f
-47	Kingsley	Coman	kingsleycoman@gmail.com	$2b$10$lt7GuhiQrWO5CIEtjKNfGO7B8N/22cPZ/69I8Ghi4uOb5252fsVWi	\N	2025-01-20 21:11:43.759303	1	acct_1Qm7cQRxpdF3cOR9	f
-48	Leroy	Sane	leroysane@gmail.com	$2b$10$WX32rraIA5LVYqGyxUcfUudYkFLV2q9zam4cv2ZoyxmVXpvHiPjya	\N	2025-01-20 21:12:13.786828	1	acct_1Qm7YGRsgFaPAEfh	f
-49	Serge	Gnabry	sergegnabry@gmail.com	$2b$10$EJKdoU4m6s/h2RwtFXXpCes7y3Tjky4N0TUwRbgz6g1gyawJV13Iq	\N	2025-01-20 21:12:35.933816	1	acct_1Qm6m02Ko0Pc1TLf	f
-39	Jamal	Musiala	jamalmusiala@gmail.com	$2b$10$Z.zQf1HO5pxZTtSTBPethewXXAaCm6uysfpc0xgsSq9eGd5B9cXyW	\N	2025-01-20 21:00:34.109821	1	acct_1Qm3lc2KuRfs3OTZ	f
-40	Manuel	Neuer	manuelneuer@gmail.com	$2b$10$8ecs4c1ECEqrk/puV8jvY.orO2hl9/ZjrA8hF0nvFWlMinQQ2PNri	\N	2025-01-20 21:04:12.690056	1	acct_1Qm6Y72NIjp1YceJ	f
-41	Dayot	Upamecano	dayotupamecano@gmail.com	$2b$10$NkS0jnmGbURVQWfXkSZEQ.VrJAR0U5eKLjT3kbx7vE2nOseFMZDSu	\N	2025-01-20 21:05:09.693307	1	acct_1Qm7YGRsgFaPAEfh	f
-8	Aum	Zaveri	aumzaveri06@gmail.com	$2b$10$KHqAQBDwxgUVs0BTqUYIv.x3OqgzsJ80FacdxBoYTcH5dWF.rEwlK	profile-photo/4dff638c-abdc-46ad-992d-0a86a5090e2a-WhatsApp Image 2021-09-20 at 12.46.36 PM.jpeg	2025-01-29 10:35:11.701691	\N	acct_1QmnGc2K9wpSDFwj	t
+42	Eric	Dier	ericdier@gmail.com	$2b$10$ruNH.w4TwQRVd6mW1z18TevCbhFRjxJvGcyFo/RXbT4za2pL6bT4C	\N	2025-01-20 21:06:16.91512	\N	acct_1QmLUARv0Ud3G2cP	f
+43	Alphonso	Davies	alphonsodavies@gmail.com	$2b$10$pvGkaoNcaTH2wHibHrkht.KTjFkssVlzdibaM4sofe0vV2ADIYOCW	\N	2025-01-20 21:06:38.995511	\N	acct_1QmLQWRrqBSWHse0	f
+44	Aleksandar	Pavlović	aleksandarpavlovic@gmail.com	$2b$10$SZ.e5PMD2rWxvY9UoYe48OJF76PyAC.iXJY1HOidqX1p1DSJb0PfG	\N	2025-01-20 21:08:17.015221	\N	acct_1QmLX1RxYgByxzle	f
+45	Leon	Goretzka	leongoretzka@gmail.com	$2b$10$e1ohhToKOpwpDuCE7b6EZOg/GYfR1FVjFl7eRG1wxzbqUei3l.NPi	\N	2025-01-20 21:10:44.457261	\N	acct_1Qm9EH2Kb1BKZnMk	f
+46	Joshua	Kimmich	joshuakimmich@gmail.com	$2b$10$Fh5CA6bF6HRusWZYpZnaQey8ujwO5mHH8EaJrxWjayZxTKDosbTkm	\N	2025-01-20 21:11:12.671125	\N	acct_1Qm8Jw2N6mV3XHlH	f
+47	Kingsley	Coman	kingsleycoman@gmail.com	$2b$10$lt7GuhiQrWO5CIEtjKNfGO7B8N/22cPZ/69I8Ghi4uOb5252fsVWi	\N	2025-01-20 21:11:43.759303	\N	acct_1Qm7cQRxpdF3cOR9	f
+48	Leroy	Sane	leroysane@gmail.com	$2b$10$WX32rraIA5LVYqGyxUcfUudYkFLV2q9zam4cv2ZoyxmVXpvHiPjya	\N	2025-01-20 21:12:13.786828	\N	acct_1Qm7YGRsgFaPAEfh	f
+49	Serge	Gnabry	sergegnabry@gmail.com	$2b$10$EJKdoU4m6s/h2RwtFXXpCes7y3Tjky4N0TUwRbgz6g1gyawJV13Iq	\N	2025-01-20 21:12:35.933816	\N	acct_1Qm6m02Ko0Pc1TLf	f
+39	Jamal	Musiala	jamalmusiala@gmail.com	$2b$10$Z.zQf1HO5pxZTtSTBPethewXXAaCm6uysfpc0xgsSq9eGd5B9cXyW	\N	2025-01-20 21:00:34.109821	\N	acct_1Qm3lc2KuRfs3OTZ	f
+40	Manuel	Neuer	manuelneuer@gmail.com	$2b$10$8ecs4c1ECEqrk/puV8jvY.orO2hl9/ZjrA8hF0nvFWlMinQQ2PNri	\N	2025-01-20 21:04:12.690056	\N	acct_1Qm6Y72NIjp1YceJ	f
+41	Dayot	Upamecano	dayotupamecano@gmail.com	$2b$10$NkS0jnmGbURVQWfXkSZEQ.VrJAR0U5eKLjT3kbx7vE2nOseFMZDSu	\N	2025-01-20 21:05:09.693307	\N	acct_1Qm7YGRsgFaPAEfh	f
+8	Aum	Zaveri	aumzaveri06@gmail.com	$2b$10$KHqAQBDwxgUVs0BTqUYIv.x3OqgzsJ80FacdxBoYTcH5dWF.rEwlK	profile-photo/4dff638c-abdc-46ad-992d-0a86a5090e2a-WhatsApp Image 2021-09-20 at 12.46.36 PM.jpeg	2025-01-29 10:35:11.701691	\N	acct_1QmrbR2Lol7xYxQb	f
 \.
 
 
@@ -694,14 +697,14 @@ SELECT pg_catalog.setval('public.roles_id_seq', 1, false);
 -- Name: teams_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.teams_id_seq', 14, true);
+SELECT pg_catalog.setval('public.teams_id_seq', 43, true);
 
 
 --
 -- Name: transactions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.transactions_id_seq', 1, false);
+SELECT pg_catalog.setval('public.transactions_id_seq', 11, true);
 
 
 --
