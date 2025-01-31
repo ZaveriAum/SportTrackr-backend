@@ -349,10 +349,12 @@ const deleteTeam = async(email, teamId)=>{
 
     transactionStarted = true;
 
-    await pool.query('UPDATE transactions SET status=$1, team_id=$2 WHERE charge_id=$3', ['refunded', null, transaction.charge_id])
+    await pool.query('DELETE FROM transactions WHERE team_id=$1', [teamId])
     
     await pool.query('UPDATE users SET team_id=$1 WHERE email=$2', [null, email])
-        
+    
+    await pool.query('DELETE FROM teams WHERE id=$1', [teamId])
+    
     await refund(transaction.intent_id, transaction.amount);
 
     await pool.query('COMMIT')
