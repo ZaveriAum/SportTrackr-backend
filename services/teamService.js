@@ -5,6 +5,7 @@ const { toCamelCase } = require("../utilities/utilities");
 const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
 const { checkoutSession } = require('./paymentService')
 const bcrypt = require("bcrypt");
+const {getAccountBalance, refund} = require('./paymentService')
 
 const createTeam = async (user, data, file) => {
   try {
@@ -93,6 +94,9 @@ const createTeam = async (user, data, file) => {
       RETURNING *;`,
       values
     );
+    
+    // Add team id for that user
+    await pool.query('UPDATE users SET team_id=$1 WHERE email=$2', [team.rows[0].id, user.email])
     
     const query = await pool.query('SELECT price, organizer_id FROM leagues WHERE id=$1', [leagueId])
 
@@ -310,9 +314,59 @@ const getTeamById = async (teamId) => {
   }
 };
 
+const deleteTeam = async(email, teamId)=>{
+  let transactionStarted = false;
+  try{
+    // getting the id from users using email get the owner_id from teamId now check if both are same then move
+    // further else throw new error
+    const query = await pool.query('SELECT id FROM users WHERE email=$1', [email]);
+    const query2 = await pool.query('SELECT owner_id, league_id FROM teams WHERE id=$1', [teamId])
+    
+    if (query.rows[0].id !== query2.rows[0].owner_id)
+      throw new AppError(`${UNAUTHORIZED.ACCESS_DENIED}`, 401)
+
+    // Check if league has already started Team can only be deleted 5 days before the leagues get started
+    const query3 = await pool.query('SELECT start_time FROM leagues WHERE id=$1', [query2.rows[0].league_id])
+
+    const startTime = new Date(query3.rows[0].start_time);
+    const fiveDaysBeforeStart = new Date(startTime);
+    fiveDaysBeforeStart.setDate(startTime.getDate() - 5);
+    const now = new Date();
+
+    if (now >= fiveDaysBeforeStart)
+      throw new AppError("Not Allowed: Less than 5 days before the league start time.", 400);
+
+    // Now for refund get the transaction information from the teamId
+    const query4 = await pool.query('SELECT intent_id, amount FROM transactions WHERE team_id=$1', [teamId]);
+
+    if (query4.rows.length === 0)
+      throw new Error("No successful transaction found for this team.");
+
+    const transaction = query4.rows[0];
+
+    // Now process the refund
+    await pool.query('BEGIN');
+
+    transactionStarted = true;
+
+    await pool.query('UPDATE transactions SET status=$1, team_id=$2 WHERE charge_id=$3', ['refunded', null, transaction.charge_id])
+    
+    await pool.query('UPDATE users SET team_id=$1 WHERE email=$2', [null, email])
+        
+    await refund(transaction.intent_id, transaction.amount);
+
+    await pool.query('COMMIT')
+
+  }catch(e){
+    if (transactionStarted) await pool.query('ROLLBACK');
+    throw new AppError(e.message || 'Unable to delete the team', e.statusCode || 401)
+  }
+}
+
 module.exports = {
   createTeam,
   updateTeam,
   getTeamsByLeagueId,
-  getTeamById
+  getTeamById,
+  deleteTeam
 };
