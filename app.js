@@ -5,6 +5,8 @@ const employeeRoutes = require('./routes/employeeRoutes')
 const userRoutes = require('./routes/userRoutes')
 const teamRoutes = require ('./routes/teamRoutes')
 const matchRoutes = require ('./routes/matchRoutes')
+const connectAccountRoutes = require('./routes/connectAccountRoutes')
+const stripeWebHookRoutes = require('./routes/stripeWebhookRoutes')
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const { requestLogger, errorLogger } = require('./middlewares/loggingMiddleware');
@@ -15,7 +17,11 @@ app.use(cors({
     origin: "http://localhost:5173", // frontend
     credentials: true,
 }));
+
 app.use(cookieParser());
+
+app.use('/v1', stripeWebHookRoutes)
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -29,6 +35,7 @@ app.use('/v1/league/emp', employeeRoutes)
 app.use('/v1/user', userRoutes)
 app.use('/v1/team', teamRoutes)
 app.use('/v1/match', matchRoutes)
+app.use('/v1/connect', connectAccountRoutes)
 // Error Logging Middleware
 app.use(errorLogger);
 

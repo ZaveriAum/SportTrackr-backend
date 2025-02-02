@@ -7,7 +7,7 @@ app.get('/', (req, res) => {
 })
 
 
-// listening at port 5000
+// listing at port 5000
 app.listen(SERVER_PORT, () => {
     console.log(`Server listening to http://localhost:${SERVER_PORT}`)
 })
