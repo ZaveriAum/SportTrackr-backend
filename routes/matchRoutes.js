@@ -12,5 +12,5 @@ router.use(validator)
 router.use(authenticateToken)
 
 router.post('/',matchController.updateMatch);
-
+router.get("/",matchController.getStats)
 module.exports = router;
