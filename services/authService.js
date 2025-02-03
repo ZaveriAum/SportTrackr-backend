@@ -21,7 +21,6 @@ const findUserRoles = async(email) =>{
         const result = await pool.query('SELECT owner_status FROM users WHERE email=$1', [email]);
         if (result.rows[0].owner_status)
             user_roles.push('owner')
-
         return user_roles
     }catch(error){
         throw new Error('Connection error');
@@ -171,7 +170,6 @@ const forgotPassword = async (email) => {
         if (user) {
             // Generate a reset token with a short expiration time
             const resetToken = jwt.sign({ id: user.id }, process.env.RESET_PASSWORD_TOKEN_SECRET, { expiresIn: '5m' });
-            console.log(user)
             // Send the reset password email with the token
             await mailService.sendResetPasswordEmail(user.email, resetToken);
         } else {

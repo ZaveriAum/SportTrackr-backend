@@ -178,26 +178,31 @@ const getTopInterceptors = async (teamId) => {
   const topInterceptors = await pool.query(topInterceptorsQuery, [teamId]);
 
   topInterceptors.rows.forEach(({ first_name, match_id, interceptions_in_match }) => {
-    let matchEntry = result.find(entry => entry.game === match_id);
+    let matchEntry = topInterceptorsResult.find(
+      (entry) => entry.game === match_id
+    );
+
     if (!matchEntry) {
       matchEntry = { game: match_id };
-      result.push(matchEntry);
+      topInterceptorsResult.push(matchEntry);
     }
-
-    matchEntry[first_name] = (matchEntry[first_name] || 0) + interceptions_in_match;
+    if (match_id === 1) {
+      matchEntry[first_name] = interceptions_in_match;
+    } else {
+      matchEntry[first_name] = (matchEntry[first_name] || 0) + interceptions_in_match;
+    }
   });
+
 
   return result;
 };
 
 const getStats = async (user) => {
-  console.log(user)
-  const teamQuery = `SELECT team_id FROM users WHERE id=$1`
-  const team = await pool.query(teamQuery, [user.id]);
+  const teamQuery = `SELECT team_id FROM users WHERE email=$1`
+  const team = await pool.query(teamQuery, [user.email]);
+  
   const teamId = team.rows[0].team_id
-  if(!teamId ){
-    throw new AppError(BAD_REQUEST.TEAM_NOT_EXISTS)
-  }
+
   const mainStats = await getMainStats(teamId);
   const topGoalScorers = await getTopGoalScorers(teamId);
   const shotsResult = await getShots(teamId);
