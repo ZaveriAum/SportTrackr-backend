@@ -4,6 +4,7 @@ const { AppError, UNAUTHORIZED, BAD_REQUEST } = require("../utilities/errorCodes
 const { toCamelCase } = require("../utilities/utilities");
 const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
 const DEFAULT_LEAGUE_LOGO = 'defualts/default_league_photo.png'
+const {refund, calculateRefundAmount, getAccountBalance} = require('./paymentService')
 
 const getAllLeagues = async () => {
   try {
@@ -74,9 +75,9 @@ const getLeague = async (id) => {
   }
 }
 
-const createLeague = async (user, data, file) => {
+const createLeague = async (email, roles, data, file) => {
   try {
-    if (user.roles.includes('owner')) {
+    if (roles.includes('owner')) {
       const {
         leagueName,
         teamStarterSize,
@@ -97,9 +98,12 @@ const createLeague = async (user, data, file) => {
           "league-logos"
         );
       }
+
+      const user = await pool.query('SELECT id FROM users WHERE email=$1', [email]);
+
       const values = [
         leagueName,
-        user.id,
+        user.rows[0].id,
         teamStarterSize,
         price,
         maxTeamSize,
@@ -179,30 +183,64 @@ const uploadLeagueLogo = async (user, file, leagueId) => {
     }
 }
 
-const deleteLeague = async (user, leagueId) => {
+const deleteLeague = async (email, roles, leagueId) => {
 
     try{
-        if (user.roles.includes('owner')){
-            await pool.query('BEGIN');
-                    
-            // Delete employee roles for employees linked to the league
-            await pool.query(`DELETE FROM employee_roles WHERE employee_id IN (SELECT id FROM league_emp WHERE league_id = $1)`,[leagueId]);
-        
-            // Delete employees linked to the league
-            await pool.query(`DELETE FROM league_emp WHERE league_id = $1`,[leagueId]);
-        
-            // Delete teams linked to the league
-            await pool.query(`DELETE FROM teams WHERE league_id = $1`,[leagueId]);
-        
-            // Delete the league
-            const result = await pool.query( `DELETE FROM leagues WHERE id = $1 RETURNING logo_url`,[leagueId]);
+        if (roles.includes('owner')){
 
+          // Check if User is the owner Of the league
+          const league = await pool.query('SELECT organizer_id FROM leagues WHERE id=$1', [leagueId])
+          const user = await pool.query('SELECT id FROM users WHERE email=$1', [email])
+
+          if(league.rows[0].organizer_id !== user.rows[0].id)
+            throw new AppError(BAD_REQUEST.ACCESS_DENIED, 400);
+
+
+          // Check if league has already started Team can only be deleted 5 days before the leagues get started
+          const query = await pool.query('SELECT start_time FROM leagues WHERE id=$1', [leagueId])
+
+          const startTime = new Date(query.rows[0].start_time);
+          const fiveDaysBeforeStart = new Date(startTime);
+          fiveDaysBeforeStart.setDate(startTime.getDate() - 5);
+          const now = new Date();
+
+          if (now >= fiveDaysBeforeStart)
+            throw new AppError("Deletion Timeline Has Passed", 400);
+
+          // get all the transactions and delete every transactions which has team id found
+          const transactions = await pool.query(`SELECT intent_id, amount, team_id FROM transactions WHERE team_id IN (SELECT id FROM teams WHERE league_id=$1)`,[leagueId]);
+          
+          // Delete those transactions for that league
+          transactions.rows.forEach(async (transaction)=>{
+            await pool.query('DELETE FROM transactions WHERE team_id=$1', [transaction.team_id]);
+          })
+          
+          await pool.query('BEGIN');
+
+          // Delete employee roles for employees linked to the league
+          await pool.query(`DELETE FROM employee_roles WHERE employee_id IN (SELECT id FROM league_emp WHERE league_id = $1)`,[leagueId]);
+      
+          // Delete employees linked to the league
+          await pool.query(`DELETE FROM league_emp WHERE league_id = $1`,[leagueId]);
+      
+          // Delete teams linked to the league
+          await pool.query(`DELETE FROM teams WHERE league_id = $1`,[leagueId]);
+      
+          // Delete the league
+          const result = await pool.query( `DELETE FROM leagues WHERE id = $1 RETURNING logo_url`,[leagueId]);
+
+          // Refund all the teams 
+          transactions.rows.forEach(async (transaction)=>{
+            await refund(transaction.intent_id, transaction.amount, false);
+          });
+
+          if (result.rows[0].logo_url)
             // Deleting the league logo
             deleteFile(result.rows[0].logo_url)
 
-            await pool.query('COMMIT');
+          await pool.query('COMMIT');
         }else{
-            throw new AppError(BAD_REQUEST.ACCESS_DENIED, 400)
+          throw new AppError(BAD_REQUEST.ACCESS_DENIED, 400)
         }
     }catch(e){
         await pool.query('ROLLBACK');

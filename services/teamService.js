@@ -5,7 +5,7 @@ const { toCamelCase } = require("../utilities/utilities");
 const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
 const { checkoutSession } = require('./paymentService')
 const bcrypt = require("bcrypt");
-const {getAccountBalance, refund} = require('./paymentService')
+const {refund} = require('./paymentService')
 
 const createTeam = async (user, data, file) => {
   try {
@@ -321,7 +321,7 @@ const deleteTeam = async(email, teamId)=>{
     // further else throw new error
     const query = await pool.query('SELECT id FROM users WHERE email=$1', [email]);
     const query2 = await pool.query('SELECT owner_id, league_id FROM teams WHERE id=$1', [teamId])
-    
+
     if (query.rows[0].id !== query2.rows[0].owner_id)
       throw new AppError(`${UNAUTHORIZED.ACCESS_DENIED}`, 401)
 
@@ -334,18 +334,25 @@ const deleteTeam = async(email, teamId)=>{
     const now = new Date();
 
     if (now >= fiveDaysBeforeStart)
-      throw new AppError("Not Allowed: Less than 5 days before the league start time.", 400);
+      throw new AppError("Deletion Timeline Has Passed", 400);
 
     // Now for refund get the transaction information from the teamId
     const query4 = await pool.query('SELECT intent_id, amount FROM transactions WHERE team_id=$1', [teamId]);
 
-    if (query4.rows.length === 0)
+    if (query4.rowCount === 0){
       throw new Error("No successful transaction found for this team.");
-
+    }
     const transaction = query4.rows[0];
 
+    const query5 = await pool.query('SELECT account_id FROM users WHERE id=(SELECT organizer_id FROM leagues WHERE id=$1)', [query2.rows[0].league_id])
+        
     // Now process the refund
     await pool.query('BEGIN');
+
+    // Delete the team logo
+    const team = await pool.query('SELECT logo_url FROM teams WHERE id=$1', [teamId]);
+    if (team.rows[0].logo_url)
+      await deleteFile(team.rows[0].logo_url);    
 
     transactionStarted = true;
 
@@ -355,7 +362,9 @@ const deleteTeam = async(email, teamId)=>{
     
     await pool.query('DELETE FROM teams WHERE id=$1', [teamId])
     
-    await refund(transaction.intent_id, transaction.amount);
+
+    await refund(transaction.intent_id, transaction.amount, true);
+
 
     await pool.query('COMMIT')
 

@@ -107,9 +107,7 @@ router.post('/payment_webhook', express.raw({ type: 'application/json' }), async
       break;
     }
     case 'charge.refunded': {
-      console.log("Refunded")
       const charge = event.data.object;
-      // await client.query('UPDATE transactions SET status = $1 WHERE intent_id = $2', ['refunded', charge.payment_intent]);
       break;
     }
     case 'charge.dispute.created': {

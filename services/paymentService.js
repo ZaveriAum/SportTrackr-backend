@@ -45,14 +45,14 @@ const checkoutSession = async(account_id, teamId, teamName, leaguePrice) => {
 
 const getAccountBalance = async(email) => {
     try{
-        const query = await pool.query('SELECT account_id FROM users WHERE email=$1 and owner_status', [email, true])
-
+        // Get the balance before the paid out.
+        const query = await pool.query('SELECT account_id FROM users WHERE email=$1 and owner_status=$2', [email, true])
         const balance = await stripe.balance.retrieve({
             stripeAccount: query.rows[0].account_id
-        })
+        });
 
         return balance.available[0]?.amount || 0;
-    } catch (error) {
+    } catch (e) {
         throw new AppError("Failed to fetch balance", 400);
     }
 }
@@ -61,39 +61,36 @@ const calculateRefundAmount = async (leagueId) => {
     try {
         // Fetch total number of teams and sum of completed transactions in a single query
         const result = await pool.query(
-            `COALESCE(SUM(tr.amount), 0) as total_amount 
-             FROM teams t
-             LEFT JOIN transactions tr ON t.team_id = tr.team_id AND tr.status = 'completed'
-             WHERE t.league_id = $1`,
-            [leagueId]
+            `SELECT COALESCE(SUM(tr.amount), 0) as total_amount FROM transactions tr WHERE team_id IN (SELECT id FROM teams WHERE league_id=$1)`,[leagueId]
         );
 
-        const totalAmount = parseFloat(result.rows[0].total_amount) || 0;
-
-        return totalAmount * 100;
-    } catch (error) {
+        const baseRefundAmount = parseFloat(result.rows[0].total_amount) || 0;
+        const totalAmount = baseRefundAmount + baseRefundAmount * 0.03;
+        return totalAmount;
+    } catch (e) {
         throw new AppError("Unknown Error", 500);
     }
 };
 
 const refund = async(intentId, amount, teamDeletion) => {
-    try{
-        if (teamDeletion)
+    try {
+        if (teamDeletion) {
             amount = Math.round(amount * 0.97 * 100);
-        // Process the refund
+        }
+
         await stripe.refunds.create({
             payment_intent: intentId,
-            amount: amount * 100,
+            amount: amount * 100 // into cents for the return
         });
-  
-    }catch(e){
-        console.log(e)
-        throw new AppError("Unable to Process the Refund")
+
+    } catch (e) {
+        throw new AppError("Unable to Process the Refund", 500);
     }
 }
 
 module.exports = {
     checkoutSession,
     getAccountBalance,
-    refund
+    refund,
+    calculateRefundAmount
 }
