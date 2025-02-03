@@ -11,8 +11,20 @@ const updateMatch = async (req, res, next) => {
         next(e);
     }
 }
-
+const getStats = async(req,res,next)=>{
+    try{
+        const stats = await matchService.getStats(req.user)
+        res.status(200).json({
+            stats: stats
+        });
+    }
+    catch(e){
+        console.log(e)
+        next(e)
+    }
+}
 
 module.exports = {
-    updateMatch
+    updateMatch,
+    getStats
 }
