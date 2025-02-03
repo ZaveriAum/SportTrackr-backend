@@ -21,8 +21,17 @@ const assignEmployeeToLeague = async (req, res, next) => {
         next(e);
     }
 }
+const getAdminDashboardStats = async (req,res,next)=>{
+    try{
+        dashboardStats = await employeeService.getAdminDashboardStats(req.user)
+        res.status(200).json({stats:dashboardStats})
+    }catch(e){
+        next(e);
+    }
+}
 
 module.exports = {
     getLeagues,
-    assignEmployeeToLeague
+    assignEmployeeToLeague,
+    getAdminDashboardStats
 }

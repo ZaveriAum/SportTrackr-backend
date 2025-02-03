@@ -9,8 +9,13 @@ const authenticateToken = require('../middlewares/jwtAuth')
 router.use(validator)
 router.use(authenticateToken)
 
+
+router.get('/dashboard',employeeController.getAdminDashboardStats)
+
 router.get('/:leagueId', employeeController.getLeagues);
 
 router.post('/:leagueId', employeeController.assignEmployeeToLeague)
+
+
 
 module.exports = router;
