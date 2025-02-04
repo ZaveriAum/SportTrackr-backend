@@ -1,7 +1,6 @@
 require("dotenv").config();
 const pool = require("../config/db");
 const { AppError, UNAUTHORIZED, BAD_REQUEST } = require("../config/errorCodes");
-const { toCamelCase } = require("../utilities/utilities");
 const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
 
 const updateMatch = async (user, data) => {
@@ -174,7 +173,7 @@ const getTopInterceptors = async (teamId) => {
     ORDER BY u.first_name, m.id;
   `;
   
-  const result = [];
+  const topInterceptorsResult = [];
   const topInterceptors = await pool.query(topInterceptorsQuery, [teamId]);
 
   topInterceptors.rows.forEach(({ first_name, match_id, interceptions_in_match }) => {
@@ -194,7 +193,7 @@ const getTopInterceptors = async (teamId) => {
   });
 
 
-  return result;
+  return topInterceptorsResult;
 };
 
 const getStats = async (user) => {
@@ -215,8 +214,78 @@ const getStats = async (user) => {
   };
 };
 
+const uploadHighlights = async (user, files, body) => {
+  let highlightVideos = [];
+
+  for (const field in files) {
+    highlightVideos = highlightVideos.concat(files[field]); 
+  }
+  
+  for (const file of highlightVideos) {
+    if (file.size > 100 * 1024 * 1024) {
+      return res
+        .status(400)
+        .json({ error: `File ${file.originalname} exceeds 100MB limit.` });
+    }
+  }
+
+  const highlightsData = body.highlights;
+
+  const uploadPromises = highlightVideos.map(async (file, index) => {
+    const highlight = highlightsData[index];
+
+    if (!highlight.matchId || !highlight.playerId || !highlight.type) {
+      throw new AppError("Missing required metadata (matchId, playerId, or type).", 400);
+    }
+
+    const key = `highlights/${highlight.matchId}/${highlight.playerId}/${Date.now()}_${file.originalname}`;
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const insertHighlightQuery = `
+        INSERT INTO highlights(match_id, highlight_url, highlight_type, highlight_from)
+        VALUES ($1, $2, $3, $4) RETURNING id
+      `;
+      const { rows } = await client.query(insertHighlightQuery, [
+        highlight.matchId,
+        null,
+        highlight.type,
+        highlight.playerId,
+      ]);
+      const highlightId = rows[0].id;
+      const fileUrl = await uploadFile(file.buffer, key, file.mimetype);
+      const updateHighlightQuery = `
+        UPDATE highlights
+        SET highlight_url = $1
+        WHERE id = $2
+      `;
+      await client.query(updateHighlightQuery, [fileUrl, highlightId]);
+
+      await client.query('COMMIT');
+
+      return {
+        matchId: highlight.matchId,
+        playerId: highlight.playerId,
+        type: highlight.type,
+        videoUrl: fileUrl,
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error("Error during file upload or database operations:", error);
+      throw new AppError("Failed to upload the highlight and update the database.", 500);
+    } finally {
+      client.release();
+    }
+  });
+
+  await Promise.all(uploadPromises);
+
+  return { message: "Upload successful!" };
+};
 
 module.exports = {
   updateMatch,
   getStats,
+  uploadHighlights
 };

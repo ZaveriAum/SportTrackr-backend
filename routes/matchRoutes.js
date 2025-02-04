@@ -13,4 +13,9 @@ router.use(authenticateToken)
 
 router.post('/',matchController.updateMatch);
 router.get("/stats",matchController.getStats)
+router.post('/highlights', upload.fields([
+    { name: 'highlights[0][video]', maxCount: 1 },  
+    { name: 'highlights[1][video]', maxCount: 1 },  
+    { name: 'highlights[2][video]', maxCount: 1 }   
+  ]), matchController.uploadHighlights);
 module.exports = router;
