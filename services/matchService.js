@@ -173,7 +173,7 @@ const getTopInterceptors = async (teamId) => {
     ORDER BY u.first_name, m.id;
   `;
   
-  const result = [];
+  const topInterceptorsResult = [];
   const topInterceptors = await pool.query(topInterceptorsQuery, [teamId]);
 
   topInterceptors.rows.forEach(({ first_name, match_id, interceptions_in_match }) => {
@@ -193,7 +193,7 @@ const getTopInterceptors = async (teamId) => {
   });
 
 
-  return result;
+  return topInterceptorsResult;
 };
 
 const getStats = async (user) => {
