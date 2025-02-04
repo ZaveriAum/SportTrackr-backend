@@ -5,6 +5,8 @@ const { toCamelCase } = require("../utilities/utilities");
 const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
 const DEFAULT_LEAGUE_LOGO = 'defualts/default_league_photo.png'
 const {refund, calculateRefundAmount, getAccountBalance} = require('./paymentService')
+const { sendTeamDeletionToOwner, sendRefundConfirmationToOwner, sendTeamDeletionToPlayer,
+   sendLeagueOwnerRefund, sendLeagueOwnerDeletionConfirmation} = require('./mailService')
 
 const getAllLeagues = async () => {
   try {
@@ -197,25 +199,56 @@ const deleteLeague = async (email, roles, leagueId) => {
 
 
           // Check if league has already started Team can only be deleted 5 days before the leagues get started
-          const query = await pool.query('SELECT start_time FROM leagues WHERE id=$1', [leagueId])
+          const query = await pool.query('SELECT start_time, league_name FROM leagues WHERE id=$1', [leagueId])
+          const leagueName = query.rows[0].league_name;
+          const leagueOwner = await pool.query('SELECT email, first_name, last_name FROM users WHERE id=$1', [league.rows[0].organizer_id])
 
           const startTime = new Date(query.rows[0].start_time);
           const fiveDaysBeforeStart = new Date(startTime);
           fiveDaysBeforeStart.setDate(startTime.getDate() - 5);
-          const now = new Date();
 
-          if (now >= fiveDaysBeforeStart)
-            throw new AppError("Deletion Timeline Has Passed", 400);
+          const teams = await pool.query('SELECT id from teams WHERE league_id=$1', [leagueId])
 
-          // get all the transactions and delete every transactions which has team id found
           const transactions = await pool.query(`SELECT intent_id, amount, team_id FROM transactions WHERE team_id IN (SELECT id FROM teams WHERE league_id=$1)`,[leagueId]);
-          
-          // Delete those transactions for that league
+          let totalAmount = 0;
+
+          // Refund all the teams 
           transactions.rows.forEach(async (transaction)=>{
-            await pool.query('DELETE FROM transactions WHERE team_id=$1', [transaction.team_id]);
-          })
+            totalAmount += transaction.amount;
+            await refund(transaction.intent_id, transaction.amount * 100, false);
+          });
+
+          await sendLeagueOwnerDeletionConfirmation(leagueOwner.rows[0].email, `${leagueOwner.rows[0].first_name} ${leagueOwner.rows[0].last_name}` ,leagueName)
+          await sendLeagueOwnerRefund(leagueOwner.rows[0].email, `${leagueOwner.rows[0].first_name} ${leagueOwner.rows[0].last_name}` ,leagueName, totalAmount);
+
+          teams.rows.forEach(async(team)=>{
+
+            let teamId = team.id;
+
+            let te = await pool.query('SELECT logo_url, owner_id, captain_id, name FROM teams WHERE id=$1', [teamId]);
+            if (te.rows[0].logo_url)
+              await deleteFile(te.rows[0].logo_url);    
+            transactionStarted = true;
+        
+            const trans = await pool.query('DELETE FROM transactions WHERE team_id=$1 RETURNING *', [teamId])
+        
+            await pool.query('BEGIN');
+        
+            const team_players = await pool.query('SELECT email, first_name, last_name FROM users WHERE team_id=$1',[teamId])
+            const owner_email = await pool.query('SELECT email, first_name, last_name FROM users WHERE id=$1', [te.rows[0].owner_id])
+            const captain_email = await pool.query('SELECT email, first_name, last_name FROM users WHERE id=$1', [te.rows[0].captain_id])
+            
+            await sendTeamDeletionToOwner(owner_email.rows[0].email, `${owner_email.rows[0].first_name} ${owner_email.rows[0].last_name}`, te.rows[0].name);
+            await sendRefundConfirmationToOwner(owner_email.rows[0].email, `${owner_email.rows[0].first_name} ${owner_email.rows[0].last_name}`, trans.rows[0].charge_id, trans.rows[0].amount);
+            team_players.rows.forEach(async (player)=>{
+              await sendTeamDeletionToPlayer(player.email, `${player.first_name} ${player.last_name}`, "League Organizer Has successfully deleted the League", "League Deleted");
+            });
+            if(owner_email.rows[0].email !== owner_email.rows[0].email){
+              await sendTeamDeletionToPlayer(captain_email.rows[0].email, `${captain_email.rows[0].first_name} ${captain_email.rows[0].last_name}`, "League Organizer Has successfully deleted the League", "League Deleted");
+            }
           
-          await pool.query('BEGIN');
+          })
+
 
           // Delete employee roles for employees linked to the league
           await pool.query(`DELETE FROM employee_roles WHERE employee_id IN (SELECT id FROM league_emp WHERE league_id = $1)`,[leagueId]);
@@ -229,11 +262,8 @@ const deleteLeague = async (email, roles, leagueId) => {
           // Delete the league
           const result = await pool.query( `DELETE FROM leagues WHERE id = $1 RETURNING logo_url`,[leagueId]);
 
-          // Refund all the teams 
-          transactions.rows.forEach(async (transaction)=>{
-            await refund(transaction.intent_id, transaction.amount, false);
-          });
-
+          
+          
           if (result.rows[0].logo_url)
             // Deleting the league logo
             deleteFile(result.rows[0].logo_url)

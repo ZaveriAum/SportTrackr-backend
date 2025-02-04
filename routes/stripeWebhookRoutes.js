@@ -4,7 +4,7 @@ const endpointSecret = process.env.WEBHOOK_SECRET;
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/db')
-const {sendLeagueOwnerConfirmation, sendRequestCompletionLeagueOwnerEmail} = require('../services/mailService')
+const {sendLeagueOwnerConfirmation, sendRequestCompletionLeagueOwnerEmail, sendTeamCreationConfirmation, sendPaymentReceipt} = require('../services/mailService')
 
 router.post('/connect_account_webhook', express.raw({ type: 'application/json' }), async (request, response, next) => {
   let event = request.body;
@@ -79,42 +79,53 @@ router.post('/payment_webhook', express.raw({ type: 'application/json' }), async
     try {
       event = stripe.webhooks.constructEvent(request.body, signature, endpointSecret);
     } catch (e) {
-      return response.status(400).json({
-        message: e.message
-      });
+      console.log(e);
     }
   }
   switch (event.type) {
     case 'checkout.session.completed': {
-      const session = event.data.object;
-      const paymentIntentId = session.payment_intent;
-      const sessionId = session.id;
-      const teamId = session.metadata.teamId;
+      try{
+        const session = event.data.object;
+        const paymentIntentId = session.payment_intent;
+        const teamId = session.metadata.teamId;
 
-      await pool.query('UPDATE transactions SET status = $1, intent_id = $2 WHERE team_id = $3', ['success', paymentIntentId, teamId]);
-      break;
+        const transaction = await pool.query('UPDATE transactions SET status = $1, intent_id = $2 WHERE team_id = $3 RETURNING *', ['success', paymentIntentId, teamId]);
+        const query = await pool.query('SELECT t.owner_id, t.name, l.league_name FROM teams t JOIN leagues l ON t.league_id = l.id');
+        const user = await pool.query('SELECT first_name, last_name, email FROM users WHERE id=$1', [query.rows[0].owner_id])
+
+        await sendTeamCreationConfirmation(user.rows[0].email, `${user.rows[0].first_name} ${user.rows[0].last_name}`,query.rows[0].name, query.rows[0].league_name, `${process.env.FRONTEND_URL}/app`)
+        await sendPaymentReceipt(user.rows[0].email, `${user.rows[0].first_name} ${user.rows[0].last_name}`,query.rows[0].name, query.rows[0].league_name, transaction.rows[0].charge_id, new Date().toLocaleString("en-US", { timeZone: "America/New_York" }), transaction.rows[0].amount)
+        break;
+      }catch(e){
+        console.log(e);
+      }
     }
     case 'checkout.session.expired':
     case 'checkout.session.async_payment_failed': {
-      const session = event.data.object;
-      const teamId = session.metadata.teamId;
+      try{
+        const session = event.data.object;
+        const teamId = session.metadata.teamId;
 
-      // Delete the transaction first
-      await pool.query('DELETE FROM transactions WHERE team_id = $1', [teamId]);
-      
-      // Delete the team
-      await pool.query('DELETE FROM public.teams WHERE id = $1', [teamId]);
-      break;
-    }
-    case 'charge.refunded': {
-      const charge = event.data.object;
-      break;
+        // Delete the transaction first
+        await pool.query('DELETE FROM transactions WHERE team_id = $1', [teamId]);
+        
+        // Delete the team
+        await pool.query('DELETE FROM public.teams WHERE id = $1', [teamId]);
+        break;
+      }catch(e){
+        console.log(e);
+      }
     }
     case 'charge.dispute.created': {
-      console.log("Disputed")
-      const dispute = event.data.object;
-      // await client.query('UPDATE transactions SET status = $1 WHERE intent_id = $2', ['disputed', dispute.payment_intent]);
-      break;
+      try{
+        console.log("Disputed")
+        const dispute = event.data.object;
+        const chargeId = dispute.charge;
+        const query = await pool.query('DELETE FROM transactions WHERE charge_id=$1 RETURNING team_id', [chargeId]);
+        await pool.query('DELETE FROM teams WHERE id=$1', [query.rows[0].team_id]);
+        break;
+      }catch(e){
+      }
     }
     default:
       console.log(`Unhandled event type: ${event.type}`);

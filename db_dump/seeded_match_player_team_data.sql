@@ -440,7 +440,6 @@ CREATE TABLE public.users (
 
 ALTER TABLE public.users OWNER TO postgres;
 
-
 --
 -- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
@@ -1074,4 +1073,3 @@ REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 --
 -- PostgreSQL database dump complete
 --
-

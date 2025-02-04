@@ -6,6 +6,7 @@ const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
 const { checkoutSession } = require('./paymentService')
 const bcrypt = require("bcrypt");
 const {refund} = require('./paymentService')
+const {sendTeamDeletionToOwner, sendTeamDeletionToPlayer, sendRefundConfirmationToOwner} = require('./mailService')
 
 const createTeam = async (user, data, file) => {
   try {
@@ -344,26 +345,37 @@ const deleteTeam = async(email, teamId)=>{
     }
     const transaction = query4.rows[0];
 
-    const query5 = await pool.query('SELECT account_id FROM users WHERE id=(SELECT organizer_id FROM leagues WHERE id=$1)', [query2.rows[0].league_id])
-        
     // Now process the refund
-    await pool.query('BEGIN');
 
     // Delete the team logo
-    const team = await pool.query('SELECT logo_url FROM teams WHERE id=$1', [teamId]);
+    const team = await pool.query('SELECT logo_url, owner_id, captain_id, name FROM teams WHERE id=$1', [teamId]);
     if (team.rows[0].logo_url)
       await deleteFile(team.rows[0].logo_url);    
-
     transactionStarted = true;
 
-    await pool.query('DELETE FROM transactions WHERE team_id=$1', [teamId])
+    const trans = await pool.query('DELETE FROM transactions WHERE team_id=$1 RETURNING *', [teamId])
+
+    await pool.query('BEGIN');
+
+    const team_players = await pool.query('SELECT email, first_name, last_name FROM users WHERE team_id=$1',[teamId])
+    const owner_email = await pool.query('SELECT email, first_name, last_name FROM users WHERE id=$1', [team.rows[0].owner_id])
+    const captain_email = await pool.query('SELECT email, first_name, last_name FROM users WHERE id=$1', [team.rows[0].captain_id])
+    
+    await sendTeamDeletionToOwner(owner_email.rows[0].email, `${owner_email.rows[0].first_name} ${owner_email.rows[0].last_name}`, team.rows[0].name);
+    await sendRefundConfirmationToOwner(owner_email.rows[0].email, `${owner_email.rows[0].first_name} ${owner_email.rows[0].last_name}`, trans.rows[0].charge_id, trans.rows[0].amount);
+    team_players.rows.forEach(async (player)=>{
+      await sendTeamDeletionToPlayer(player.email, `${player.first_name} ${player.last_name}`, "Team Owner Has successfully deleted the team.", "Team Deleted");
+    });
+    if(owner_email.rows[0].email !== owner_email.rows[0].email){
+      await sendTeamDeletionToPlayer(captain_email.rows[0].email, `${captain_email.rows[0].first_name} ${captain_email.rows[0].last_name}`, "Team Owner Has successfully deleted the team.", "Team Deleted");
+    }
     
     await pool.query('UPDATE users SET team_id=$1 WHERE email=$2', [null, email])
     
     await pool.query('DELETE FROM teams WHERE id=$1', [teamId])
     
 
-    await refund(transaction.intent_id, transaction.amount, true);
+    await refund(transaction.intent_id, transaction.amount * 100, true);
 
 
     await pool.query('COMMIT')

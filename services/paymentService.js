@@ -75,15 +75,16 @@ const calculateRefundAmount = async (leagueId) => {
 const refund = async(intentId, amount, teamDeletion) => {
     try {
         if (teamDeletion) {
-            amount = Math.round(amount * 0.97 * 100);
+            amount = Math.round(amount * 0.97);
         }
 
         await stripe.refunds.create({
             payment_intent: intentId,
-            amount: amount * 100 // into cents for the return
+            amount: amount // into cents for the return
         });
 
     } catch (e) {
+        console.log(e)
         throw new AppError("Unable to Process the Refund", 500);
     }
 }
