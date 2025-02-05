@@ -18,4 +18,5 @@ router.post('/highlights', upload.fields([
     { name: 'highlights[1][video]', maxCount: 1 },  
     { name: 'highlights[2][video]', maxCount: 1 }   
   ]), matchController.uploadHighlights);
+  router.get("/:id",matchController.getMatchDetails)
 module.exports = router;

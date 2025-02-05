@@ -32,13 +32,23 @@ const uploadHighlights = async (req, res, next) => {
     await matchService.uploadHighlights(req.user, req.files, req.body);
     res.json({ message: "Upload successful!" });
   } catch (error) {
-    console.error(error);
     next(error);
   }
 };
+const getMatchDetails = async(req,res,next)=>{
+  try{
+    const matchId = req.params.id
+    const matchDetails = await matchService.getMatchDetails(matchId)
+    res.json(matchDetails)
+  }
+  catch{
+    next(error);
+  }
+}
 
 module.exports = {
   updateMatch,
   getStats,
   uploadHighlights,
+  getMatchDetails
 };
