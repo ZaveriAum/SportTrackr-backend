@@ -17,7 +17,6 @@ const getStats = async (req, res, next) => {
       stats: stats,
     });
   } catch (e) {
-    console.log(e);
     next(e);
   }
 };
