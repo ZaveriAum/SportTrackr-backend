@@ -75,6 +75,15 @@ const deleteLeague = async (req, res, next) => {
     }
 }
 
+const getLeagueNamesByOwner = async (req,res,next)=>{
+    try{
+        res.status(200).json(await leagueService.getLeagueNamesByOwner(req.user.email))
+    }
+    catch(e){
+        next(e);
+    }
+}
+
 module.exports = {
     getAllLeagues,
     getLeague,
@@ -82,4 +91,5 @@ module.exports = {
     updateLeague,
     uploadLeagueLogo,
     deleteLeague,
+    getLeagueNamesByOwner
 }

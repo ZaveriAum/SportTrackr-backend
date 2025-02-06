@@ -27,7 +27,7 @@ const updateTeam = async(req,res,next)=>{
 }
 
 const getTeamsByLeagueId = async(req,res,next)=>{
-    const leagueId = req.body.leagueId
+    const leagueId = req.params.id;
     try{
         const teams = await teamService.getTeamsByLeagueId(leagueId)
         res.status(201).json({

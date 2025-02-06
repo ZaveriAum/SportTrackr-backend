@@ -14,6 +14,7 @@ const register = async (req, res, next) => {
             token: response.accessToken
         })
     }catch(e){
+        console.log(e)
         // Pass the error to the next middleware
         next(e);
     }
@@ -22,7 +23,7 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
     try{
         const response = await authService.login(req.body);
-        res.cookie("jwt", response.refreshToken, {
+        res.cookie("jwt", response.tokens.refreshToken, {
             httpOnly: true,
             domain: undefined,
             secure: true,
@@ -30,7 +31,8 @@ const login = async (req, res, next) => {
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
         });
         res.status(200).json({
-            token: response.accessToken
+            token: response.tokens.accessToken,
+            roles:response.roles
         })
     }catch(e){
         // Pass the error to the next middleware
