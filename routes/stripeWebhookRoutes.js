@@ -71,7 +71,7 @@ router.post('/connect_account_webhook', express.raw({ type: 'application/json' }
   response.send();
 });
 
-router.post('/payment_webhook', express.raw({ type: 'application/json' }), async (request, response, next) => {
+router.post('/payment-webhook', express.raw({ type: 'application/json' }), async (request, response, next) => {
   let event = request.body;
 
   if (endpointSecret) {
