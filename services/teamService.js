@@ -227,6 +227,8 @@ const updateTeam = async (userEmail, data, file, teamId) => {
 const getTeamsByLeagueId = async (leagueId) => {
   try {
 
+    console.log("In get team")
+
     if (!leagueId) {
       throw new AppError("League ID is required", 400);
     }
@@ -234,7 +236,7 @@ const getTeamsByLeagueId = async (leagueId) => {
     const teamsQuery = `
       SELECT 
         t.id, 
-        t.name, 
+        t.name,
         t.description, 
         t.home_color AS "homeColor", 
         t.away_color AS "awayColor", 
@@ -280,7 +282,9 @@ const getTeamById = async (teamId) => {
       SELECT 
         t.id, 
         t.name, 
-        t.description, 
+        t.description,
+        t.owner_id,
+        t.league_id,
         t.home_color AS "homeColor", 
         t.away_color AS "awayColor", 
         t.logo_url AS "logoUrl", 
@@ -298,8 +302,14 @@ const getTeamById = async (teamId) => {
       WHERE 
         t.id = $1;
     `;
-
+    
     const result = await pool.query(teamQuery, [ teamId]);
+    
+    const teamTransaction = await pool.query('SELECT status FROM transactions WHERE team_id=$1', [teamId]);
+
+    if (teamTransaction.rows[0].status !== "success"){
+      throw new AppError("Team Creation Incomplete", 401);
+    }
 
     if (result.rows.length === 0) {
       return new AppError(BAD_REQUEST.TEAM_NOT_EXISTS)
