@@ -6,7 +6,8 @@ const BAD_REQUEST = {
     UNABLE_TO_RESET: 'Unable to resent password',
     UNABLE_TO_UPLOAD: 'Unable to upload',
     UNKNOWN_ERROR: 'Unknown Error',
-    TEAM_NOT_EXISTS:"Team does not exist"
+    TEAM_NOT_EXISTS:"Team does not exist",
+    MATCH_NOT_EXISTS:"Match does not exist"
 };
 
 const UNAUTHORIZED = {
