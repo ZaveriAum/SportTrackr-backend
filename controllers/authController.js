@@ -40,9 +40,11 @@ const login = async (req, res, next) => {
 }
 
 const refresh = async (req, res, next) => {
-    const refreshContent = await authService.refresh(req.cookies)
-    
+
     try{
+
+        const refreshContent = await authService.refresh(req.cookies)
+    
         res.status(200).json({
             token: refreshContent.token,
             roles:refreshContent.roles

@@ -6,7 +6,7 @@ const router = express.Router();
 const pool = require('../config/db')
 const {sendLeagueOwnerConfirmation, sendRequestCompletionLeagueOwnerEmail, sendTeamCreationConfirmation, sendPaymentReceipt} = require('../services/mailService')
 
-router.post('/connect_account_webhook', express.raw({ type: 'application/json' }), async (request, response, next) => {
+router.post('/connect-account-webhook', express.raw({ type: 'application/json' }), async (request, response, next) => {
   let event = request.body;
 
   if (endpointSecret) {
