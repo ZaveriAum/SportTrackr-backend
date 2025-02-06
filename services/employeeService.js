@@ -86,9 +86,9 @@ const assignEmployeeToLeague = async (email, role, leagueId) => {
 
 const getAdminDashboardStats = async (user) => {
 
-  if (!user.roles.includes('owner')) {
-      return new AppError(UNAUTHORIZED.UNAUTHORIZED)
-  }
+  // if (!user.roles.includes('owner')) {
+  //     return new AppError(UNAUTHORIZED.UNAUTHORIZED)
+  // }
 
   const leagueAmount = `
     SELECT 

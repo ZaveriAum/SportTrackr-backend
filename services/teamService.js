@@ -234,26 +234,29 @@ const getTeamsByLeagueId = async (leagueId) => {
     }
 
     const teamsQuery = `
-      SELECT 
-        t.id, 
-        t.name,
-        t.description, 
-        t.home_color AS "homeColor", 
-        t.away_color AS "awayColor", 
-        t.logo_url AS "logoUrl", 
-        t.team_visibility AS "teamVisibility", 
-        CONCAT(u.first_name, ' ', u.last_name) AS "ownerName",
-        (
-          SELECT COUNT(*) 
-          FROM matches m 
-          WHERE m.home_team_id = t.id OR m.away_team_id = t.id
-        ) AS "matchesPlayed"
-      FROM 
-        teams t
-      LEFT JOIN 
-        users u ON t.owner_id = u.id
-      WHERE 
-        t.league_id = $1;
+SELECT 
+  t.id, 
+  t.name,
+  t.description, 
+  t.home_color AS "homeColor", 
+  t.away_color AS "awayColor", 
+  t.logo_url AS "logoUrl", 
+  t.team_visibility AS "teamVisibility", 
+  CONCAT(u.first_name, ' ', u.last_name) AS "ownerName",
+  (
+    SELECT COUNT(*) 
+    FROM matches m 
+    WHERE m.home_team_id = t.id OR m.away_team_id = t.id
+  ) AS "matchesPlayed",
+  l.league_name AS "leagueName" 
+FROM 
+  teams t
+LEFT JOIN 
+  users u ON t.owner_id = u.id
+LEFT JOIN 
+  leagues l ON t.league_id = l.id  
+WHERE 
+  t.league_id = $1;
     `;
     const result = await pool.query(teamsQuery, [leagueId]);
 

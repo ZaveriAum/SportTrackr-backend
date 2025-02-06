@@ -278,6 +278,20 @@ const deleteLeague = async (email, roles, leagueId) => {
         throw new AppError(e.message || 'Error deleting the league',e.statusCode || 401)
     }
 }
+const getLeagueNamesByOwner = async (ownerEmail) =>{
+  try{
+
+    if(!ownerEmail){
+      throw new AppError(UNAUTHORIZED.ACCESS_DENIED)
+    }
+    const leagueListQuery = `select leagues.id,league_name as name from leagues join users on leagues.organizer_id = users.id where email = $1`
+    const leagueList = await pool.query(leagueListQuery,[ownerEmail])
+    return leagueList.rows
+  }
+  catch(e){
+    throw new AppError(e.message || 'Error deleting the league',e.statusCode || 401)
+  }
+}
 module.exports = {
   updateLeague,
   getAllLeagues,
@@ -285,5 +299,6 @@ module.exports = {
   createLeague,
   updateLeague,
   uploadLeagueLogo,
-  deleteLeague
+  deleteLeague,
+  getLeagueNamesByOwner
 }

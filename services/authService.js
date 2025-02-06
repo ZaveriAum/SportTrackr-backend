@@ -110,7 +110,10 @@ const login = async (body) => {
                 throw new AppError(UNAUTHORIZED.INVALID_CREDENTIALS, 400);
             }
 
-            return generateTokens(user);
+            const tokens = await generateTokens(user);
+            const roles = await findUserRoles(email);
+            return {tokens,roles}
+
         } else {
             throw new AppError(BAD_REQUEST.USER_NOT_EXISTS, 400);
         }
