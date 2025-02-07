@@ -12,6 +12,8 @@ router.use(authenticateToken)
 
 router.get('/dashboard',employeeController.getAdminDashboardStats)
 
+router.get('/filtered', employeeController.getFilteredEmployees);
+
 router.get('/:leagueId', employeeController.getLeagues);
 
 router.post('/:leagueId', employeeController.assignEmployeeToLeague)

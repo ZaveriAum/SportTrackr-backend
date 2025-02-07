@@ -1,6 +1,7 @@
 require("dotenv").config();
 const pool = require("../config/db");
-const { AppError, UNAUTHORIZED, BAD_REQUEST } = require("../utilities/errorCodes");
+const { AppError, UNAUTHORIZED, BAD_REQUEST, FORBIDDEN } = require("../config/errorCodes");
+
 const { toCamelCase } = require("../utilities/utilities");
 const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
 const { checkoutSession } = require('./paymentService')
@@ -328,6 +329,15 @@ const getTeamById = async (teamId) => {
   }
 };
 
+const getTeamByLeagueOwner = async(userEmail) =>{
+ if(!userEmail){
+  throw new AppError(FORBIDDEN.FORBIDDEN)
+ }
+ const teamsQuery = `SELECT t.id, t.name FROM teams t JOIN leagues l ON l.id = t.league_id JOIN users u ON l.organizer_id = u.id WHERE u.email=$1`
+ const teams = await pool.query(teamsQuery,[userEmail])
+ return teams.rows
+}
+
 const deleteTeam = async(email, teamId)=>{
   let transactionStarted = false;
   try{
@@ -404,5 +414,6 @@ module.exports = {
   updateTeam,
   getTeamsByLeagueId,
   getTeamById,
+  getTeamByLeagueOwner
   deleteTeam
 };

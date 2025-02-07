@@ -44,4 +44,7 @@ router.put('/update-pass',[
 
 router.post('/upload-photo', upload.single('file'), userController.uploadProfilePhoto)
 
+router.get('/filtered', userController.getFilteredUsers);
+
+
 module.exports = router
