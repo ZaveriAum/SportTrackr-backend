@@ -59,6 +59,9 @@ const getTeamByLeagueOwner = async(req,res,next)=>{
     }
     catch(e){
         next(e)
+    }
+}
+
 const deleteTeam = async(req, res, next) => {
     try{
         await teamService.deleteTeam(req.user.email, req.user.teamId)
@@ -72,6 +75,6 @@ module.exports = {
     createTeam,
     getTeamsByLeagueId,
     getTeamById,
-    getTeamByLeagueOwner
+    getTeamByLeagueOwner,
     deleteTeam
 }
