@@ -6,7 +6,7 @@ const router = express.Router();
 const pool = require('../config/db')
 const {sendLeagueOwnerConfirmation, sendRequestCompletionLeagueOwnerEmail, sendTeamCreationConfirmation, sendPaymentReceipt} = require('../services/mailService')
 
-router.post('/connect_account_webhook', express.raw({ type: 'application/json' }), async (request, response, next) => {
+router.post('/connect-account-webhook', express.raw({ type: 'application/json' }), async (request, response, next) => {
   let event = request.body;
 
   if (endpointSecret) {
@@ -50,8 +50,8 @@ router.post('/connect_account_webhook', express.raw({ type: 'application/json' }
             }
             const accountLink = await stripe.accountLinks.create({
               account: account.id,
-              refresh_url: `${process.env.FRONTEND_URL}`,
-              return_url: `${process.env.FRONTEND_URL}`,
+              refresh_url: `${process.env.FRONTEND_URL}/fail-onboarding`,
+              return_url: `${process.env.FRONTEND_URL}/success-onboard`,
               type: 'account_onboarding',
             });
 

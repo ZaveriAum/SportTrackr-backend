@@ -1,6 +1,6 @@
 require("dotenv").config();
 const pool = require("../config/db");
-const { AppError, UNAUTHORIZED, BAD_REQUEST, FORBIDDEN } = require("../config/errorCodes");
+const { AppError, UNAUTHORIZED, BAD_REQUEST, FORBIDDEN } = require("../utilities/errorCodes");
 
 const { toCamelCase } = require("../utilities/utilities");
 const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
@@ -414,6 +414,6 @@ module.exports = {
   updateTeam,
   getTeamsByLeagueId,
   getTeamById,
-  getTeamByLeagueOwner
+  getTeamByLeagueOwner,
   deleteTeam
 };

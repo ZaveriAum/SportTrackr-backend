@@ -1,4 +1,3 @@
-const { body } = require('express-validator');
 const pool = require('../config/db')
 const DEFAULT_PROFILE_PICTURE='defualts/default_profile_photo.jpeg'
 const {AppError, BAD_REQUEST} = require('../utilities/errorCodes')
@@ -26,7 +25,7 @@ const getUserProfile = async (email) => {
     } catch (e) {
         throw new AppError('Unknown Error', 500)
     }
-
+}
 const getUserById = async (id) => {
     try{
         const user = await pool.query('SELECT first_name, last_name, picture_url FROM users WHERE id=$1', [id]);
