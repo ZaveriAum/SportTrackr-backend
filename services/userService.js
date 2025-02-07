@@ -1,7 +1,7 @@
 const { body } = require('express-validator');
 const pool = require('../config/db')
 const DEFAULT_PROFILE_PICTURE='defualts/default_profile_photo.jpeg'
-const {AppError, BAD_REQUEST} = require('../config/errorCodes')
+const {AppError, BAD_REQUEST} = require('../utilities/errorCodes')
 const {getObjectSignedUrl, uploadFile, deleteFile} = require('./s3Service')
 const bcrypt = require('bcrypt')
 
@@ -27,6 +27,25 @@ const getUserProfile = async (email) => {
         throw new AppError('Unknown Error', 500)
     }
 };
+
+const getUserById = async (id) => {
+    try{
+        const user = await pool.query('SELECT first_name, last_name, picture_url FROM users WHERE id=$1', [id]);
+        
+        const pictureUrl = user.picture_url
+        ? await getObjectSignedUrl(user.picture_url)
+        : await getObjectSignedUrl(DEFAULT_PROFILE_PICTURE);
+        
+        return {
+            firstName: user.rows[0].first_name,
+            lastName: user.rows[0].last_name,
+            pictureUrl: pictureUrl,
+        }
+
+    }catch(e){
+        throw new AppError("Cannot get User", 400);
+    }
+}
 
 const updateUserProfile = async (email, firstName, lastName) => {
     try{
@@ -87,6 +106,7 @@ const uploadProfilePhoto = async(email, file) => {
 
 module.exports = {
     getUserProfile,
+    getUserById,
     updateUserProfile,
     updateUserPassword,
     uploadProfilePhoto

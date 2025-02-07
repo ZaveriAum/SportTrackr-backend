@@ -2,10 +2,9 @@ const teamService = require('../services/teamService')
 
 const createTeam = async (req, res, next) => {
     try{
-        const team = await teamService.createTeam(req.user, req.body, req.file);
+        const url = await teamService.createTeam(req.user, req.body, req.file);
         res.status(201).json({
-            message : "Team Created Successfully",
-            team: team
+            url: url
         });
     }catch(e){
         next(e);
@@ -51,9 +50,18 @@ const getTeamById = async(req,res,next)=>{
     }
 }
 
+const deleteTeam = async(req, res, next) => {
+    try{
+        await teamService.deleteTeam(req.user.email, req.user.teamId)
+        res.status(204).json({});
+    }catch(e){
+        next(e);
+    }
+}
 module.exports = {
     updateTeam,
     createTeam,
     getTeamsByLeagueId,
-    getTeamById
+    getTeamById,
+    deleteTeam
 }

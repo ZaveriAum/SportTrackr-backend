@@ -2,7 +2,7 @@ const { PutObjectCommand, DeleteObjectCommand, GetObjectCommand} = require('@aws
 const { v4: uuidv4 } = require('uuid');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const s3Client = require('../config/s3Client')
-const {AppError, BAD_REQUEST} = require('../config/errorCodes')
+const {AppError, BAD_REQUEST} = require('../utilities/errorCodes')
 require('dotenv').config();
 
 const uploadFile = async (fileBuffer, fileName, mimeType, folder) => {

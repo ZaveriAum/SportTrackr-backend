@@ -15,4 +15,5 @@ router.post('/',upload.single("logo") ,teamController.createTeam);
 router.patch('/:id',upload.single("logo") ,teamController.updateTeam);
 router.get("/league/:id",teamController.getTeamsByLeagueId)
 router.get("/:id",teamController.getTeamById)
+router.delete("/", teamController.deleteTeam)
 module.exports = router;

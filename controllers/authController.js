@@ -14,7 +14,6 @@ const register = async (req, res, next) => {
             token: response.accessToken
         })
     }catch(e){
-        console.log(e)
         // Pass the error to the next middleware
         next(e);
     }
@@ -41,9 +40,11 @@ const login = async (req, res, next) => {
 }
 
 const refresh = async (req, res, next) => {
-    const refreshContent = await authService.refresh(req.cookies)
-    
+
     try{
+
+        const refreshContent = await authService.refresh(req.cookies)
+    
         res.status(200).json({
             token: refreshContent.token,
             roles:refreshContent.roles

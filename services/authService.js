@@ -2,7 +2,7 @@ require('dotenv').config();
 const pool = require('../config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, AppError } = require('../config/errorCodes');
+const { BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, AppError } = require('../utilities/errorCodes');
 const mailService = require('./mailService');
 
 // Helper function to find user by email
@@ -124,7 +124,6 @@ const login = async (body) => {
 
 // Function to refresh access token
 const refresh = async (cookies) => {
-    
     try {
         
         if (!cookies?.jwt) {
@@ -135,13 +134,20 @@ const refresh = async (cookies) => {
         const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
         const user = (await findUser(decode.email)).rows[0];
-        const roles = await findUserRoles(decode.email);
+        const roles = await findUserRoles(user.email);
+        const league_roles = await findLeagueRoles(user.email);
 
         if (!user) {
             throw new AppError(UNAUTHORIZED.UNAUTHORIZED, 401);
         }
 
-        return {token:jwt.sign({ id: user.id, email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' }),roles}
+        return {token:jwt.sign({ 
+            id: user.id,
+            email: user.email,
+            roles: [...roles, ...league_roles],
+            teamId: user.team_id || null 
+        },
+            process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' }),roles}
     } catch (e) {
         throw new AppError(`${e.message}` || UNAUTHORIZED.UNAUTHORIZED, e.statusCode || 401);
     }

@@ -1,5 +1,5 @@
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const {AppError, BAD_REQUEST} = require('../config/errorCodes')
+const stripe = require('../config/stripe');
+const {AppError, BAD_REQUEST} = require('../utilities/errorCodes')
 const pool = require('../config/db')
 
 
@@ -31,6 +31,20 @@ const createConnectAccountLink = async (user) => {
   }
 };
 
+const getExpressDashboard = async (email) => {
+  try {
+    console.log(email)
+    const query = await pool.query('SELECT account_id FROM users WHERE email=$1 and owner_status=$2', [email, true])
+    console.log(query)
+    const loginLink = await stripe.accounts.createLoginLink(query.rows[0].account_id);
+    return loginLink.url;
+  } catch (e) {
+    console.log(e)
+    throw new AppError('Dashboard Unavailable', 400)
+  }
+};
+
 module.exports = {
     createConnectAccountLink,
+    getExpressDashboard
 }

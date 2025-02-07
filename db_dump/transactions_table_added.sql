@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 16.3
--- Dumped by pg_dump version 16.3
+-- Dumped from database version 16.6
+-- Dumped by pg_dump version 16.6
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -392,8 +392,7 @@ CREATE TABLE public.user_stats (
     interceptions integer DEFAULT 0 NOT NULL,
     yellow_card integer DEFAULT 0 NOT NULL,
     red_card integer DEFAULT 0 NOT NULL,
-    position_played character varying(50),
-    number integer
+    position_played character varying(50)
 );
 
 
@@ -532,8 +531,6 @@ COPY public.employee_roles (role_id, employee_id) FROM stdin;
 --
 
 COPY public.highlights (id, match_id, highlight_url, highlight_type, highlight_from) FROM stdin;
-4	1	undefined/9190bdb2-7557-4c9a-b298-e96f487c7914-highlights/1/2/1738644873520_856672-hd_1920_1080_25fps.mp4	Goal	2
-5	2	undefined/89c8cfdc-913f-442c-aec2-b0fe6ab5271d-highlights/2/1/1738644873520_856672-hd_1920_1080_25fps.mp4	goal	1
 \.
 
 
@@ -558,12 +555,12 @@ COPY public.league_roles (id, role_name) FROM stdin;
 --
 
 COPY public.leagues (id, organizer_id, team_starter_size, price, max_team_size, game_amount, start_time, end_time, league_name, logo_url, description) FROM stdin;
-8	1	6	1000	20	15	2025-01-20 10:00:00	2025-04-20 10:00:00	Bundesliga	league-logos/952e0fc8-8352-47c8-b6eb-b0e65d95afe2-Bundesliga	\N
-9	1	10	2000	40	11	2025-02-25 10:00:00	2025-05-23 10:00:00	Premier League	league-logos/71bea882-cc71-4457-9f0a-b8c53625d752-Premier League	\N
-11	1	4	500	12	8	2025-01-28 16:00:00	2025-02-23 23:00:00	MLS	league-logos/6fee54f4-8ebc-433a-bab1-29f311188089-MLS	\N
-12	1	11	2500	44	20	2025-01-10 10:30:00	2025-06-30 22:00:00	La Liga	league-logos/fdcd160b-627f-4ef6-b1f9-c7a224c2d9ff-La Liga	\N
-13	1	6	1000	20	5	2025-09-11 14:30:00	2025-10-02 20:00:00	Ligue 1	league-logos/8d5fd404-ed89-4d43-8428-88d7dcdd8aef-Ligue 1	\N
-14	1	10	3000	30	40	2025-02-11 10:30:00	2025-10-02 22:00:00	Seria A	league-logos/089b3ab6-c304-42cb-97c1-2410766ec77c-Seria A	\N
+8	50	6	1000	20	15	2025-01-20 10:00:00	2025-04-20 10:00:00	Bundesliga	league-logos/952e0fc8-8352-47c8-b6eb-b0e65d95afe2-Bundesliga	\N
+9	50	10	2000	40	11	2025-02-25 10:00:00	2025-05-23 10:00:00	Premier League	league-logos/71bea882-cc71-4457-9f0a-b8c53625d752-Premier League	\N
+11	50	4	500	12	8	2025-01-28 16:00:00	2025-02-23 23:00:00	MLS	league-logos/6fee54f4-8ebc-433a-bab1-29f311188089-MLS	\N
+12	50	11	2500	44	20	2025-01-10 10:30:00	2025-06-30 22:00:00	La Liga	league-logos/fdcd160b-627f-4ef6-b1f9-c7a224c2d9ff-La Liga	\N
+13	50	6	1000	20	5	2025-09-11 14:30:00	2025-10-02 20:00:00	Ligue 1	league-logos/8d5fd404-ed89-4d43-8428-88d7dcdd8aef-Ligue 1	\N
+14	50	10	3000	30	40	2025-02-11 10:30:00	2025-10-02 22:00:00	Seria A	league-logos/089b3ab6-c304-42cb-97c1-2410766ec77c-Seria A	\N
 \.
 
 
@@ -572,8 +569,6 @@ COPY public.leagues (id, organizer_id, team_starter_size, price, max_team_size, 
 --
 
 COPY public.matches (id, home_team_id, away_team_id, match_time, forfeited) FROM stdin;
-1	1	2	2025-01-28 16:35:40	f
-2	2	1	2025-02-28 18:30:00	f
 \.
 
 
@@ -592,8 +587,7 @@ COPY public.roles (id, role_name) FROM stdin;
 --
 
 COPY public.teams (id, name, league_id, description, owner_id, captain_id, home_color, away_color, logo_url, team_visibility, password) FROM stdin;
-1	Bayer Leverkusen	8	\N	39	39	white	red	team-logos/75955c14-1331-4386-b7a5-3288f624ed56-league-8-Bayer Leverkusen	t	\N
-2	Real Madrid	8	\N	2	2	white	gray	team-logos/746b96c3-ef32-4aae-b9c0-309015dcbef5-league-8-Real Madrid	f	\N
+43	Team 5	8	\N	8	8	white	gray	team-logos/c3e8e799-a89e-461b-a2e5-e36381e4c271-league-8-Team 5	f	\N
 \.
 
 
@@ -602,7 +596,7 @@ COPY public.teams (id, name, league_id, description, owner_id, captain_id, home_
 --
 
 COPY public.transactions (id, team_id, status, amount, intent_id, created_at, updated_at, charge_id) FROM stdin;
-11	1	success	1000	pi_3QmtNWRwq83ArHb90ZkLIE62	2025-01-30 03:43:53.656445	2025-01-30 03:43:53.656445	cs_test_a18sEW7vmAu6cIM9KCeHxcZdpLWAKorcYN2xh052IggFkCeuXS8L704hra
+11	43	success	1000	pi_3QmtNWRwq83ArHb90ZkLIE62	2025-01-30 03:43:53.656445	2025-01-30 03:43:53.656445	cs_test_a18sEW7vmAu6cIM9KCeHxcZdpLWAKorcYN2xh052IggFkCeuXS8L704hra
 \.
 
 
@@ -622,19 +616,9 @@ COPY public.user_roles (user_id, role_id) FROM stdin;
 47	1
 48	1
 49	1
-2	1
-3	1
-4	1
-5	1
-6	1
-7	1
+50	1
+50	2
 8	1
-9	1
-10	1
-11	1
-12	1
-1	1
-1	2
 \.
 
 
@@ -642,52 +626,7 @@ COPY public.user_roles (user_id, role_id) FROM stdin;
 -- Data for Name: user_stats; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.user_stats (id, user_id, match_id, goals, shots, assists, saves, interceptions, yellow_card, red_card, position_played, number) FROM stdin;
-3	39	1	1	3	0	0	2	0	0	\N	\N
-4	40	1	0	2	1	3	1	1	0	\N	\N
-5	41	1	2	5	2	0	3	1	0	\N	\N
-6	42	1	0	1	0	4	0	0	0	\N	\N
-7	43	1	3	6	2	0	5	1	1	\N	\N
-8	44	1	0	1	0	1	2	2	0	\N	\N
-9	45	1	1	4	1	0	3	0	0	\N	\N
-10	46	1	2	7	3	0	4	1	0	\N	\N
-11	47	1	0	0	0	6	2	0	0	\N	\N
-12	48	1	1	3	0	0	3	1	0	\N	\N
-13	49	1	0	1	0	2	1	0	0	\N	\N
-14	2	1	0	1	1	0	3	0	0	\N	\N
-15	3	1	2	4	0	0	2	1	0	\N	\N
-16	4	1	1	5	2	0	3	0	0	\N	\N
-17	5	1	0	2	1	0	1	1	0	\N	\N
-18	6	1	0	3	0	0	4	2	0	\N	\N
-19	7	1	3	6	1	0	5	1	1	\N	\N
-20	8	1	0	0	1	3	2	0	0	\N	\N
-21	9	1	0	0	0	5	2	0	0	\N	\N
-22	10	1	2	3	2	0	3	0	0	\N	\N
-23	11	1	1	2	0	0	4	1	0	\N	\N
-24	12	1	0	1	0	0	2	0	0	\N	\N
-25	13	1	1	2	0	0	1	0	0	\N	\N
-27	39	2	1	3	0	0	2	0	0	\N	\N
-28	40	2	0	2	1	3	1	1	0	\N	\N
-29	41	2	2	5	2	0	3	1	0	\N	\N
-30	42	2	0	1	0	4	0	0	0	\N	\N
-32	44	2	0	1	0	1	2	2	0	\N	\N
-33	45	2	1	4	1	0	3	0	0	\N	\N
-34	46	2	2	7	3	0	4	1	0	\N	\N
-35	47	2	0	0	0	6	2	0	0	\N	\N
-36	48	2	1	3	0	0	3	1	0	\N	\N
-37	49	2	0	1	0	2	1	0	0	\N	\N
-38	2	2	0	1	1	0	3	0	0	\N	\N
-39	3	2	2	4	0	0	2	1	0	\N	\N
-40	4	2	1	5	2	0	3	0	0	\N	\N
-41	5	2	0	2	1	0	1	1	0	\N	\N
-42	6	2	0	3	0	0	4	2	0	\N	\N
-43	7	2	3	6	1	0	5	1	1	\N	\N
-44	8	2	0	0	1	3	2	0	0	\N	\N
-45	9	2	0	0	0	5	2	0	0	\N	\N
-46	10	2	2	3	2	0	3	0	0	\N	\N
-47	11	2	1	2	0	0	4	1	0	\N	\N
-48	12	2	0	1	0	0	2	0	0	\N	\N
-49	13	2	1	2	0	0	1	0	0	\N	\N
+COPY public.user_stats (id, user_id, match_id, goals, shots, assists, saves, interceptions, yellow_card, red_card, position_played) FROM stdin;
 \.
 
 
@@ -696,31 +635,19 @@ COPY public.user_stats (id, user_id, match_id, goals, shots, assists, saves, int
 --
 
 COPY public.users (id, first_name, last_name, email, password, picture_url, created_at, team_id, account_id, owner_status) FROM stdin;
-43	Alphonso	Davies	alphonsodavies@gmail.com	$2b$10$pvGkaoNcaTH2wHibHrkht.KTjFkssVlzdibaM4sofe0vV2ADIYOCW	\N	2025-01-20 21:06:38.995511	1	acct_1QmLQWRrqBSWHse0	f
-44	Aleksandar	Pavlović	aleksandarpavlovic@gmail.com	$2b$10$SZ.e5PMD2rWxvY9UoYe48OJF76PyAC.iXJY1HOidqX1p1DSJb0PfG	\N	2025-01-20 21:08:17.015221	1	acct_1QmLX1RxYgByxzle	f
-45	Leon	Goretzka	leongoretzka@gmail.com	$2b$10$e1ohhToKOpwpDuCE7b6EZOg/GYfR1FVjFl7eRG1wxzbqUei3l.NPi	\N	2025-01-20 21:10:44.457261	1	acct_1Qm9EH2Kb1BKZnMk	f
-46	Joshua	Kimmich	joshuakimmich@gmail.com	$2b$10$Fh5CA6bF6HRusWZYpZnaQey8ujwO5mHH8EaJrxWjayZxTKDosbTkm	\N	2025-01-20 21:11:12.671125	1	acct_1Qm8Jw2N6mV3XHlH	f
-47	Kingsley	Coman	kingsleycoman@gmail.com	$2b$10$lt7GuhiQrWO5CIEtjKNfGO7B8N/22cPZ/69I8Ghi4uOb5252fsVWi	\N	2025-01-20 21:11:43.759303	1	acct_1Qm7cQRxpdF3cOR9	f
-48	Leroy	Sane	leroysane@gmail.com	$2b$10$WX32rraIA5LVYqGyxUcfUudYkFLV2q9zam4cv2ZoyxmVXpvHiPjya	\N	2025-01-20 21:12:13.786828	1	acct_1Qm7YGRsgFaPAEfh	f
-49	Serge	Gnabry	sergegnabry@gmail.com	$2b$10$EJKdoU4m6s/h2RwtFXXpCes7y3Tjky4N0TUwRbgz6g1gyawJV13Iq	\N	2025-01-20 21:12:35.933816	1	acct_1Qm6m02Ko0Pc1TLf	f
-40	Manuel	Neuer	manuelneuer@gmail.com	$2b$10$8ecs4c1ECEqrk/puV8jvY.orO2hl9/ZjrA8hF0nvFWlMinQQ2PNri	\N	2025-01-20 21:04:12.690056	1	acct_1Qm6Y72NIjp1YceJ	f
-41	Dayot	Upamecano	dayotupamecano@gmail.com	$2b$10$NkS0jnmGbURVQWfXkSZEQ.VrJAR0U5eKLjT3kbx7vE2nOseFMZDSu	\N	2025-01-20 21:05:09.693307	1	acct_1Qm7YGRsgFaPAEfh	f
-9	Thibaut	Courtois	thibautcourtois@gmail.com	$2b$10$j5mkkGgEIMSLz41MHBGThu02OL08cc6Zts47k1gytiBJI7avjwcU.	\N	2025-01-28 14:50:47.610356	2	\N	f
-10	Eduardo	Camavinga	eduardocamavinga@gmail.com	$2b$10$Y4KpQVWMQE7wNYKEa.a7IercW673smGKjsWA9ZuGOjbxHWkrAtI9m	\N	2025-01-28 14:51:21.746216	2	\N	f
-11	Brahim	Díaz	brahimdiaz@gmail.com	$2b$10$g/MPTzfOjNd286v5u9bw.u422qgJfMdGpMw.ocRvRsMvVZpOufRVS	\N	2025-01-28 14:51:51.692192	2	\N	f
-3	Kylian	Mbappe	kylianmbappe@gmail.com	$2b$10$CBm6L2MIGOdFt9nn74zViujjBnztHEAHIaJcB0PHHMz53h/0HAonq	\N	2025-01-28 14:46:52.822253	2	\N	f
-4	Vinicius	Junior	viniciusjunior@gmail.com	$2b$10$fcyNrb5zKvw/.Lr7saCn5uTNWYcYlgLXjRpyDuMDWTyN9vSoiQkL2	\N	2025-01-28 14:47:40.553291	2	\N	f
-5	Rodrygo	Silva de Goes	rodrygosilva@gmail.com	$2b$10$gd1X1iz9.UJXPFBG.Juokegvd7nQa7W9aiGoVVAFF5vj9BqTl4bE6	\N	2025-01-28 14:48:25.844735	2	\N	f
-6	Raúl	Asencio	raulasencio@gmail.com	$2b$10$2GAPnUQBbsFfGICIOZWZ1u93YTcXo.19BTGHPOBUQtjIxHNf0arGu	\N	2025-01-28 14:49:02.801719	2	\N	f
-7	Arda	Güler	ardaguler@gmail.com	$2b$10$rCKnkw25nZSCTb4RTVYnkuFuvQChbdrxdLWr/BecBxpvWits7UMWi	\N	2025-01-28 14:49:31.456409	2	\N	f
-8	Federico	Valverde	fredericovalverde@gmail.com	$2b$10$HfkDMk0MERk1XccnPvg/W.xhV5/XrAASErKMMikt0hc0Ddi86G4Ui	\N	2025-01-28 14:50:20.168833	2	\N	f
-12	David	Alaba	davidalaba@gmail.com	$2b$10$eE58VboH4dp.dklQOX95C.oW/U.DAzduommWnuYUn3M48aUCzkSqW	\N	2025-01-28 14:52:17.862394	2	\N	f
-13	Luka	Modric	lukamodric@gmail.com	$2b$10$e2WRFnaf7dQCMS.QjkyI3u.BJH2I.7ef37hcobM2FD.KB2YLPtus.	\N	2025-01-28 14:45:33.166418	2	\N	f
-14	Aum	Zaveri	aumzaveri06@gmail.com	$2b$10$KHqAQBDwxgUVs0BTqUYIv.x3OqgzsJ80FacdxBoYTcH5dWF.rEwlK	profile-photo/4dff638c-abdc-46ad-992d-0a86a5090e2a-WhatsApp Image 2021-09-20 at 12.46.36 PM.jpeg	2025-01-29 10:35:11.701691	\N	acct_1QmrbR2Lol7xYxQb	f
-2	Jude	Bellingham	judebellingham@gmail.com	$2b$10$SgHdxdMeXzFzLxiDjA7cW.dRT3QM7OA2TxHfIlNhX0SHYX2ZGWIVm	\N	2025-01-28 14:46:21.13231	2	\N	f
-42	Eric	Dier	ericdier@gmail.com	$2b$10$ruNH.w4TwQRVd6mW1z18TevCbhFRjxJvGcyFo/RXbT4za2pL6bT4C	\N	2025-01-20 21:06:16.91512	1	acct_1QmLUARv0Ud3G2cP	f
-1	Elio	Fezollari	fezollarielio@gmail.com	$2b$10$cfj3akmM1.hYurIM2.2rZ./SqNevGg6XjF.5pEIDvKLWbiqEBYoRy	\N	2025-01-20 21:14:59.290939	\N	\N	t
-39	Jamal	Musiala	jamalmusiala@gmail.com	$2b$10$Z.zQf1HO5pxZTtSTBPethewXXAaCm6uysfpc0xgsSq9eGd5B9cXyW	\N	2025-01-20 21:00:34.109821	1	acct_1Qm3lc2KuRfs3OTZ	f
+50	Elio	Fezollari	fezollarielio@gmail.com	$2b$10$cfj3akmM1.hYurIM2.2rZ./SqNevGg6XjF.5pEIDvKLWbiqEBYoRy	\N	2025-01-20 21:14:59.290939	\N	acct_1QmKwJRunFkMbJtY	t
+42	Eric	Dier	ericdier@gmail.com	$2b$10$ruNH.w4TwQRVd6mW1z18TevCbhFRjxJvGcyFo/RXbT4za2pL6bT4C	\N	2025-01-20 21:06:16.91512	\N	acct_1QmLUARv0Ud3G2cP	f
+43	Alphonso	Davies	alphonsodavies@gmail.com	$2b$10$pvGkaoNcaTH2wHibHrkht.KTjFkssVlzdibaM4sofe0vV2ADIYOCW	\N	2025-01-20 21:06:38.995511	\N	acct_1QmLQWRrqBSWHse0	f
+44	Aleksandar	Pavlović	aleksandarpavlovic@gmail.com	$2b$10$SZ.e5PMD2rWxvY9UoYe48OJF76PyAC.iXJY1HOidqX1p1DSJb0PfG	\N	2025-01-20 21:08:17.015221	\N	acct_1QmLX1RxYgByxzle	f
+45	Leon	Goretzka	leongoretzka@gmail.com	$2b$10$e1ohhToKOpwpDuCE7b6EZOg/GYfR1FVjFl7eRG1wxzbqUei3l.NPi	\N	2025-01-20 21:10:44.457261	\N	acct_1Qm9EH2Kb1BKZnMk	f
+46	Joshua	Kimmich	joshuakimmich@gmail.com	$2b$10$Fh5CA6bF6HRusWZYpZnaQey8ujwO5mHH8EaJrxWjayZxTKDosbTkm	\N	2025-01-20 21:11:12.671125	\N	acct_1Qm8Jw2N6mV3XHlH	f
+47	Kingsley	Coman	kingsleycoman@gmail.com	$2b$10$lt7GuhiQrWO5CIEtjKNfGO7B8N/22cPZ/69I8Ghi4uOb5252fsVWi	\N	2025-01-20 21:11:43.759303	\N	acct_1Qm7cQRxpdF3cOR9	f
+48	Leroy	Sane	leroysane@gmail.com	$2b$10$WX32rraIA5LVYqGyxUcfUudYkFLV2q9zam4cv2ZoyxmVXpvHiPjya	\N	2025-01-20 21:12:13.786828	\N	acct_1Qm7YGRsgFaPAEfh	f
+49	Serge	Gnabry	sergegnabry@gmail.com	$2b$10$EJKdoU4m6s/h2RwtFXXpCes7y3Tjky4N0TUwRbgz6g1gyawJV13Iq	\N	2025-01-20 21:12:35.933816	\N	acct_1Qm6m02Ko0Pc1TLf	f
+39	Jamal	Musiala	jamalmusiala@gmail.com	$2b$10$Z.zQf1HO5pxZTtSTBPethewXXAaCm6uysfpc0xgsSq9eGd5B9cXyW	\N	2025-01-20 21:00:34.109821	\N	acct_1Qm3lc2KuRfs3OTZ	f
+40	Manuel	Neuer	manuelneuer@gmail.com	$2b$10$8ecs4c1ECEqrk/puV8jvY.orO2hl9/ZjrA8hF0nvFWlMinQQ2PNri	\N	2025-01-20 21:04:12.690056	\N	acct_1Qm6Y72NIjp1YceJ	f
+41	Dayot	Upamecano	dayotupamecano@gmail.com	$2b$10$NkS0jnmGbURVQWfXkSZEQ.VrJAR0U5eKLjT3kbx7vE2nOseFMZDSu	\N	2025-01-20 21:05:09.693307	\N	acct_1Qm7YGRsgFaPAEfh	f
+8	Aum	Zaveri	aumzaveri06@gmail.com	$2b$10$KHqAQBDwxgUVs0BTqUYIv.x3OqgzsJ80FacdxBoYTcH5dWF.rEwlK	profile-photo/4dff638c-abdc-46ad-992d-0a86a5090e2a-WhatsApp Image 2021-09-20 at 12.46.36 PM.jpeg	2025-01-29 10:35:11.701691	\N	acct_1QmrbR2Lol7xYxQb	f
 \.
 
 
@@ -728,7 +655,7 @@ COPY public.users (id, first_name, last_name, email, password, picture_url, crea
 -- Name: highlights_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.highlights_id_seq', 5, true);
+SELECT pg_catalog.setval('public.highlights_id_seq', 1, false);
 
 
 --
@@ -1076,3 +1003,4 @@ REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 --
 -- PostgreSQL database dump complete
 --
+

@@ -15,6 +15,8 @@ router.use(authenticateToken)
 
 router.get('', userController.getUserProfile)
 
+router.get('/:id', userController.getUserById)
+
 router.put('/update',[
     body('firstName')
         .exists().withMessage('First name is required')
