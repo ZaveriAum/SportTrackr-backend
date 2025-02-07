@@ -50,8 +50,8 @@ router.post('/connect-account-webhook', express.raw({ type: 'application/json' }
             }
             const accountLink = await stripe.accountLinks.create({
               account: account.id,
-              refresh_url: `${process.env.FRONTEND_URL}`,
-              return_url: `${process.env.FRONTEND_URL}`,
+              refresh_url: `${process.env.FRONTEND_URL}/fail-onboarding`,
+              return_url: `${process.env.FRONTEND_URL}/success-onboard`,
               type: 'account_onboarding',
             });
 
