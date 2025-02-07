@@ -43,10 +43,24 @@ const uploadProfilePhoto = async(req, res, next) => {
         next(e)
     }
 }
+const getFilteredUsers = async (req, res, next) => {
+    try {
+      const { leagueId, teamId, name } = req.query;  
+  
+      const users = await userService.getFilteredUsers(req.user, leagueId, teamId, name);
+
+      res.json(users);
+    } catch (err) {
+      console.error('Error fetching filtered users:', err);
+      res.status(500).send('Error fetching users');
+    }
+  };
+  
 
 module.exports = {
     getUserProfile,
     updateUserProfile,
     updateUserPassword,
-    uploadProfilePhoto
+    uploadProfilePhoto,
+    getFilteredUsers
 }
