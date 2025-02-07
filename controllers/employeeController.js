@@ -26,7 +26,6 @@ const getAdminDashboardStats = async (req,res,next)=>{
         dashboardStats = await employeeService.getAdminDashboardStats(req.user)
         res.status(200).json({stats:dashboardStats})
     }catch(e){
-        console.log(e)
         next(e);
     }
 }

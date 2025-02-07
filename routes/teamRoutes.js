@@ -13,6 +13,6 @@ router.use(authenticateToken)
 
 router.post('/',upload.single("logo") ,teamController.createTeam);
 router.patch('/:id',upload.single("logo") ,teamController.updateTeam);
-router.get("/",teamController.getTeamsByLeagueId)
+router.get("/league/:id",teamController.getTeamsByLeagueId)
 router.get("/:id",teamController.getTeamById)
 module.exports = router;
