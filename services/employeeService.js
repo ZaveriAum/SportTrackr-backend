@@ -2,7 +2,7 @@ require("dotenv").config();
 const pool = require("../config/db");
 const { AppError, UNAUTHORIZED, BAD_REQUEST } = require("../config/errorCodes");
 const { findLeagueRoles } = require("./authService");
-
+const { toCamelCase } = require("../utilities/utilities");
 const getEmployees = async (user, leagueId) => {
   try {
     // Check if the user has the appropriate roles
@@ -108,8 +108,46 @@ const getAdminDashboardStats = async (user) => {
   return leagues.rows;
 };
 
+const getFilteredEmployees = async (user,leagueId,roleId,name)=>{
+  const filteredEmployeeQuery = `SELECT 
+  CONCAT(u.first_name, ' ', u.last_name) AS "fullName",
+  l.league_name AS "league",       
+  lr.role_name AS "leagueRole"      
+FROM league_emp le
+JOIN employee_roles er 
+  ON le.id = er.employee_id
+JOIN users u
+  ON le.user_id = u.id
+JOIN leagues l
+  ON le.league_id = l.id   
+JOIN league_roles lr
+  ON er.role_id = lr.id    
+WHERE 
+  (CAST($1 AS INTEGER) IS NULL OR le.league_id = $1)  -- Cast $1 as INTEGER
+  AND (CAST($2 AS INTEGER) IS NULL OR er.role_id = $2)  -- Cast $2 as INTEGER
+AND (
+    CAST($3 AS TEXT) IS NULL OR CONCAT(u.first_name, ' ', u.last_name) ILIKE '%' || CAST($3 AS TEXT) || '%'
+  );
+
+`
+
+if(!leagueId){
+  leagueId = null
+}
+if(!roleId){
+  roleId = null
+}
+if(!name){
+  name=null
+}
+const filteredEmployees = await pool.query(filteredEmployeeQuery, [leagueId,roleId,name]);
+
+return  filteredEmployees.rows
+}
+
 module.exports = {
   getEmployees,
   assignEmployeeToLeague,
   getAdminDashboardStats,
+  getFilteredEmployees
 };

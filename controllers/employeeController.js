@@ -29,9 +29,22 @@ const getAdminDashboardStats = async (req,res,next)=>{
         next(e);
     }
 }
+const getFilteredEmployees = async (req, res,next) => {
+    try {
+      const { league, role, name } = req.query;  
+  
+      employees = await employeeService.getFilteredEmployees(req.user,league,role,name)
+  
+      res.json(employees);  
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Error fetching employees');
+    }
+  };
 
 module.exports = {
     getLeagues,
     assignEmployeeToLeague,
-    getAdminDashboardStats
+    getAdminDashboardStats,
+    getFilteredEmployees
 }
