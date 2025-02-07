@@ -532,8 +532,6 @@ COPY public.employee_roles (role_id, employee_id) FROM stdin;
 --
 
 COPY public.highlights (id, match_id, highlight_url, highlight_type, highlight_from) FROM stdin;
-4	1	undefined/9190bdb2-7557-4c9a-b298-e96f487c7914-highlights/1/2/1738644873520_856672-hd_1920_1080_25fps.mp4	Goal	2
-5	2	undefined/89c8cfdc-913f-442c-aec2-b0fe6ab5271d-highlights/2/1/1738644873520_856672-hd_1920_1080_25fps.mp4	goal	1
 \.
 
 
@@ -550,6 +548,9 @@ COPY public.league_emp (id, user_id, league_id) FROM stdin;
 --
 
 COPY public.league_roles (id, role_name) FROM stdin;
+1	admin
+2	statistician
+3	referee
 \.
 
 
@@ -558,12 +559,15 @@ COPY public.league_roles (id, role_name) FROM stdin;
 --
 
 COPY public.leagues (id, organizer_id, team_starter_size, price, max_team_size, game_amount, start_time, end_time, league_name, logo_url, description) FROM stdin;
+\.
+
 
 --
 -- Data for Name: matches; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.matches (id, home_team_id, away_team_id, match_time, forfeited) FROM stdin;
+\.
 
 
 --
@@ -572,7 +576,7 @@ COPY public.matches (id, home_team_id, away_team_id, match_time, forfeited) FROM
 
 COPY public.roles (id, role_name) FROM stdin;
 1	user
-2	admin
+2	owner
 \.
 
 
@@ -581,18 +585,23 @@ COPY public.roles (id, role_name) FROM stdin;
 --
 
 COPY public.teams (id, name, league_id, description, owner_id, captain_id, home_color, away_color, logo_url, team_visibility, password) FROM stdin;
+\.
+
 
 --
 -- Data for Name: transactions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.transactions (id, team_id, status, amount, intent_id, created_at, updated_at, charge_id) FROM stdin;
+\.
+
 
 --
 -- Data for Name: user_roles; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.user_roles (user_id, role_id) FROM stdin;
+\.
 
 
 --
@@ -600,6 +609,7 @@ COPY public.user_roles (user_id, role_id) FROM stdin;
 --
 
 COPY public.user_stats (id, user_id, match_id, goals, shots, assists, saves, interceptions, yellow_card, red_card, position_played, number) FROM stdin;
+\.
 
 
 --
@@ -607,13 +617,14 @@ COPY public.user_stats (id, user_id, match_id, goals, shots, assists, saves, int
 --
 
 COPY public.users (id, first_name, last_name, email, password, picture_url, created_at, team_id, account_id, owner_status) FROM stdin;
+\.
 
 
 --
 -- Name: highlights_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.highlights_id_seq', 5, true);
+SELECT pg_catalog.setval('public.highlights_id_seq', 1, false);
 
 
 --
@@ -655,14 +666,14 @@ SELECT pg_catalog.setval('public.roles_id_seq', 1, false);
 -- Name: teams_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.teams_id_seq', 43, true);
+SELECT pg_catalog.setval('public.teams_id_seq', 1, false);
 
 
 --
 -- Name: transactions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.transactions_id_seq', 11, true);
+SELECT pg_catalog.setval('public.transactions_id_seq', 1, false);
 
 
 --
@@ -676,7 +687,7 @@ SELECT pg_catalog.setval('public.user_stats_id_seq', 1, false);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 8, true);
+SELECT pg_catalog.setval('public.users_id_seq', 1, false);
 
 
 --
@@ -961,3 +972,4 @@ REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 --
 -- PostgreSQL database dump complete
 --
+

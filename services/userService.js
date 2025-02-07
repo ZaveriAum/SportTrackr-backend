@@ -41,6 +41,7 @@ const getUserById = async (id) => {
         }
 
     }catch(e){
+      
         throw new AppError("Cannot get User", 400);
     }
 }
