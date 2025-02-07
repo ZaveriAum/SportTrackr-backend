@@ -13,6 +13,7 @@ const getLeagues = async (req, res, next) => {
 
 const assignEmployeeToLeague = async (req, res, next) => {
     try{
+        
         await employeeService.assignEmployeeToLeague(req.body.email, req.body.role, req.params.leagueId);
         res.status(200).json({
             message : "Employee Assigned Successfully"
@@ -37,7 +38,6 @@ const getFilteredEmployees = async (req, res,next) => {
   
       res.json(employees);  
     } catch (err) {
-      console.error(err);
       res.status(500).send('Error fetching employees');
     }
   };

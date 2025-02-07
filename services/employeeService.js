@@ -3,6 +3,8 @@ const pool = require("../config/db");
 const { AppError, UNAUTHORIZED, BAD_REQUEST } = require("../config/errorCodes");
 const { findLeagueRoles } = require("./authService");
 const { toCamelCase } = require("../utilities/utilities");
+const DEFAULT_PROFILE_PICTURE='defualts/default_profile_photo.jpeg'
+const { getObjectSignedUrl } = require("./s3Service");
 const getEmployees = async (user, leagueId) => {
   try {
     // Check if the user has the appropriate roles
@@ -38,13 +40,15 @@ const assignEmployeeToLeague = async (email, role, leagueId) => {
   try {
     await pool.query("BEGIN");
 
+
+
     // Fetch role_id from league_roles where role_name matches user input role
     const roleId = await pool.query(
-      "SELECT id FROM league_roles WHERE role_name = $1",
+      "SELECT id FROM league_roles WHERE id = $1",
       [role]
     );
 
-    if (!roleId) {
+    if (roleId.rows.length==0) {
       throw new AppError("Role does not exist.", 404);
     }
 
@@ -52,12 +56,10 @@ const assignEmployeeToLeague = async (email, role, leagueId) => {
       email,
     ]);
 
-    if (!userId) {
+
+    if (userId.rows.length == 0) {
       throw new AppError(BAD_REQUEST.USER_NOT_EXISTS, 400);
     }
-
-    // get the userId from the email given
-
     const leagueEmpResult = await pool.query(
       `
             INSERT INTO league_emp (user_id, league_id)
@@ -69,6 +71,7 @@ const assignEmployeeToLeague = async (email, role, leagueId) => {
 
     const leagueEmpId = leagueEmpResult.rows[0].id;
 
+
     await pool.query(
       `
             INSERT INTO employee_roles (role_id, employee_id)
@@ -76,6 +79,7 @@ const assignEmployeeToLeague = async (email, role, leagueId) => {
             `,
       [roleId.rows[0].id, leagueEmpId]
     );
+
 
     await pool.query("COMMIT");
   } catch (e) {
@@ -92,16 +96,17 @@ const getAdminDashboardStats = async (user) => {
 
   const leagueAmount = `
     SELECT 
-        l.league_name AS leagueName, 
-        COUNT(t.id) AS totalTeams, 
-        COUNT(t.id) * l.price AS totalRevenue,
-        COUNT(le.id) AS totalEmployees
-    FROM leagues l  
-    LEFT JOIN teams t ON l.id = t.league_id  
-    JOIN users u ON l.organizer_id = u.id  
-    LEFT JOIN league_emp le ON l.id = le.league_id
-    WHERE u.email = $1 
-    GROUP BY l.league_name, l.price;
+    l.league_name AS leagueName, 
+    COUNT(DISTINCT t.id) AS totalTeams, 
+    COUNT(DISTINCT t.id) * l.price AS totalRevenue,
+    COUNT(DISTINCT le.id) AS totalEmployees
+FROM leagues l  
+LEFT JOIN teams t ON l.id = t.league_id  
+JOIN users u ON l.organizer_id = u.id  
+LEFT JOIN league_emp le ON l.id = le.league_id
+WHERE u.email = $1
+GROUP BY l.league_name, l.price;
+
 `;
   const leagues = await pool.query(leagueAmount, [user.email]);
 
@@ -112,7 +117,8 @@ const getFilteredEmployees = async (user,leagueId,roleId,name)=>{
   const filteredEmployeeQuery = `SELECT 
   CONCAT(u.first_name, ' ', u.last_name) AS "fullName",
   l.league_name AS "league",       
-  lr.role_name AS "leagueRole"      
+  lr.role_name AS "leagueRole",
+  u.picture_url as pictureUrl
 FROM league_emp le
 JOIN employee_roles er 
   ON le.id = er.employee_id
@@ -140,10 +146,21 @@ if(!roleId){
 if(!name){
   name=null
 }
-const filteredEmployees = await pool.query(filteredEmployeeQuery, [leagueId,roleId,name]);
 
-return  filteredEmployees.rows
-}
+
+const filteredEmployees = await pool.query(filteredEmployeeQuery, [leagueId, roleId, name]);
+
+const employees = Promise.all(filteredEmployees.rows.map(async (employee) => {
+  return {
+    fullName: employee.fullName,
+    league: employee.league,
+    leagueRole: employee.leagueRole,
+    signedUrl: employee.pictureUrl ? await getObjectSignedUrl(employee.pictureUrl) : await getObjectSignedUrl(DEFAULT_PROFILE_PICTURE),
+  };
+}));
+
+return employees;
+};
 
 module.exports = {
   getEmployees,
