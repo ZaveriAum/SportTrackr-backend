@@ -28,7 +28,7 @@ const getLeague = async (req, res, next) => {
 
 const createLeague = async (req, res, next) => {
     try{
-        const league = await leagueService.createLeague(req.user, req.body, req.file);
+        const league = await leagueService.createLeague(req.user.email, req.user.roles, req.body, req.file);
         res.status(201).json({
             message : "League Created Successfully",
             league: league
@@ -66,7 +66,7 @@ const uploadLeagueLogo = async (req, res, next) => {
 
 const deleteLeague = async (req, res, next) => {
     try{
-        await leagueService.deleteLeague(req.user, req.params.leagueId);
+        await leagueService.deleteLeague(req.user.email, req.user.roles, req.params.leagueId);
         res.status(200).json({
             message: "League Delete Successfully"
         })

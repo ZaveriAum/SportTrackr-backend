@@ -5,6 +5,7 @@ const { findLeagueRoles } = require("./authService");
 const { toCamelCase } = require("../utilities/utilities");
 const DEFAULT_PROFILE_PICTURE='defualts/default_profile_photo.jpeg'
 const { getObjectSignedUrl } = require("./s3Service");
+
 const getEmployees = async (user, leagueId) => {
   try {
     // Check if the user has the appropriate roles

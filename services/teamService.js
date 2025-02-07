@@ -1,9 +1,13 @@
 require("dotenv").config();
 const pool = require("../config/db");
 const { AppError, UNAUTHORIZED, BAD_REQUEST, FORBIDDEN } = require("../config/errorCodes");
+
 const { toCamelCase } = require("../utilities/utilities");
 const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
+const { checkoutSession } = require('./paymentService')
 const bcrypt = require("bcrypt");
+const {refund} = require('./paymentService')
+const {sendTeamDeletionToOwner, sendTeamDeletionToPlayer, sendRefundConfirmationToOwner} = require('./mailService')
 
 const createTeam = async (user, data, file) => {
   try {
@@ -11,6 +15,7 @@ const createTeam = async (user, data, file) => {
       throw new AppError(`${UNAUTHORIZED.ACCESS_DENIED}`, 401);
     }
     const teamInfo = JSON.parse(data.teamInfo);
+
     const {
       name,
       homeColor,
@@ -68,12 +73,14 @@ const createTeam = async (user, data, file) => {
       );
     }
 
+    const userId = await pool.query('SELECT id FROM users WHERE email=$1', [user.email])
+
     const values = [
       name,
       leagueId,
       description,
-      user.id,
-      user.id,
+      userId.rows[0].id,
+      userId.rows[0].id,
       homeColor,
       awayColor,
       teamLogoUrl,
@@ -89,9 +96,16 @@ const createTeam = async (user, data, file) => {
       RETURNING *;`,
       values
     );
+    
+    // Add team id for that user
+    await pool.query('UPDATE users SET team_id=$1 WHERE email=$2', [team.rows[0].id, user.email])
+    
+    const query = await pool.query('SELECT price, organizer_id FROM leagues WHERE id=$1', [leagueId])
 
-    team.rows[0].logoUrl = await getObjectSignedUrl(team.rows[0].logo_url);
-    return toCamelCase(team.rows[0]);
+    const account_id = await pool.query('SELECT account_id FROM users WHERE id=$1', [query.rows[0].organizer_id])
+
+    return await checkoutSession(account_id.rows[0].account_id, team.rows[0].id, team.rows[0].name, query.rows[0].price);
+
   } catch (e) {
     if (
       e.code === "22P02" ||
@@ -214,6 +228,8 @@ const updateTeam = async (userEmail, data, file, teamId) => {
 const getTeamsByLeagueId = async (leagueId) => {
   try {
 
+    console.log("In get team")
+
     if (!leagueId) {
       throw new AppError("League ID is required", 400);
     }
@@ -221,7 +237,7 @@ const getTeamsByLeagueId = async (leagueId) => {
     const teamsQuery = `
 SELECT 
   t.id, 
-  t.name, 
+  t.name,
   t.description, 
   t.home_color AS "homeColor", 
   t.away_color AS "awayColor", 
@@ -270,7 +286,9 @@ const getTeamById = async (teamId) => {
       SELECT 
         t.id, 
         t.name, 
-        t.description, 
+        t.description,
+        t.owner_id,
+        t.league_id,
         t.home_color AS "homeColor", 
         t.away_color AS "awayColor", 
         t.logo_url AS "logoUrl", 
@@ -288,8 +306,14 @@ const getTeamById = async (teamId) => {
       WHERE 
         t.id = $1;
     `;
-
+    
     const result = await pool.query(teamQuery, [ teamId]);
+    
+    const teamTransaction = await pool.query('SELECT status FROM transactions WHERE team_id=$1', [teamId]);
+
+    if (teamTransaction.rows[0].status !== "success"){
+      throw new AppError("Team Creation Incomplete", 401);
+    }
 
     if (result.rows.length === 0) {
       return new AppError(BAD_REQUEST.TEAM_NOT_EXISTS)
@@ -314,10 +338,82 @@ const getTeamByLeagueOwner = async(userEmail) =>{
  return teams.rows
 }
 
+const deleteTeam = async(email, teamId)=>{
+  let transactionStarted = false;
+  try{
+    // getting the id from users using email get the owner_id from teamId now check if both are same then move
+    // further else throw new error
+    const query = await pool.query('SELECT id FROM users WHERE email=$1', [email]);
+    const query2 = await pool.query('SELECT owner_id, league_id FROM teams WHERE id=$1', [teamId])
+
+    if (query.rows[0].id !== query2.rows[0].owner_id)
+      throw new AppError(`${UNAUTHORIZED.ACCESS_DENIED}`, 401)
+
+    // Check if league has already started Team can only be deleted 5 days before the leagues get started
+    const query3 = await pool.query('SELECT start_time FROM leagues WHERE id=$1', [query2.rows[0].league_id])
+
+    const startTime = new Date(query3.rows[0].start_time);
+    const fiveDaysBeforeStart = new Date(startTime);
+    fiveDaysBeforeStart.setDate(startTime.getDate() - 5);
+    const now = new Date();
+
+    if (now >= fiveDaysBeforeStart)
+      throw new AppError("Deletion Timeline Has Passed", 400);
+
+    // Now for refund get the transaction information from the teamId
+    const query4 = await pool.query('SELECT intent_id, amount FROM transactions WHERE team_id=$1', [teamId]);
+
+    if (query4.rowCount === 0){
+      throw new Error("No successful transaction found for this team.");
+    }
+    const transaction = query4.rows[0];
+
+    // Now process the refund
+
+    // Delete the team logo
+    const team = await pool.query('SELECT logo_url, owner_id, captain_id, name FROM teams WHERE id=$1', [teamId]);
+    if (team.rows[0].logo_url)
+      await deleteFile(team.rows[0].logo_url);    
+    transactionStarted = true;
+
+    const trans = await pool.query('DELETE FROM transactions WHERE team_id=$1 RETURNING *', [teamId])
+
+    await pool.query('BEGIN');
+
+    const team_players = await pool.query('SELECT email, first_name, last_name FROM users WHERE team_id=$1',[teamId])
+    const owner_email = await pool.query('SELECT email, first_name, last_name FROM users WHERE id=$1', [team.rows[0].owner_id])
+    const captain_email = await pool.query('SELECT email, first_name, last_name FROM users WHERE id=$1', [team.rows[0].captain_id])
+    
+    await sendTeamDeletionToOwner(owner_email.rows[0].email, `${owner_email.rows[0].first_name} ${owner_email.rows[0].last_name}`, team.rows[0].name);
+    await sendRefundConfirmationToOwner(owner_email.rows[0].email, `${owner_email.rows[0].first_name} ${owner_email.rows[0].last_name}`, trans.rows[0].charge_id, trans.rows[0].amount);
+    team_players.rows.forEach(async (player)=>{
+      await sendTeamDeletionToPlayer(player.email, `${player.first_name} ${player.last_name}`, "Team Owner Has successfully deleted the team.", "Team Deleted");
+    });
+    if(owner_email.rows[0].email !== owner_email.rows[0].email){
+      await sendTeamDeletionToPlayer(captain_email.rows[0].email, `${captain_email.rows[0].first_name} ${captain_email.rows[0].last_name}`, "Team Owner Has successfully deleted the team.", "Team Deleted");
+    }
+    
+    await pool.query('UPDATE users SET team_id=$1 WHERE email=$2', [null, email])
+    
+    await pool.query('DELETE FROM teams WHERE id=$1', [teamId])
+    
+
+    await refund(transaction.intent_id, transaction.amount * 100, true);
+
+
+    await pool.query('COMMIT')
+
+  }catch(e){
+    if (transactionStarted) await pool.query('ROLLBACK');
+    throw new AppError(e.message || 'Unable to delete the team', e.statusCode || 401)
+  }
+}
+
 module.exports = {
   createTeam,
   updateTeam,
   getTeamsByLeagueId,
   getTeamById,
   getTeamByLeagueOwner
+  deleteTeam
 };

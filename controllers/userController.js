@@ -11,6 +11,17 @@ const getUserProfile = async (req, res, next) => {
     }
 }
 
+const getUserById = async (req, res, next) => {
+    try{
+        const user = await userService.getUserById(req.params.id)
+        res.status(200).json({
+            user: user
+        })
+    }catch(e){
+        next(e);
+    }
+}
+
 const updateUserProfile = async(req, res, next) => {
     try{
         await userService.updateUserProfile(req.user.email, req.body.firstName, req.body.lastName);
@@ -59,6 +70,7 @@ const getFilteredUsers = async (req, res, next) => {
 
 module.exports = {
     getUserProfile,
+    getUserById,
     updateUserProfile,
     updateUserPassword,
     uploadProfilePhoto,

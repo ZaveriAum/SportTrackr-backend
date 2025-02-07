@@ -1,34 +1,50 @@
-const { body } = require("express-validator");
-const pool = require("../config/db");
-const DEFAULT_PROFILE_PICTURE = "defualts/default_profile_photo.jpeg";
-const { AppError, BAD_REQUEST } = require("../config/errorCodes");
-const { getObjectSignedUrl, uploadFile, deleteFile } = require("./s3Service");
-const bcrypt = require("bcrypt");
+const { body } = require('express-validator');
+const pool = require('../config/db')
+const DEFAULT_PROFILE_PICTURE='defualts/default_profile_photo.jpeg'
+const {AppError, BAD_REQUEST} = require('../utilities/errorCodes')
+const {getObjectSignedUrl, uploadFile, deleteFile} = require('./s3Service')
+const bcrypt = require('bcrypt')
 
-const getUserProfile = async (email) => {
-  try {
-    const result = await pool.query(
-      "SELECT first_name, last_name, picture_url FROM users WHERE email = $1",
-      [email]
-    );
-    const user = result.rows[0];
-    if (!user) {
-      throw new AppError(BAD_REQUEST.USER_NOT_EXISTS, 400);
+const getUserProfile = async (email) => { 
+
+    try {
+        const result = await pool.query('SELECT first_name, last_name, picture_url FROM users WHERE email = $1', [email]);
+        const user = result.rows[0];
+        if (!user) {
+            throw new AppError(BAD_REQUEST.USER_NOT_EXISTS, 400)
+        }
+
+        const pictureUrl = user.picture_url
+            ? await getObjectSignedUrl(user.picture_url)
+            : await getObjectSignedUrl(DEFAULT_PROFILE_PICTURE);
+
+        return {
+            first_name: user.first_name,
+            last_name: user.last_name,
+            picture_url: pictureUrl,
+        }
+    } catch (e) {
+        throw new AppError('Unknown Error', 500)
     }
 
-    const pictureUrl = user.picture_url
-      ? await getObjectSignedUrl(user.picture_url)
-      : await getObjectSignedUrl(DEFAULT_PROFILE_PICTURE);
+const getUserById = async (id) => {
+    try{
+        const user = await pool.query('SELECT first_name, last_name, picture_url FROM users WHERE id=$1', [id]);
+        
+        const pictureUrl = user.picture_url
+        ? await getObjectSignedUrl(user.picture_url)
+        : await getObjectSignedUrl(DEFAULT_PROFILE_PICTURE);
+        
+        return {
+            firstName: user.rows[0].first_name,
+            lastName: user.rows[0].last_name,
+            pictureUrl: pictureUrl,
+        }
 
-    return {
-      first_name: user.first_name,
-      last_name: user.last_name,
-      picture_url: pictureUrl,
-    };
-  } catch (e) {
-    throw new AppError("Unknown Error", 500);
-  }
-};
+    }catch(e){
+        throw new AppError("Cannot get User", 400);
+    }
+}
 
 const updateUserProfile = async (email, firstName, lastName) => {
   try {
@@ -178,9 +194,10 @@ const getFilteredUsers = async (user, leagueId, teamId, name) => {
   
 
 module.exports = {
-  getUserProfile,
-  updateUserProfile,
-  updateUserPassword,
-  uploadProfilePhoto,
-  getFilteredUsers,
-};
+    getUserProfile,
+    getUserById,
+    updateUserProfile,
+    updateUserPassword,
+    uploadProfilePhoto,
+    getFilteredUsers
+}

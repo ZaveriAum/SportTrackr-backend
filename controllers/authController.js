@@ -14,7 +14,6 @@ const register = async (req, res, next) => {
             token: response.accessToken
         })
     }catch(e){
-        console.log(e)
         // Pass the error to the next middleware
         next(e);
     }
