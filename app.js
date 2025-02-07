@@ -36,6 +36,8 @@ app.use('/v1/user', userRoutes)
 app.use('/v1/team', teamRoutes)
 app.use('/v1/match', matchRoutes)
 app.use('/v1/connect', connectAccountRoutes)
+app.use('/v1/schedule', connectAccountRoutes)
+
 // Error Logging Middleware
 app.use(errorLogger);
 
