@@ -13,6 +13,7 @@ const getLeagues = async (req, res, next) => {
 
 const assignEmployeeToLeague = async (req, res, next) => {
     try{
+        
         await employeeService.assignEmployeeToLeague(req.body.email, req.body.role, req.params.leagueId);
         res.status(200).json({
             message : "Employee Assigned Successfully"
@@ -29,9 +30,21 @@ const getAdminDashboardStats = async (req,res,next)=>{
         next(e);
     }
 }
+const getFilteredEmployees = async (req, res,next) => {
+    try {
+      const { league, role, name } = req.query;  
+  
+      employees = await employeeService.getFilteredEmployees(req.user,league,role,name)
+  
+      res.json(employees);  
+    } catch (err) {
+      res.status(500).send('Error fetching employees');
+    }
+  };
 
 module.exports = {
     getLeagues,
     assignEmployeeToLeague,
-    getAdminDashboardStats
+    getAdminDashboardStats,
+    getFilteredEmployees
 }
