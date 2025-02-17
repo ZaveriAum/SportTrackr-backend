@@ -379,9 +379,7 @@ const goalsData = goalsResult.rows;
 for (const team of teams) {
   team.logo_url = await getObjectSignedUrl(team.logo_url || DEFAULT_TEAM_LOGO);
 }
-for (const team of teams) {
-  team.logo_url = await getObjectSignedUrl(team.logo_url || DEFAULT_TEAM_LOGO);
-}
+
 // Construct match results
 const matchResults = matches.map(match => {
     const matchGoals = goalsData.find(g => g.match_id === match.id) || { home_goals: 0, away_goals: 0 };
@@ -390,10 +388,10 @@ const matchResults = matches.map(match => {
     return {
         matchId: match.id,
         team1: teams.find(t => t.id === match.home_team_id)?.name || "Unknown",
-        logo1: teams.find(t => t.id === match.home_team_id)?.logo_url || "🏳",
+        logo1: teams.find(t => t.id === match.home_team_id)?.logo_url ,
         result: `${matchGoals.home_goals} - ${matchGoals.away_goals}`,
         team2: teams.find(t => t.id === match.away_team_id)?.name || "Unknown",
-        logo2: teams.find(t => t.id === match.away_team_id)?.logo_url || "🏳",
+        logo2: teams.find(t => t.id === match.away_team_id)?.logo_url,
     };
 });
 
