@@ -325,9 +325,89 @@ const uploadHighlights = async (user, files, body) => {
   return { message: "Upload successful!" };
 };
 
+
+const getMatchesByLeagueId = async (leagueId) => {
+  try {
+    //  all teams in the league
+    const teamsQuery = `
+      SELECT id, name, logo_url FROM teams WHERE league_id = $1
+    `;
+    const teamsResult = await pool.query(teamsQuery, [leagueId]);
+    const teams = teamsResult.rows;
+
+    if (teams.length === 0) {
+      return { message: "No teams found in this league", matches: [] };
+    }
+
+    // get all matches in the league
+    const teamIds = teams.map(t => t.id);
+    const matchesQuery = `
+      SELECT id, home_team_id, away_team_id 
+      FROM matches 
+      WHERE home_team_id = ANY($1) OR away_team_id = ANY($1)
+    `;
+    const matchesResult = await pool.query(matchesQuery, [teamIds]);
+    const matches = matchesResult.rows;
+
+    if (matches.length === 0) {
+      return { message: "No matches found in this league", matches: [] };
+    }
+
+    // team goals for each match
+    const matchIds = matches.map(m => m.id);
+    if (matchIds.length === 0) return { matches };
+
+    const teamGoalsQuery = `
+    SELECT 
+        m.id AS match_id,
+        m.home_team_id AS home_team_id,
+        COALESCE(SUM(CASE WHEN us.user_id IN (
+            SELECT id FROM users WHERE team_id = m.home_team_id
+        ) THEN us.goals END), 0) AS home_goals,
+        m.away_team_id AS away_team_id,
+        COALESCE(SUM(CASE WHEN us.user_id IN (
+            SELECT id FROM users WHERE team_id = m.away_team_id
+        ) THEN us.goals END), 0) AS away_goals
+    FROM matches m
+    LEFT JOIN user_stats us ON us.match_id = m.id
+    WHERE m.id = ANY($1)
+    GROUP BY m.id, m.home_team_id, m.away_team_id;
+`;
+
+const goalsResult = await pool.query(teamGoalsQuery, [matchIds]);
+const goalsData = goalsResult.rows;
+for (const team of teams) {
+  team.logo_url = await getObjectSignedUrl(team.logo_url || DEFAULT_TEAM_LOGO);
+}
+for (const team of teams) {
+  team.logo_url = await getObjectSignedUrl(team.logo_url || DEFAULT_TEAM_LOGO);
+}
+// Construct match results
+const matchResults = matches.map(match => {
+    const matchGoals = goalsData.find(g => g.match_id === match.id) || { home_goals: 0, away_goals: 0 };
+
+
+    return {
+        matchId: match.id,
+        team1: teams.find(t => t.id === match.home_team_id)?.name || "Unknown",
+        logo1: teams.find(t => t.id === match.home_team_id)?.logo_url || "🏳",
+        result: `${matchGoals.home_goals} - ${matchGoals.away_goals}`,
+        team2: teams.find(t => t.id === match.away_team_id)?.name || "Unknown",
+        logo2: teams.find(t => t.id === match.away_team_id)?.logo_url || "🏳",
+    };
+});
+
+    return { matches: matchResults };
+  } catch (error) {
+    console.error("Error fetching matches:", error);
+    throw new Error("Internal Server Error");
+  }
+};
+
 module.exports = {
   updateMatch,
   getStats,
   uploadHighlights,
   getMatchDetails,
+  getMatchesByLeagueId
 };
