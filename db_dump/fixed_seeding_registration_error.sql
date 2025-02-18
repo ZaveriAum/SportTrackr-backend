@@ -563,7 +563,6 @@ COPY public.league_emp (id, user_id, league_id) FROM stdin;
 \.
 
 
-
 --
 -- Data for Name: league_roles; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -751,7 +750,6 @@ COPY public.user_stats (id, user_id, match_id, goals, shots, assists, saves, int
 \.
 
 
-
 --
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -887,7 +885,7 @@ SELECT pg_catalog.setval('public.user_stats_id_seq', 1, false);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 4, true);
+SELECT pg_catalog.setval('public.users_id_seq', 60, true);
 
 
 --

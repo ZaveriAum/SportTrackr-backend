@@ -93,6 +93,7 @@ const register = async (body, token) => {
 
         return generateTokens(user.rows[0]);
     }catch(e){
+        console.log(e)
         throw new AppError(`${e.message}` || 'Registration failed', e.statusCode || 500)
     }
 }
