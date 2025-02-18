@@ -56,10 +56,24 @@ const getMatchesByLeagueId = async (req, res) => {
   }
 };
 
+const getMatchById = async (req, res) => {
+  try {
+    const { matchId } = req.params;
+    const matchData = await matchService.getMatchById(matchId);
+    res.json(matchData);
+  } catch (error) {
+    console.error("Controller Error:", error.message);
+    res.status(500).json({ error: "Error fetching matches" });
+  }
+};
+
+
+
 module.exports = {
   updateMatch,
   getStats,
   uploadHighlights,
   getMatchDetails,
-  getMatchesByLeagueId
+  getMatchesByLeagueId,
+  getMatchById
 };

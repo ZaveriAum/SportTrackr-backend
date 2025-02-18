@@ -20,4 +20,6 @@ router.post('/highlights', upload.fields([
   ]), matchController.uploadHighlights);
   router.get("/:id",matchController.getMatchDetails)
   router.get("/league/:leagueId", matchController.getMatchesByLeagueId);
+  router.get("/general/:matchId", matchController.getMatchById);
+
   module.exports = router;

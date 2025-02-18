@@ -402,10 +402,63 @@ const matchResults = matches.map(match => {
   }
 };
 
+
+//get match by id
+
+const getMatchById = async (matchId) => {
+  try {
+    if (!matchId) {
+      throw new AppError("Match ID is required", 400);
+    }
+
+    const matchQuery = `
+      SELECT 
+        m.*, 
+        ht.logo_url AS home_team_logo, 
+        at.logo_url AS away_team_logo,
+        ht.name as home_team_name,
+        at.name as away_team_name
+      FROM 
+        matches m
+      LEFT JOIN 
+        teams ht ON m.home_team_id = ht.id 
+      LEFT JOIN 
+        teams at ON m.away_team_id = at.id
+      WHERE 
+        m.id = $1;
+
+    `;
+    
+    const result = await pool.query(matchQuery, [matchId]);
+
+    if (result.rows.length === 0) {
+      throw new AppError("Match not found", 404);
+    }
+
+    const match = result.rows[0];  
+
+    const signedHomeLogoUrl = await getObjectSignedUrl(match.home_team_logo);
+    const signedAwayLogoUrl = await getObjectSignedUrl(match.away_team_logo);
+
+    const { home_team_logo, away_team_logo, ...matchWithoutLogos } = match;
+
+    return {
+      ...matchWithoutLogos,
+      home_team_logo: signedHomeLogoUrl,
+      away_team_logo: signedAwayLogoUrl
+    };
+
+  } catch (e) {
+    throw new AppError(`${e.message}` || "Unknown Error", e.statusCode || 500);
+  }
+};
+
+
 module.exports = {
   updateMatch,
   getStats,
   uploadHighlights,
   getMatchDetails,
-  getMatchesByLeagueId
+  getMatchesByLeagueId,
+  getMatchById
 };
