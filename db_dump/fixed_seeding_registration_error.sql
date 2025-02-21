@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 16.3
--- Dumped by pg_dump version 16.3
+-- Dumped from database version 16.6
+-- Dumped by pg_dump version 16.6
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -630,6 +630,7 @@ COPY public.teams (id, name, league_id, description, owner_id, captain_id, home_
 16	Napoli	4	A strong team with a passionate fan base.	16	16	blue	white	team-logos/f801c6b7-2307-4962-86c7-7e55cc86376a-league-8-Team 5	t	\N
 1	Bayern Munich	1	A top team in Germany.	2	1	red	white	team-logos/f801c6b7-2307-4962-86c7-7e55cc86376a-league-8-Team 5	t	\N
 2	Borussia Dortmund	1	A strong contender in Bundesliga.	17	2	yellow	black	team-logos/f801c6b7-2307-4962-86c7-7e55cc86376a-league-8-Team 5	t	\N
+21	dfdgdfg	1	\N	61	61	red	blue	team-logos/5539751c-6ec7-478b-8620-1527bdb3e082-league-1-dfdgdfg	f	\N
 \.
 
 
@@ -653,6 +654,7 @@ COPY public.transactions (id, team_id, status, amount, intent_id, created_at, up
 16	2	success	400	pi_1323456789	2024-02-06 12:10:00	2024-02-06 12:10:00	ch_9876543211
 17	2	success	500	pi_1423456789	2024-02-06 12:20:00	2024-02-06 12:25:00	ch_9876543223
 18	2	success	600	pi_1523456789	2024-02-06 12:30:00	2024-02-06 12:30:00	ch_9876543211
+23	21	success	1000	pi_3Quya5Rwq83ArHb90GIaBCw7	2025-02-21 10:55:42.761469	2025-02-21 10:55:42.761469	cs_test_a1Oej1G670Ds6xkNBcLxEdPMp0YTAOY3ay1KVyrgFkvkr03QQc5clXnKQc
 \.
 
 
@@ -721,6 +723,7 @@ COPY public.user_roles (user_id, role_id) FROM stdin;
 58	1
 59	1
 60	1
+61	1
 \.
 
 
@@ -815,6 +818,7 @@ COPY public.users (id, first_name, last_name, email, password, picture_url, crea
 59	Nadiem	Amiri	nadiemamiri@gmail.com	$2b$10$9HQNCPrIWjhcTTxLsMdr9uvOaoseRDUbtY7doYuWdHhGJabVsguMK	\N	2025-02-07 15:54:20.123789	16	acct_1QmnGc2K9wpSDFwj	f
 60	Luca	Waldschmidt	lucawaldschmidt@gmail.com	$2b$10$08y6j/rPtekXrZ9fkjBcfe4ntCs8VjBALdot8EZsDLmklv34mSlXJ	\N	2025-02-07 15:55:50.789654	16	acct_1QmnGc2K9wpSDFwj	f
 1	Elio	Fezollari	fezollarielio@gmail.com	$2b$10$.qpT7eX/neC6ihDQBJtF4e01vi5EeGEY81VRlPFLQiMO5CaXdtmb.	\N	2025-02-07 14:52:55.530651	16	acct_1QmnGc2K9wpSDFwj	t
+61	Aum	Zaveri	aumzaveri06@gmail.com	$2b$10$T2FGJuI/m.DiYDb0xQtByOVxYbSdqMkw2pLKTcGmWiB7tj3xUVD/q	\N	2025-02-21 10:33:13.743288	21	\N	f
 \.
 
 
@@ -829,14 +833,14 @@ SELECT pg_catalog.setval('public.highlights_id_seq', 1, false);
 -- Name: league_emp_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.league_emp_id_seq', 1, false);
+SELECT pg_catalog.setval('public.league_emp_id_seq', 10, true);
 
 
 --
 -- Name: league_roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.league_roles_id_seq', 1, false);
+SELECT pg_catalog.setval('public.league_roles_id_seq', 3, true);
 
 
 --
@@ -850,42 +854,42 @@ SELECT pg_catalog.setval('public.leagues_id_seq', 4, true);
 -- Name: matches_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.matches_id_seq', 1, false);
+SELECT pg_catalog.setval('public.matches_id_seq', 5, true);
 
 
 --
 -- Name: roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.roles_id_seq', 1, false);
+SELECT pg_catalog.setval('public.roles_id_seq', 2, true);
 
 
 --
 -- Name: teams_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.teams_id_seq', 1, false);
+SELECT pg_catalog.setval('public.teams_id_seq', 21, true);
 
 
 --
 -- Name: transactions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.transactions_id_seq', 18, true);
+SELECT pg_catalog.setval('public.transactions_id_seq', 23, true);
 
 
 --
 -- Name: user_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_stats_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_stats_id_seq', 18, true);
 
 
 --
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 60, true);
+SELECT pg_catalog.setval('public.users_id_seq', 61, true);
 
 
 --

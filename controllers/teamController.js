@@ -38,9 +38,8 @@ const getTeamsByLeagueId = async(req,res,next)=>{
 }
 
 const getTeamById = async(req,res,next)=>{
-    const teamId = req.params.id
-    
     try{
+        const teamId = req.params.id
         const team = await teamService.getTeamById(teamId)
         res.status(200).json({
             team
