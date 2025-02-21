@@ -228,8 +228,6 @@ const updateTeam = async (userEmail, data, file, teamId) => {
 const getTeamsByLeagueId = async (leagueId) => {
   try {
 
-    console.log("In get team")
-
     if (!leagueId) {
       throw new AppError("League ID is required", 400);
     }

@@ -168,7 +168,6 @@ const getFilteredUsers = async (user, leagueId, teamId, name) => {
         name,
         teamId,
       ]);
-      console.log(filteredUsers);
   
       const users = await Promise.all(
         filteredUsers.rows.map(async (user) => {
