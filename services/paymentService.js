@@ -84,7 +84,6 @@ const refund = async(intentId, amount, teamDeletion) => {
         });
 
     } catch (e) {
-        console.log(e)
         throw new AppError("Unable to Process the Refund", 500);
     }
 }
