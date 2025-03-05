@@ -45,6 +45,6 @@ router.put('/update-pass',[
 
 router.post('/upload-photo', upload.single('file'), userController.uploadProfilePhoto)
 
-
+router.post('/toggle-visibility', userController.toggleProfile)
 
 module.exports = router

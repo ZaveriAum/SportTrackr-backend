@@ -7,25 +7,74 @@ const bcrypt = require('bcrypt')
 const getUserProfile = async (email) => { 
 
     try {
-        const result = await pool.query('SELECT first_name, last_name, picture_url FROM users WHERE email = $1', [email]);
+
+        const result = await pool.query(`
+          SELECT 
+          u.id, u.first_name , u.last_name, u.picture_url, u.profile_visibility,
+          t.id as teamid, t.name as teamName, t.logo_url teamLogoUrl,
+          l.league_name as leagueName, l.logo_url as leagueLogoUrl
+          FROM users u
+          JOIN teams t
+          ON u.team_id = t.id 
+          JOIN leagues l
+          ON t.league_id = l.id
+          WHERE email = $1`, [email]);
+
         const user = result.rows[0];
         if (!user) {
             throw new AppError(BAD_REQUEST.USER_NOT_EXISTS, 400)
         }
 
         const pictureUrl = user.picture_url
-            ? await getObjectSignedUrl(user.picture_url)
-            : await getObjectSignedUrl(DEFAULT_PROFILE_PICTURE);
+          ? await getObjectSignedUrl(user.picture_url)
+          : null
 
+        const teamLogoUrl = user.teamlogourl
+          ? await getObjectSignedUrl(user.teamlogourl)
+          : null
+
+        const leagueLogUrl = user.leaguelogourl
+          ? await getObjectSignedUrl(user.leaguelogourl)
+          : null
+
+          const userStats = await pool.query(`
+          SELECT 
+            SUM(us.goals) AS total_goals,
+            SUM(us.shots) AS total_shots,
+            SUM(us.assists) AS total_assists,
+            SUM(us.saves) AS total_saves,
+            SUM(us.interceptions) AS total_interceptions,
+            SUM(us.yellow_card) AS total_yellow_cards,
+            SUM(us.red_card) AS total_red_cards
+          FROM user_stats us
+          JOIN matches m ON us.match_id = m.id
+          WHERE (m.home_team_id = $1 OR m.away_team_id = $1)
+          AND us.user_id = $2
+          GROUP BY us.user_id;
+          `, [user.teamid, user.id])
+        
         return {
-            first_name: user.first_name,
-            last_name: user.last_name,
-            picture_url: pictureUrl,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            pictureUrl: pictureUrl,
+            profileVisibility: user.profile_visibility,
+            teamName: user.teamname,
+            teamLogo: teamLogoUrl,
+            leagueName: user.leaguename,
+            leagueLogo: leagueLogUrl,
+            totalGoals: userStats.rows[0].total_goals,
+            totalShots: userStats.rows[0].total_shots,
+            totalAssists: userStats.rows[0].total_assists,
+            totalSaves: userStats.rows[0].total_saves,
+            totalInterceptionL: userStats.rows[0].total_interceptions,
+            totalYellowCards: userStats.rows[0].total_yellow_cards,
+            totalRedCards: userStats.rows[0].total_red_cards
         }
     } catch (e) {
         throw new AppError('Unknown Error', 500)
     }
 }
+
 const getUserById = async (id) => {
     try{
         const user = await pool.query('SELECT first_name, last_name, picture_url FROM users WHERE id=$1', [id]);
@@ -186,11 +235,20 @@ const getFilteredUsers = async (user, leagueId, teamId, name) => {
   
       return users;
     } catch (error) {
-
-      throw new Error("Failed to fetch filtered users");
+      throw new AppError("Failed to fetch filtered users", 400);
     }
   };
   
+  const toggleProfile = async (email) => {
+    try{
+      const user = await pool.query('Select profile_visibility FROM users WHERE email = $1', [email])
+      await pool.query(`UPDATE users
+                        SET profile_visibility=$1
+	                      WHERE email = $2`,[ !user.rows[0].profile_visibility, email])
+    }catch(e){
+      throw new AppError(e.message || "Unknown Error", e.statusCode || 400)
+    }
+  }
 
 module.exports = {
     getUserProfile,
@@ -198,5 +256,6 @@ module.exports = {
     updateUserProfile,
     updateUserPassword,
     uploadProfilePhoto,
-    getFilteredUsers
+    getFilteredUsers,
+    toggleProfile
 }

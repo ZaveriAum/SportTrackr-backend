@@ -11,6 +11,7 @@ const {sendTeamDeletionToOwner, sendTeamDeletionToPlayer, sendRefundConfirmation
 
 const createTeam = async (user, data, file) => {
   try {
+
     if (user.teamId !== null) {
       throw new AppError(`${UNAUTHORIZED.ACCESS_DENIED}`, 401);
     }
