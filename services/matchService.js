@@ -7,18 +7,30 @@ const { uploadFile, deleteFile, getObjectSignedUrl } = require("./s3Service");
 const updateMatch = async (user, data) => {
   try {
     const { matchId, homeTeam, awayTeam } = data;
-    const query = "SELECT league_id FROM teams WHERE id = $1";
-    const values = [homeTeam.id];
 
-    const result = await pool.query(query, values);
+    // Validate if both teams exist
+    const homeTeamQuery = "SELECT league_id FROM teams WHERE id = $1";
+    const homeTeamValues = [homeTeam.id];
+    const homeTeamResult = await pool.query(homeTeamQuery, homeTeamValues);
 
-    if (result.rows.length === 0) {
+    if (homeTeamResult.rows.length === 0) {
       throw new AppError(BAD_REQUEST.TEAM_NOT_EXISTS, 404);
     }
-    const leagueId = result.rows[0].league_id;
+    const leagueId = homeTeamResult.rows[0].league_id;
 
+    // Validate away team
+    const awayTeamQuery = "SELECT league_id FROM teams WHERE id = $1";
+    const awayTeamValues = [awayTeam.id];
+    const awayTeamResult = await pool.query(awayTeamQuery, awayTeamValues);
+
+    if (awayTeamResult.rows.length === 0) {
+      throw new AppError(BAD_REQUEST.TEAM_NOT_EXISTS, 404);
+    }
+
+    // Combine both teams' players
     const players = [...homeTeam.players, ...awayTeam.players];
 
+    // Loop through each player and insert stats
     for (const player of players) {
       const {
         id,
@@ -31,25 +43,71 @@ const updateMatch = async (user, data) => {
         redCard,
       } = player;
 
-      const insertQuery = `
-                INSERT INTO user_stats (user_id, match_id, goals, shots, assists, saves, interceptions, yellow_card, red_card)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            `;
-      const insertValues = [
-        id,
-        matchId,
-        goals,
-        shots,
-        assists,
-        saves,
-        interceptions,
-        yellowCards,
-        redCard,
-      ];
-      await pool.query(insertQuery, insertValues);
+      // Check if player id is valid
+      if (!id) {
+        console.error('Player ID is missing:', player);
+        continue; // Skip this player if ID is invalid
+      }
+
+      // Set default value of 0 if any field is null or empty
+      const goalValue = goals ?? 0;
+      const shotValue = shots ?? 0;
+      const assistValue = assists ?? 0;
+      const saveValue = saves ?? 0;
+      const interceptionValue = interceptions ?? 0;
+      const yellowCardValue = yellowCards ?? 0;
+      const redCardValue = redCard ?? 0;
+
+      // First, check if the stats for the player already exist for this match (for updating)
+      const checkPlayerStatsQuery = `
+        SELECT * FROM user_stats WHERE user_id = $1 AND match_id = $2
+      `;
+      const checkPlayerStatsValues = [id, matchId];
+      const checkResult = await pool.query(checkPlayerStatsQuery, checkPlayerStatsValues);
+
+      if (checkResult.rows.length > 0) {
+        // If stats already exist, update them
+        const updateQuery = `
+          UPDATE user_stats
+          SET goals = $1, shots = $2, assists = $3, saves = $4, interceptions = $5, 
+              yellow_card = $6, red_card = $7
+          WHERE user_id = $8 AND match_id = $9
+        `;
+        const updateValues = [
+          goalValue,
+          shotValue,
+          assistValue,
+          saveValue,
+          interceptionValue,
+          yellowCardValue,
+          redCardValue,
+          id,
+          matchId,
+        ];
+        await pool.query(updateQuery, updateValues);
+      } else {
+        // If no stats exist, insert new stats
+        const insertQuery = `
+          INSERT INTO user_stats (user_id, match_id, goals, shots, assists, saves, interceptions, yellow_card, red_card)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `;
+        const insertValues = [
+          id,
+          matchId,
+          goalValue,
+          shotValue,
+          assistValue,
+          saveValue,
+          interceptionValue,
+          yellowCardValue,
+          redCardValue,
+        ];
+        await pool.query(insertQuery, insertValues);
+      }
     }
     return leagueId;
   } catch (error) {
+    console.error("Error updating match:", error);
     throw error;
   }
 };

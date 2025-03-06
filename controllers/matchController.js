@@ -2,14 +2,18 @@ const matchService = require("../services/matchService");
 
 const updateMatch = async (req, res, next) => {
   try {
-    await matchService.updateMatch(req.user, req.body);
+    const data = req.body;
+    const leagueId = await matchService.updateMatch(req.user, data);
+
     res.status(200).json({
       message: "Match Updated Successfully",
+      leagueId: leagueId, 
     });
   } catch (e) {
     next(e);
   }
 };
+
 const getStats = async (req, res, next) => {
   try {
     const stats = await matchService.getStats(req.user);
