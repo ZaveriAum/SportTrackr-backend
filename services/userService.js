@@ -19,8 +19,8 @@ const getUserProfile = async (email) => {
               COALESCE(SUM(us.yellow_card), 0) AS total_yellow_cards,
               COALESCE(SUM(us.red_card), 0) AS total_red_cards
           FROM users u
-          JOIN teams t ON u.team_id = t.id
-          JOIN leagues l ON t.league_id = l.id
+          LEFT JOIN teams t ON u.team_id = t.id
+          LEFT JOIN leagues l ON t.league_id = l.id
           LEFT JOIN user_stats us ON us.user_id = u.id
           LEFT JOIN matches m ON us.match_id = m.id 
               AND (m.home_team_id = t.id OR m.away_team_id = t.id)
@@ -42,9 +42,9 @@ const getUserProfile = async (email) => {
           lastName: user.last_name,
           pictureUrl: pictureUrl,
           profileVisibility: user.profile_visibility,
-          teamName: user.teamname,
+          teamName: user.teamname || null,
           teamLogo: teamLogoUrl,
-          leagueName: user.leaguename,
+          leagueName: user.leaguename || null,
           leagueLogo: leagueLogoUrl,
           totalGoals: user.total_goals,
           totalShots: user.total_shots,
