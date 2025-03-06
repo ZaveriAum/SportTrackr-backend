@@ -56,32 +56,50 @@ const updateMatch = async (user, data) => {
 
 
 
-
 const getMatchDetails = async (matchId) => {
-  const matchDetailsQuery = `SELECT DISTINCT
+  const matchDetailsQuery = `
+    SELECT DISTINCT
         m.id AS match_id,
         u.id AS user_id,
         CONCAT(u.first_name, ' ', u.last_name) AS user_name,
         u.email AS user_email,
         t.name AS user_team_name,
+        t.logo_url AS team_logo,
         us.position_played,
+        SUM(us.goals) AS goals,
+        SUM(us.shots) AS shots,
+        SUM(us.assists) AS assists,
+        SUM(us.saves) AS saves,
+        SUM(us.interceptions) AS interceptions,
         us.number,
-        u.team_id  -- Add u.team_id to the SELECT list
-        FROM matches m
-        JOIN teams ht ON m.home_team_id = ht.id
-        JOIN teams at ON m.away_team_id = at.id
-        JOIN users u ON u.team_id IN (m.home_team_id, m.away_team_id)
-        JOIN teams t ON u.team_id = t.id
-        JOIN user_stats us ON u.id = us.user_id
-        WHERE m.id = $1
-        ORDER BY u.team_id, u.id;`;
-const matchDetails = await pool.query(matchDetailsQuery, [matchId]);
+        SUM(us.yellow_card) AS yellow_card,
+        SUM(us.red_card) AS red_card,
+        u.team_id
+    FROM matches m
+    JOIN teams ht ON m.home_team_id = ht.id
+    JOIN teams at ON m.away_team_id = at.id
+    JOIN users u ON u.team_id IN (m.home_team_id, m.away_team_id)
+    JOIN teams t ON u.team_id = t.id
+    LEFT JOIN user_stats us ON u.id = us.user_id
+    WHERE m.id = $1
+    GROUP BY m.id, u.id, u.first_name, u.last_name, u.email, t.name, t.logo_url, us.position_played, us.number, u.team_id
+    ORDER BY u.team_id, u.id;
+  `;
 
-if(matchDetails.rowCount < 1){
-  throw new AppError(BAD_REQUEST.MATCH_NOT_EXISTS,404)
-}
+  const matchDetails = await pool.query(matchDetailsQuery, [matchId]);
 
-return transformTeamData(matchDetails.rows)
+  if (matchDetails.rowCount < 1) {
+    throw new AppError(BAD_REQUEST.MATCH_NOT_EXISTS, 404);
+  }
+
+  const updatedRows = await Promise.all(
+    matchDetails.rows.map(async (row) => {
+      row.team_logo = await getObjectSignedUrl(row.team_logo || DEFAULT_TEAM_LOGO);
+      return row;
+    })
+  );
+
+  return transformTeamData(updatedRows);
 };
 
 const getMainStats = async (teamId) => {
@@ -453,6 +471,95 @@ const getMatchById = async (matchId) => {
   }
 };
 
+const getMatchDetailsWithPlayerStat = async (matchId, teamId) => {
+  // Update query with placeholders for matchId and teamId
+  const matchDetailsQuery = `
+    SELECT
+      m.id AS match_id,
+      u.id AS user_id,
+      t.name AS team_name,
+      home_team.name AS home_team_name,
+      away_team.name AS away_team_name,
+      CONCAT(u.first_name, ' ', u.last_name) AS user_name,
+      u.email AS user_email,
+      us.position_played,
+      SUM(us.goals) AS goals,
+      SUM(us.shots) AS shots,
+      SUM(us.assists) AS assists,
+      SUM(us.saves) AS saves,
+      SUM(us.interceptions) AS interceptions,
+      us.number,
+      SUM(us.yellow_card) AS yellow_card,
+      SUM(us.red_card) AS red_card,
+      u.team_id,
+      m.home_team_id,
+      m.away_team_id
+    FROM matches m
+    JOIN teams t ON t.id = $2
+    JOIN teams home_team ON home_team.id = m.home_team_id
+    JOIN teams away_team ON away_team.id = m.away_team_id
+    JOIN users u ON u.team_id = t.id
+    JOIN user_stats us ON u.id = us.user_id
+    WHERE m.id = $1 AND u.team_id IN (m.home_team_id, m.away_team_id)
+    GROUP BY m.id, u.id, t.name, home_team.name, away_team.name, CONCAT(u.first_name, ' ', u.last_name), u.email, us.position_played, us.number, u.team_id, m.home_team_id, m.away_team_id;
+  `;
+
+  try {
+    // Execute the query with the matchId and teamId as parameters
+    const matchDetails = await pool.query(matchDetailsQuery, [matchId, teamId]);
+
+    if (matchDetails.rowCount < 1) {
+      throw new AppError(BAD_REQUEST.MATCH_NOT_EXISTS, 404);  // Throw error if no results are found
+    }
+
+    // Organize the match data
+    const matchData = {
+      matchId: matchId,
+      homeTeam: {
+        id: matchDetails.rows[0].home_team_id,
+        name: matchDetails.rows[0].home_team_name,
+      },
+      awayTeam: {
+        id: matchDetails.rows[0].away_team_id,
+        name: matchDetails.rows[0].away_team_name,
+      },
+      team: {
+        id: teamId,
+        name: matchDetails.rows[0].team_name,
+        players: [],
+      },
+    };
+
+    // Populate the team players list from the result
+    matchDetails.rows.forEach((row) => {
+      matchData.team.players.push({
+        user_id: row.user_id,
+        user_name: row.user_name,
+        user_email: row.user_email,
+        position_played: row.position_played,
+        goals: row.goals || 0,  // Ensure defaults if any stats are null
+        shots: row.shots || 0,
+        assists: row.assists || 0,
+        saves: row.saves || 0,
+        interceptions: row.interceptions || 0,
+        number: row.number || null,
+        yellow_card: row.yellow_card || 0,
+        red_card: row.red_card || 0,
+      });
+    });
+
+    return matchData;  // Return the structured match data
+  } catch (error) {
+    // Handle unexpected errors
+    console.error("Error fetching match details:", error);
+    throw new AppError(BAD_REQUEST.FAILED_TO_FETCH, 500);  // Handle any database or logic errors
+  }
+};
+
+
+
+
+
 
 module.exports = {
   updateMatch,
@@ -460,5 +567,5 @@ module.exports = {
   uploadHighlights,
   getMatchDetails,
   getMatchesByLeagueId,
-  getMatchById
+  getMatchById,
 };

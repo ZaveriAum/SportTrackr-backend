@@ -6,40 +6,57 @@ const toCamelCase = (obj) => {
     }
     return result;
   };
-
   const transformTeamData = (data) => {
-    const result = {};
+    const matchResult = {
+      matchId: data[0]?.match_id || null,
+      homeTeam: {
+        id: null,
+        name: null,
+        logo: null,
+        players: [],
+      },
+      awayTeam: {
+        id: null,
+        name: null,
+        logo: null,
+        players: [],
+      },
+    };
   
     data.forEach((player) => {
-      const matchId = player.match_id;
-      if (!result[matchId]) {
-        result[matchId] = {
-          matchId: matchId,
-          homeTeam: {
-            id: null,
-            players: []
-          },
-          awayTeam: {
-            id: null, 
-            players: []
-          }
-        };
+      const teamKey = matchResult.homeTeam.id === null
+        ? 'homeTeam'
+        : player.team_id === matchResult.homeTeam.id
+        ? 'homeTeam'
+        : 'awayTeam';
+  
+      if (!matchResult[teamKey].id) {
+        matchResult[teamKey].id = player.team_id;
+        matchResult[teamKey].name = player.user_team_name;
+        matchResult[teamKey].logo = player.team_logo;  // Include team logo
       }
   
-      const team = player.team_id === 1 ? 'homeTeam' : 'awayTeam';
-      result[matchId][team].id = player.team_id; 
-      result[matchId][team].players.push({
+      matchResult[teamKey].players.push({
         user_id: player.user_id,
         user_name: player.user_name,
         user_email: player.user_email,
         position_played: player.position_played,
-        number: player.number
+        number: player.number,
+        stats: {
+          goals: player.goals || 0,
+          shots: player.shots || 0,
+          assists: player.assists || 0,
+          saves: player.saves || 0,
+          interceptions: player.interceptions || 0,
+          yellow_card: player.yellow_card || 0,
+          red_card: player.red_card || 0,
+        },
       });
     });
   
-    return Object.values(result);
+    return matchResult;
   };
-
+  
 
   module.exports = {
     toCamelCase,

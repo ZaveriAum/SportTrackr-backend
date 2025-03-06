@@ -21,5 +21,4 @@ router.post('/highlights', upload.fields([
   router.get("/:id",matchController.getMatchDetails)
   router.get("/league/:leagueId", matchController.getMatchesByLeagueId);
   router.get("/general/:matchId", matchController.getMatchById);
-
   module.exports = router;
