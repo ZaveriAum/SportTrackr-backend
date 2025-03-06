@@ -46,8 +46,9 @@ const updateUserPassword = async(req, res, next) => {
 
 const uploadProfilePhoto = async(req, res, next) => {
     try{
-        await userService.uploadProfilePhoto(req.user.email, req.file);
+        const profilePictureUrl = await userService.uploadProfilePhoto(req.user.email, req.file);
         res.status(200).json({
+            profilePictureUrl: profilePictureUrl,
             message: "Profile Photo Added"
         })
     }catch(e){

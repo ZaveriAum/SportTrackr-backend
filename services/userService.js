@@ -5,75 +5,59 @@ const {getObjectSignedUrl, uploadFile, deleteFile} = require('./s3Service')
 const bcrypt = require('bcrypt')
 
 const getUserProfile = async (email) => { 
-
-    try {
-
-        const result = await pool.query(`
+  try {
+      const result = await pool.query(`
           SELECT 
-          u.id, u.first_name , u.last_name, u.picture_url, u.profile_visibility,
-          t.id as teamid, t.name as teamName, t.logo_url teamLogoUrl,
-          l.league_name as leagueName, l.logo_url as leagueLogoUrl
+              u.id, u.first_name, u.last_name, u.picture_url, u.profile_visibility,
+              t.id AS teamid, t.name AS teamName, t.logo_url AS teamLogoUrl,
+              l.league_name AS leagueName, l.logo_url AS leagueLogoUrl,
+              COALESCE(SUM(us.goals), 0) AS total_goals,
+              COALESCE(SUM(us.shots), 0) AS total_shots,
+              COALESCE(SUM(us.assists), 0) AS total_assists,
+              COALESCE(SUM(us.saves), 0) AS total_saves,
+              COALESCE(SUM(us.interceptions), 0) AS total_interceptions,
+              COALESCE(SUM(us.yellow_card), 0) AS total_yellow_cards,
+              COALESCE(SUM(us.red_card), 0) AS total_red_cards
           FROM users u
-          JOIN teams t
-          ON u.team_id = t.id 
-          JOIN leagues l
-          ON t.league_id = l.id
-          WHERE email = $1`, [email]);
+          JOIN teams t ON u.team_id = t.id
+          JOIN leagues l ON t.league_id = l.id
+          LEFT JOIN user_stats us ON us.user_id = u.id
+          LEFT JOIN matches m ON us.match_id = m.id 
+              AND (m.home_team_id = t.id OR m.away_team_id = t.id)
+          WHERE u.email = $1
+          GROUP BY u.id, t.id, t.name, t.logo_url, l.league_name, l.logo_url;
+      `, [email]);
 
-        const user = result.rows[0];
-        if (!user) {
-            throw new AppError(BAD_REQUEST.USER_NOT_EXISTS, 400)
-        }
+      const user = result.rows[0];
+      if (!user) {
+          throw new AppError(BAD_REQUEST.USER_NOT_EXISTS, 400);
+      }
 
-        const pictureUrl = user.picture_url
-          ? await getObjectSignedUrl(user.picture_url)
-          : null
+      const pictureUrl = user.picture_url ? await getObjectSignedUrl(user.picture_url) : null;
+      const teamLogoUrl = user.teamlogourl ? await getObjectSignedUrl(user.teamlogourl) : null;
+      const leagueLogoUrl = user.leaguelogourl ? await getObjectSignedUrl(user.leaguelogourl) : null;
 
-        const teamLogoUrl = user.teamlogourl
-          ? await getObjectSignedUrl(user.teamlogourl)
-          : null
-
-        const leagueLogUrl = user.leaguelogourl
-          ? await getObjectSignedUrl(user.leaguelogourl)
-          : null
-
-          const userStats = await pool.query(`
-          SELECT 
-            SUM(us.goals) AS total_goals,
-            SUM(us.shots) AS total_shots,
-            SUM(us.assists) AS total_assists,
-            SUM(us.saves) AS total_saves,
-            SUM(us.interceptions) AS total_interceptions,
-            SUM(us.yellow_card) AS total_yellow_cards,
-            SUM(us.red_card) AS total_red_cards
-          FROM user_stats us
-          JOIN matches m ON us.match_id = m.id
-          WHERE (m.home_team_id = $1 OR m.away_team_id = $1)
-          AND us.user_id = $2
-          GROUP BY us.user_id;
-          `, [user.teamid, user.id])
-        
-        return {
-            firstName: user.first_name,
-            lastName: user.last_name,
-            pictureUrl: pictureUrl,
-            profileVisibility: user.profile_visibility,
-            teamName: user.teamname,
-            teamLogo: teamLogoUrl,
-            leagueName: user.leaguename,
-            leagueLogo: leagueLogUrl,
-            totalGoals: userStats.rows[0].total_goals,
-            totalShots: userStats.rows[0].total_shots,
-            totalAssists: userStats.rows[0].total_assists,
-            totalSaves: userStats.rows[0].total_saves,
-            totalInterceptionL: userStats.rows[0].total_interceptions,
-            totalYellowCards: userStats.rows[0].total_yellow_cards,
-            totalRedCards: userStats.rows[0].total_red_cards
-        }
-    } catch (e) {
-        throw new AppError('Unknown Error', 500)
-    }
-}
+      return {
+          firstName: user.first_name,
+          lastName: user.last_name,
+          pictureUrl: pictureUrl,
+          profileVisibility: user.profile_visibility,
+          teamName: user.teamname,
+          teamLogo: teamLogoUrl,
+          leagueName: user.leaguename,
+          leagueLogo: leagueLogoUrl,
+          totalGoals: user.total_goals,
+          totalShots: user.total_shots,
+          totalAssists: user.total_assists,
+          totalSaves: user.total_saves,
+          totalInterceptions: user.total_interceptions,
+          totalYellowCards: user.total_yellow_cards,
+          totalRedCards: user.total_red_cards
+      };
+  } catch (e) {
+      throw new AppError('Unknown Error', 500);
+  }
+};
 
 const getUserById = async (id) => {
     try{
@@ -165,6 +149,9 @@ const uploadProfilePhoto = async (email, file) => {
       key,
       email,
     ]);
+
+    return await getObjectSignedUrl(key);
+    
   } catch (e) {
     throw new AppError(
       e.message || "Unable to upload Profile Photo",
