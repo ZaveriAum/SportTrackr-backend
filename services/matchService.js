@@ -33,36 +33,29 @@ const updateMatch = async (user, data) => {
     // Loop through each player and insert stats
     for (const player of players) {
       const {
-        id,
-        goals,
-        shots,
-        assists,
-        saves,
-        interceptions,
-        yellowCards,
-        redCard,
+        user_id,
+        stats: { goals, shots, assists, saves, interceptions, yellow_card, red_card },
       } = player;
 
       // Check if player id is valid
-      if (!id) {
+      if (!user_id) {
         console.error('Player ID is missing:', player);
         continue; // Skip this player if ID is invalid
       }
 
-      // Set default value of 0 if any field is null or empty
-      const goalValue = goals ?? 0;
-      const shotValue = shots ?? 0;
-      const assistValue = assists ?? 0;
-      const saveValue = saves ?? 0;
-      const interceptionValue = interceptions ?? 0;
-      const yellowCardValue = yellowCards ?? 0;
-      const redCardValue = redCard ?? 0;
+      const goalValue = parseInt(goals, 10) || 0;
+      const shotValue = parseInt(shots, 10) || 0;
+      const assistValue = parseInt(assists, 10) || 0;
+      const saveValue = parseInt(saves, 10) || 0;
+      const interceptionValue = parseInt(interceptions, 10) || 0;
+      const yellowCardValue = parseInt(yellow_card, 10) || 0;
+      const redCardValue = parseInt(red_card, 10) || 0;
 
       // First, check if the stats for the player already exist for this match (for updating)
       const checkPlayerStatsQuery = `
         SELECT * FROM user_stats WHERE user_id = $1 AND match_id = $2
       `;
-      const checkPlayerStatsValues = [id, matchId];
+      const checkPlayerStatsValues = [user_id, matchId];
       const checkResult = await pool.query(checkPlayerStatsQuery, checkPlayerStatsValues);
 
       if (checkResult.rows.length > 0) {
@@ -81,7 +74,7 @@ const updateMatch = async (user, data) => {
           interceptionValue,
           yellowCardValue,
           redCardValue,
-          id,
+          user_id, 
           matchId,
         ];
         await pool.query(updateQuery, updateValues);
@@ -92,7 +85,7 @@ const updateMatch = async (user, data) => {
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         `;
         const insertValues = [
-          id,
+          user_id,
           matchId,
           goalValue,
           shotValue,
