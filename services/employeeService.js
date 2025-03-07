@@ -156,7 +156,7 @@ const employees = Promise.all(filteredEmployees.rows.map(async (employee) => {
     fullName: employee.fullName,
     league: employee.league,
     leagueRole: employee.leagueRole,
-    signedUrl: employee.pictureUrl ? await getObjectSignedUrl(employee.pictureUrl) : await getObjectSignedUrl(DEFAULT_PROFILE_PICTURE),
+    signedUrl: employee.pictureUrl ? await getObjectSignedUrl(employee.pictureUrl) : null,
   };
 }));
 

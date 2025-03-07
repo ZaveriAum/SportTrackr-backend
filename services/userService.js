@@ -65,7 +65,7 @@ const getUserById = async (id) => {
         
         const pictureUrl = user.picture_url
         ? await getObjectSignedUrl(user.picture_url)
-        : await getObjectSignedUrl(DEFAULT_PROFILE_PICTURE);
+        : null
         
         return {
             firstName: user.rows[0].first_name,
@@ -215,7 +215,7 @@ const getFilteredUsers = async (user, leagueId, teamId, name) => {
             teamName: user.team,
             signedUrl: user.pictureUrl
               ? await getObjectSignedUrl(user.pictureUrl)
-              : await getObjectSignedUrl(DEFAULT_PROFILE_PICTURE),
+              : null
           };
         })
       );

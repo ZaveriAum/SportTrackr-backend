@@ -206,10 +206,7 @@ const updateTeam = async (userEmail, data, file, teamId) => {
   `;
 
     const updatedTeam = await pool.query(updateQuery, values);
-
-    updatedTeam.rows[0].logoUrl = await getObjectSignedUrl(
-      updatedTeam.rows[0].logo_url
-    );
+    updatedTeam.rows[0].logoUrl = updatedTeam.rows[0].logoUrl ? getObjectSignedUrl(updatedTeam.rows[0].logoUrl) : null;
 
     return toCamelCase(updatedTeam.rows[0]);
   } catch (e) {
@@ -263,7 +260,7 @@ WHERE
 
     const teams = await Promise.all(
       result.rows.map(async (team) => {
-        const signedUrl = await getObjectSignedUrl(team.logoUrl);
+        const signedUrl = team.logoUrl ? await getObjectSignedUrl(team.logoUrl) : null;
         const { logoUrl, ...teamWithoutLogoUrl } = team;
         return { ...teamWithoutLogoUrl, signedUrl };
       })
@@ -319,7 +316,7 @@ const getTeamById = async (teamId) => {
     }
 
     const team = result.rows[0];
-    const signedUrl = await getObjectSignedUrl(team.logoUrl);
+    const signedUrl = team.logoUrl ? await getObjectSignedUrl(team.logoUrl) : null;
     const { logoUrl, ...teamWithoutLogoUrl } = team;
     return { ...teamWithoutLogoUrl, signedUrl };
 
