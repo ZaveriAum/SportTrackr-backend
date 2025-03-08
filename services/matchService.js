@@ -537,18 +537,14 @@ const getMatchById = async (matchId) => {
 
 
 const updateForfeited = async (matchId, forfeitedBy) => {
-  // Validate the forfeitedBy value
   if (![1, 2, -1].includes(forfeitedBy)) {
     throw new Error("Invalid forfeitedBy value. It must be 1, 2, or -1.");
   }
 
-  const client = await pool.connect();
   try {
-    await client.query("BEGIN"); // Start a transaction
 
-    // Check if the match exists
     const checkMatchQuery = "SELECT * FROM matches WHERE id = $1";
-    const matchResult = await client.query(checkMatchQuery, [matchId]);
+    const matchResult = await pool.query(checkMatchQuery, [matchId]);
 
     if (matchResult.rows.length === 0) {
       throw new Error("Match not found");
@@ -567,17 +563,122 @@ const updateForfeited = async (matchId, forfeitedBy) => {
       throw new Error("Failed to update match forfeited status");
     }
 
-    await client.query("COMMIT"); // Commit the transaction
+    await pool.query("COMMIT"); 
 
-    return updateResult.rows[0]; // Return the updated match data
+    return updateResult.rows[0]; 
   } catch (error) {
-    await client.query("ROLLBACK"); // Rollback the transaction if an error occurs
+    await pool.query("ROLLBACK"); 
     console.error("Error during updateForfeited:", error);
     throw new Error("Failed to update match forfeited status");
   } finally {
-    client.release(); // Release the client back to the pool
+    pool.release(); 
   }
 };
+
+const createMatch = async (homeTeamId, awayTeamId, matchTime, refereeId, statisticianId, leagueId) => {
+  try {
+    if (!homeTeamId || !awayTeamId || !matchTime || !refereeId || !statisticianId || !leagueId) {
+      throw new Error("All parameters are required: homeTeamId, awayTeamId, matchTime, refereeId, statisticianId, leagueId.");
+    }
+
+    const forfeited = '-1';
+
+    const matchResult = await pool.query(
+      "INSERT INTO public.matches (home_team_id, away_team_id, match_time, forfeited) VALUES ($1, $2, $3, $4) RETURNING id",
+      [homeTeamId, awayTeamId, matchTime, forfeited]
+    );
+    const matchId = matchResult.rows[0].id;
+
+    const checkAndRegisterLeagueEmp = async (userId, leagueId) => {
+      const result = await pool.query(
+        "SELECT id FROM public.league_emp WHERE user_id = $1 AND league_id = $2",
+        [userId, leagueId]
+      );
+
+      if (result.rows.length === 0) {
+        console.log(`User ${userId} is not registered in league ${leagueId}. Registering now...`);
+        const insertResult = await pool.query(
+          "INSERT INTO public.league_emp (user_id, league_id) VALUES ($1, $2) RETURNING id",
+          [userId, leagueId]
+        );
+        return insertResult.rows[0].id;
+      }
+
+      return result.rows[0].id;
+    };
+
+    const refereeLeagueEmpId = await checkAndRegisterLeagueEmp(refereeId, leagueId);
+    const statisticianLeagueEmpId = await checkAndRegisterLeagueEmp(statisticianId, leagueId);
+
+    // Function to assign role if not assigned
+    const assignRoleIfNeeded = async (employeeId, roleId) => {
+      const existingRole = await pool.query(
+        "SELECT * FROM public.employee_roles WHERE employee_id = $1 AND role_id = $2",
+        [employeeId, roleId]
+      );
+
+      if (existingRole.rows.length === 0) {
+        console.log(`Assigning role ${roleId} to employee ${employeeId}`);
+        await pool.query(
+          "INSERT INTO public.employee_roles (role_id, employee_id) VALUES ($1, $2)",
+          [roleId, employeeId]
+        );
+      }
+    };
+
+    // Assign roles (1 = Referee, 2 = Statistician)
+    await assignRoleIfNeeded(refereeLeagueEmpId, 1);
+    await assignRoleIfNeeded(statisticianLeagueEmpId, 2);
+
+    return { matchId, message: "Match and employee assignments created successfully!" };
+  } catch (error) {
+    console.error("Service Error:", error.message);
+    throw new Error("Error creating match and assigning employees in the database");
+  }
+};
+
+
+const getDataCreateMatch = async (leagueId) => {
+  try {
+    const employeeQuery = `
+      SELECT CONCAT(u.first_name, ' ', u.last_name) AS full_name, le.id as emp_id
+      FROM users u
+      JOIN league_emp le ON le.user_id = u.id
+      WHERE le.league_id = $1
+    `;
+
+    const teamsQuery = `
+      SELECT t.name, t.id
+      FROM teams t
+      WHERE t.league_id = $1
+    `;
+
+    const leagueQuery=`SELECT league_name from leagues l where id=$1`
+
+    // Execute both queries and get the results
+    const employeesResult = await pool.query(employeeQuery, [leagueId]);
+    const teamsResult = await pool.query(teamsQuery, [leagueId]);
+    const leagueResult = await pool.query(leagueQuery, [leagueId]);
+
+    
+
+    // Check if either query returns empty results
+    if (employeesResult.rows.length === 0 || teamsResult.rows.length === 0 ||  leagueResult.rows.length === 0 ) {
+      throw new Error("No employees or teams found for the provided leagueId.");
+    }
+
+    return {
+      employees: employeesResult.rows,
+      teams: teamsResult.rows,
+      league: leagueResult.rows
+    };
+  } catch (error) {
+    console.error("Service Error:", error.message);
+    throw error;
+  }
+};
+
+
 
 module.exports = {
   updateMatch,
@@ -586,5 +687,7 @@ module.exports = {
   getMatchDetails,
   getMatchesByLeagueId,
   getMatchById,
-  updateForfeited
+  updateForfeited,
+  createMatch,
+  getDataCreateMatch
 };

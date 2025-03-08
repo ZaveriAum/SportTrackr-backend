@@ -18,9 +18,11 @@ router.post('/highlights', upload.fields([
     { name: 'highlights[1][video]', maxCount: 1 },  
     { name: 'highlights[2][video]', maxCount: 1 }   
   ]), matchController.uploadHighlights);
-  router.get("/:id",matchController.getMatchDetails)
-  router.get("/league/:leagueId", matchController.getMatchesByLeagueId);
-  router.get("/general/:matchId", matchController.getMatchById);
-  router.put('/matches/:matchId/forfeit', matchController.updateForfeited);
+router.get("/:id",matchController.getMatchDetails)
+router.get("/league/:leagueId", matchController.getMatchesByLeagueId);
+router.get("/general/:matchId", matchController.getMatchById);
+router.put('/matches/:matchId/forfeit', matchController.updateForfeited);
+router.post('/createMatches', matchController.createMatch);
+router.get('/createMatches/:leagueId', matchController.getDataCreateMatch);
 
   module.exports = router;

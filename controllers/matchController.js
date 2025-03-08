@@ -83,8 +83,51 @@ const updateForfeited = async (req, res) => {
     res.status(500).json({ error: error.message || "Error updating match forfeited status" });
   }
 };
+const createMatch = async (req, res) => {
+  try {
+    const {
+      homeTeamId,
+      awayTeamId,
+      matchTime,
+      refereeId,
+      statisticianId,
+      leagueId
+    } = req.body;
+
+    // Validate that all required fields are present
+    if (!homeTeamId || !awayTeamId || !matchTime || !refereeId || !statisticianId || !leagueId) {
+      return res.status(400).json({ error: "All parameters are required: homeTeamId, awayTeamId, matchTime, refereeId, statisticianId, leagueId." });
+    }
+
+    console.log("Received match creation request with data:", req.body);
+
+    const newMatch = await matchService.createMatch(
+      homeTeamId,
+      awayTeamId,
+      matchTime,
+      refereeId,
+      statisticianId,
+      leagueId
+    );
+
+    res.status(201).json(newMatch);
+  } catch (error) {
+    console.error("Controller Error:", error.message);
+    res.status(500).json({ error: "Error creating match. Details: " + error.message });
+  }
+};
 
 
+const getDataCreateMatch = async (req, res) => {
+  try {
+    const { leagueId } = req.params;
+    const newMatch = await matchService.getDataCreateMatch(leagueId);
+    res.json(newMatch);
+  } catch (error) {
+    console.error("Controller Error:", error.message);
+    res.status(500).json({ error: "Error creating matches" });
+  }
+};
 module.exports = {
   updateMatch,
   getStats,
@@ -92,5 +135,7 @@ module.exports = {
   getMatchDetails,
   getMatchesByLeagueId,
   getMatchById,
-  updateForfeited
+  updateForfeited,
+  createMatch,
+  getDataCreateMatch
 };
