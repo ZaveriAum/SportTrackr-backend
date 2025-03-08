@@ -76,13 +76,19 @@ const updateForfeited = async (req, res) => {
     const { matchId } = req.params;
     const { forfeitedBy } = req.body; 
 
+    if (!forfeitedBy) {
+      return res.status(400).json({ error: "forfeitedBy is required." });
+    }
+
     const matchData = await matchService.updateForfeited(matchId, forfeitedBy);
-    res.json(matchData);
+    res.json({ message: "Match forfeited status updated", match: matchData });
   } catch (error) {
     console.error("Controller Error:", error.message);
     res.status(500).json({ error: error.message || "Error updating match forfeited status" });
   }
 };
+
+
 const createMatch = async (req, res) => {
   try {
     const {
@@ -94,7 +100,6 @@ const createMatch = async (req, res) => {
       leagueId
     } = req.body;
 
-    // Validate that all required fields are present
     if (!homeTeamId || !awayTeamId || !matchTime || !refereeId || !statisticianId || !leagueId) {
       return res.status(400).json({ error: "All parameters are required: homeTeamId, awayTeamId, matchTime, refereeId, statisticianId, leagueId." });
     }
