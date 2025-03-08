@@ -111,7 +111,12 @@ const login = async (body) => {
             }
 
             const tokens = await generateTokens(user);
-            const roles = await findUserRoles(email);
+
+            // Get user roles and league roles
+            const userRoles = await findUserRoles(email);
+            const leagueRoles = await findLeagueRoles(email);
+
+            const roles = [...userRoles, ...leagueRoles];
             return {tokens,roles}
 
         } else {

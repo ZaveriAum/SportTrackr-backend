@@ -8,7 +8,7 @@ const updateMatch = async (user, data) => {
   try {
     const { matchId, homeTeam, awayTeam } = data;
 
-    // Validate if both teams exist
+    //  if both teams exist
     const homeTeamQuery = "SELECT league_id FROM teams WHERE id = $1";
     const homeTeamValues = [homeTeam.id];
     const homeTeamResult = await pool.query(homeTeamQuery, homeTeamValues);
@@ -18,7 +18,6 @@ const updateMatch = async (user, data) => {
     }
     const leagueId = homeTeamResult.rows[0].league_id;
 
-    // Validate away team
     const awayTeamQuery = "SELECT league_id FROM teams WHERE id = $1";
     const awayTeamValues = [awayTeam.id];
     const awayTeamResult = await pool.query(awayTeamQuery, awayTeamValues);
@@ -27,17 +26,16 @@ const updateMatch = async (user, data) => {
       throw new AppError(BAD_REQUEST.TEAM_NOT_EXISTS, 404);
     }
 
-    // Combine both teams' players
+    // both teams' players
     const players = [...homeTeam.players, ...awayTeam.players];
 
-    // Loop through each player and insert stats
+    // through each player and insert stats
     for (const player of players) {
       const {
         user_id,
         stats: { goals, shots, assists, saves, interceptions, yellow_card, red_card },
       } = player;
 
-      // Check if player id is valid
       if (!user_id) {
         console.error('Player ID is missing:', player);
         continue; // Skip this player if ID is invalid
@@ -51,7 +49,6 @@ const updateMatch = async (user, data) => {
       const yellowCardValue = parseInt(yellow_card, 10) || 0;
       const redCardValue = parseInt(red_card, 10) || 0;
 
-      // First, check if the stats for the player already exist for this match (for updating)
       const checkPlayerStatsQuery = `
         SELECT * FROM user_stats WHERE user_id = $1 AND match_id = $2
       `;
@@ -59,7 +56,6 @@ const updateMatch = async (user, data) => {
       const checkResult = await pool.query(checkPlayerStatsQuery, checkPlayerStatsValues);
 
       if (checkResult.rows.length > 0) {
-        // If stats already exist, update them
         const updateQuery = `
           UPDATE user_stats
           SET goals = $1, shots = $2, assists = $3, saves = $4, interceptions = $5, 
