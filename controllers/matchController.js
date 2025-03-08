@@ -71,6 +71,18 @@ const getMatchById = async (req, res) => {
   }
 };
 
+const updateForfeited = async (req, res) => {
+  try {
+    const { matchId } = req.params;
+    const { forfeitedBy } = req.body; 
+
+    const matchData = await matchService.updateForfeited(matchId, forfeitedBy);
+    res.json(matchData);
+  } catch (error) {
+    console.error("Controller Error:", error.message);
+    res.status(500).json({ error: error.message || "Error updating match forfeited status" });
+  }
+};
 
 
 module.exports = {
@@ -79,5 +91,6 @@ module.exports = {
   uploadHighlights,
   getMatchDetails,
   getMatchesByLeagueId,
-  getMatchById
+  getMatchById,
+  updateForfeited
 };

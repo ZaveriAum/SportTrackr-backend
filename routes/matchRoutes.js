@@ -21,4 +21,6 @@ router.post('/highlights', upload.fields([
   router.get("/:id",matchController.getMatchDetails)
   router.get("/league/:leagueId", matchController.getMatchesByLeagueId);
   router.get("/general/:matchId", matchController.getMatchById);
+  router.put('/matches/:matchId/forfeit', matchController.updateForfeited);
+
   module.exports = router;

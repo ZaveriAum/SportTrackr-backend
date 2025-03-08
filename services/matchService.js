@@ -536,6 +536,48 @@ const getMatchById = async (matchId) => {
 };
 
 
+const updateForfeited = async (matchId, forfeitedBy) => {
+  // Validate the forfeitedBy value
+  if (![1, 2, -1].includes(forfeitedBy)) {
+    throw new Error("Invalid forfeitedBy value. It must be 1, 2, or -1.");
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN"); // Start a transaction
+
+    // Check if the match exists
+    const checkMatchQuery = "SELECT * FROM matches WHERE id = $1";
+    const matchResult = await client.query(checkMatchQuery, [matchId]);
+
+    if (matchResult.rows.length === 0) {
+      throw new Error("Match not found");
+    }
+
+    // Update the match's forfeited status
+    const updateQuery = `
+      UPDATE matches
+      SET forfeited = $1
+      WHERE id = $2
+      RETURNING *
+    `;
+    const updateResult = await client.query(updateQuery, [forfeitedBy, matchId]);
+
+    if (updateResult.rows.length === 0) {
+      throw new Error("Failed to update match forfeited status");
+    }
+
+    await client.query("COMMIT"); // Commit the transaction
+
+    return updateResult.rows[0]; // Return the updated match data
+  } catch (error) {
+    await client.query("ROLLBACK"); // Rollback the transaction if an error occurs
+    console.error("Error during updateForfeited:", error);
+    throw new Error("Failed to update match forfeited status");
+  } finally {
+    client.release(); // Release the client back to the pool
+  }
+};
 
 module.exports = {
   updateMatch,
@@ -544,4 +586,5 @@ module.exports = {
   getMatchDetails,
   getMatchesByLeagueId,
   getMatchById,
+  updateForfeited
 };
