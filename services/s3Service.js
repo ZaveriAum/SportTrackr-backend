@@ -27,25 +27,32 @@ const uploadFile = async (fileBuffer, fileName, mimeType, folder) => {
 
 const deleteFile = async (filename) => {
 
-    const command = new DeleteObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: filename,
-    })
+    try{
+        const command = new DeleteObjectCommand({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: filename,
+        })
 
-    return s3Client.send(command);
-
+        return s3Client.send(command);
+    }catch(e){
+        throw new AppError('Internal Server Error', 500)
+    }
 }
 
 const getObjectSignedUrl = async (key)=> {
-  
-    const command = new GetObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: key
-      });
-    const seconds = 60
-    const url = await getSignedUrl(s3Client, command);
-  
-    return url
+    try{
+    
+        const command = new GetObjectCommand({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: key
+        });
+        const seconds = 60
+        const url = await getSignedUrl(s3Client, command);
+    
+        return url
+    }catch(e){
+        throw new AppError('Internal Server Error', 500)
+    }
 }
 
 module.exports = {

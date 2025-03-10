@@ -10,7 +10,6 @@ const { sendTeamDeletionToOwner, sendRefundConfirmationToOwner, sendTeamDeletion
 
 const getAllLeagues = async () => {
   try {
-    console.log("Here")
     let response = await pool.query(
       "SELECT id, league_name, start_time, logo_url from leagues"
     );

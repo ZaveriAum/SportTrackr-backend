@@ -18,8 +18,8 @@ const createConnectAccountLink = async (user) => {
 
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: `${process.env.FRONTEND_URL}`,
-      return_url: `${process.env.FRONTEND_URL}`,
+      refresh_url: `${process.env.FRONTEND_URL}/fail-onboarding`,
+      return_url: `${process.env.FRONTEND_URL}/success-onboard-step1`,
       type: "account_onboarding",
     });
 
@@ -33,13 +33,10 @@ const createConnectAccountLink = async (user) => {
 
 const getExpressDashboard = async (email) => {
   try {
-    console.log(email)
     const query = await pool.query('SELECT account_id FROM users WHERE email=$1 and owner_status=$2', [email, true])
-    console.log(query)
     const loginLink = await stripe.accounts.createLoginLink(query.rows[0].account_id);
     return loginLink.url;
   } catch (e) {
-    console.log(e)
     throw new AppError('Dashboard Unavailable', 400)
   }
 };

@@ -15,6 +15,7 @@ router.use(authenticateToken)
 
 router.get('', userController.getUserProfile)
 
+router.get('/filtered', userController.getFilteredUsers);
 router.get('/:id', userController.getUserById)
 
 router.put('/update',[
@@ -43,5 +44,7 @@ router.put('/update-pass',[
 ],validator, userController.updateUserPassword)
 
 router.post('/upload-photo', upload.single('file'), userController.uploadProfilePhoto)
+
+
 
 module.exports = router

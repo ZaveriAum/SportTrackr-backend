@@ -22,8 +22,8 @@ const checkoutSession = async(account_id, teamId, teamName, leaguePrice) => {
                 }
             },
             mode: 'payment',
-            success_url: `${process.env.FRONTEND_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.FRONTEND_URL}/payment-failed`,
+            success_url: `${process.env.FRONTEND_URL}/success-team-creation`,
+            cancel_url: `${process.env.FRONTEND_URL}/fail-onboarding`,
             
             payment_method_types: ['card'],
             
@@ -84,7 +84,6 @@ const refund = async(intentId, amount, teamDeletion) => {
         });
 
     } catch (e) {
-        console.log(e)
         throw new AppError("Unable to Process the Refund", 500);
     }
 }
