@@ -27,7 +27,7 @@ const getAllLeagues = async () => {
 
         const url = league.logo_url
             ? await getObjectSignedUrl(league.logo_url)
-            : await getObjectSignedUrl(DEFAULT_LEAGUE_LOGO)
+            : null
         
         league.logo_url = url
         return league;
@@ -68,7 +68,7 @@ const getLeague = async (id) => {
     const league = query.rows[0];
     const url = league.logo_url
             ? await getObjectSignedUrl(league.logo_url)
-            : await getObjectSignedUrl(DEFAULT_LEAGUE_LOGO)
+            : null
         
     league.logo_url = url
     return toCamelCase(league) ;

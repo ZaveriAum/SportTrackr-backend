@@ -5,34 +5,67 @@ const {getObjectSignedUrl, uploadFile, deleteFile} = require('./s3Service')
 const bcrypt = require('bcrypt')
 
 const getUserProfile = async (email) => { 
+  try {
+      const result = await pool.query(`
+          SELECT 
+              u.id, u.first_name, u.last_name, u.picture_url, u.profile_visibility,
+              t.id AS teamid, t.name AS teamName, t.logo_url AS teamLogoUrl,
+              l.league_name AS leagueName, l.logo_url AS leagueLogoUrl,
+              COALESCE(SUM(us.goals), 0) AS total_goals,
+              COALESCE(SUM(us.shots), 0) AS total_shots,
+              COALESCE(SUM(us.assists), 0) AS total_assists,
+              COALESCE(SUM(us.saves), 0) AS total_saves,
+              COALESCE(SUM(us.interceptions), 0) AS total_interceptions,
+              COALESCE(SUM(us.yellow_card), 0) AS total_yellow_cards,
+              COALESCE(SUM(us.red_card), 0) AS total_red_cards
+          FROM users u
+          LEFT JOIN teams t ON u.team_id = t.id
+          LEFT JOIN leagues l ON t.league_id = l.id
+          LEFT JOIN user_stats us ON us.user_id = u.id
+          LEFT JOIN matches m ON us.match_id = m.id 
+              AND (m.home_team_id = t.id OR m.away_team_id = t.id)
+          WHERE u.email = $1
+          GROUP BY u.id, t.id, t.name, t.logo_url, l.league_name, l.logo_url;
+      `, [email]);
 
-    try {
-        const result = await pool.query('SELECT first_name, last_name, picture_url FROM users WHERE email = $1', [email]);
-        const user = result.rows[0];
-        if (!user) {
-            throw new AppError(BAD_REQUEST.USER_NOT_EXISTS, 400)
-        }
+      const user = result.rows[0];
+      if (!user) {
+          throw new AppError(BAD_REQUEST.USER_NOT_EXISTS, 400);
+      }
 
-        const pictureUrl = user.picture_url
-            ? await getObjectSignedUrl(user.picture_url)
-            : await getObjectSignedUrl(DEFAULT_PROFILE_PICTURE);
+      const pictureUrl = user.picture_url ? await getObjectSignedUrl(user.picture_url) : null;
+      const teamLogoUrl = user.teamlogourl ? await getObjectSignedUrl(user.teamlogourl) : null;
+      const leagueLogoUrl = user.leaguelogourl ? await getObjectSignedUrl(user.leaguelogourl) : null;
 
-        return {
-            first_name: user.first_name,
-            last_name: user.last_name,
-            picture_url: pictureUrl,
-        }
-    } catch (e) {
-        throw new AppError('Unknown Error', 500)
-    }
-}
+      return {
+          firstName: user.first_name,
+          lastName: user.last_name,
+          pictureUrl: pictureUrl,
+          profileVisibility: user.profile_visibility,
+          teamName: user.teamname || null,
+          teamLogo: teamLogoUrl,
+          leagueName: user.leaguename || null,
+          leagueLogo: leagueLogoUrl,
+          totalGoals: user.total_goals,
+          totalShots: user.total_shots,
+          totalAssists: user.total_assists,
+          totalSaves: user.total_saves,
+          totalInterceptions: user.total_interceptions,
+          totalYellowCards: user.total_yellow_cards,
+          totalRedCards: user.total_red_cards
+      };
+  } catch (e) {
+      throw new AppError('Unknown Error', 500);
+  }
+};
+
 const getUserById = async (id) => {
     try{
         const user = await pool.query('SELECT first_name, last_name, picture_url FROM users WHERE id=$1', [id]);
         
         const pictureUrl = user.picture_url
         ? await getObjectSignedUrl(user.picture_url)
-        : await getObjectSignedUrl(DEFAULT_PROFILE_PICTURE);
+        : null
         
         return {
             firstName: user.rows[0].first_name,
@@ -116,6 +149,9 @@ const uploadProfilePhoto = async (email, file) => {
       key,
       email,
     ]);
+
+    return await getObjectSignedUrl(key);
+    
   } catch (e) {
     throw new AppError(
       e.message || "Unable to upload Profile Photo",
@@ -179,18 +215,27 @@ const getFilteredUsers = async (user, leagueId, teamId, name) => {
             teamName: user.team,
             signedUrl: user.pictureUrl
               ? await getObjectSignedUrl(user.pictureUrl)
-              : await getObjectSignedUrl(DEFAULT_PROFILE_PICTURE),
+              : null
           };
         })
       );
   
       return users;
     } catch (error) {
-
-      throw new Error("Failed to fetch filtered users");
+      throw new AppError("Failed to fetch filtered users", 400);
     }
   };
   
+  const toggleProfile = async (email) => {
+    try{
+      const user = await pool.query('Select profile_visibility FROM users WHERE email = $1', [email])
+      await pool.query(`UPDATE users
+                        SET profile_visibility=$1
+	                      WHERE email = $2`,[ !user.rows[0].profile_visibility, email])
+    }catch(e){
+      throw new AppError(e.message || "Unknown Error", e.statusCode || 400)
+    }
+  }
 
 module.exports = {
     getUserProfile,
@@ -198,5 +243,6 @@ module.exports = {
     updateUserProfile,
     updateUserPassword,
     uploadProfilePhoto,
-    getFilteredUsers
+    getFilteredUsers,
+    toggleProfile
 }

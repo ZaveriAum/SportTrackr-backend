@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 16.3
--- Dumped by pg_dump version 16.3
+-- Dumped from database version 16.6
+-- Dumped by pg_dump version 16.6
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -61,6 +61,19 @@ CREATE TYPE public.color_enum AS ENUM (
 
 
 ALTER TYPE public.color_enum OWNER TO postgres;
+
+--
+-- Name: forfeit_enum; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.forfeit_enum AS ENUM (
+    '-1',
+    '1',
+    '2'
+);
+
+
+ALTER TYPE public.forfeit_enum OWNER TO postgres;
 
 SET default_tablespace = '';
 
@@ -228,7 +241,7 @@ CREATE TABLE public.matches (
     home_team_id integer NOT NULL,
     away_team_id integer NOT NULL,
     match_time timestamp without time zone NOT NULL,
-    forfeited boolean DEFAULT false
+    forfeited public.forfeit_enum DEFAULT '-1'::public.forfeit_enum
 );
 
 
@@ -435,7 +448,10 @@ CREATE TABLE public.users (
     created_at timestamp without time zone DEFAULT now(),
     team_id integer,
     account_id text,
-    owner_status boolean DEFAULT false
+    owner_status boolean DEFAULT false,
+    profile_visibility boolean DEFAULT true,
+    agreed_terms boolean DEFAULT false,
+    terms_version double precision DEFAULT 1.0
 );
 
 
@@ -579,10 +595,10 @@ COPY public.league_roles (id, role_name) FROM stdin;
 --
 
 COPY public.leagues (id, organizer_id, team_starter_size, price, max_team_size, game_amount, start_time, end_time, league_name, logo_url, description) FROM stdin;
-1	1	3	1000	10	20	2025-01-20 15:45:00	2025-03-20 15:45:00	Bundesliga	league-logos/6bf9526b-555c-41a8-9372-731673a4fe6d-Bundesliga	\N
 2	1	6	1000	10	20	2026-01-20 15:45:00	2026-03-20 15:45:00	La Liga	league-logos/f64fbea5-3475-42be-951f-18f2f35762b8-La Liga	\N
 3	1	6	1000	10	16	2025-01-26 12:45:00	2026-03-20 17:45:00	Premier League	league-logos/6110b15a-0c15-4efd-a0b5-a952cff3b06e-Premier League	\N
 4	1	10	2000	20	26	2025-01-26 22:45:00	2025-02-20 19:45:00	Seria A	league-logos/afa1171b-382d-47d8-996b-caafe842dc68-Seria A	\N
+1	1	3	1000	10	20	2025-01-20 15:45:00	2025-03-20 15:45:00	Bundesliga	league-logos/6bf9526b-555c-41a8-9372-731673a4fe6d-Bundesliga	\N
 \.
 
 
@@ -591,11 +607,11 @@ COPY public.leagues (id, organizer_id, team_starter_size, price, max_team_size, 
 --
 
 COPY public.matches (id, home_team_id, away_team_id, match_time, forfeited) FROM stdin;
-1	1	2	2025-02-15 18:00:00	f
-2	1	3	2025-02-16 20:30:00	f
-3	1	4	2025-02-17 17:45:00	f
-4	1	2	2025-02-18 19:15:00	f
-5	1	3	2025-02-19 21:00:00	f
+1	1	2	2025-02-15 18:00:00	-1
+2	1	3	2025-02-16 20:30:00	-1
+3	1	4	2025-02-17 17:45:00	-1
+4	1	2	2025-02-18 19:15:00	-1
+5	1	3	2025-02-19 21:00:00	-1
 \.
 
 
@@ -628,8 +644,8 @@ COPY public.teams (id, name, league_id, description, owner_id, captain_id, home_
 14	Inter Milan	4	A club known for its defensive strength.	14	14	blue	black	team-logos/f801c6b7-2307-4962-86c7-7e55cc86376a-league-8-Team 5	t	\N
 15	AC Milan	4	One of the most successful clubs in Italy.	15	15	red	black	team-logos/e14958ee-b172-429e-88d7-5850e504b5d9-league-8-Team 2	t	\N
 16	Napoli	4	A strong team with a passionate fan base.	16	16	blue	white	team-logos/f801c6b7-2307-4962-86c7-7e55cc86376a-league-8-Team 5	t	\N
-1	Bayern Munich	1	A top team in Germany.	2	1	red	white	team-logos/f801c6b7-2307-4962-86c7-7e55cc86376a-league-8-Team 5	t	\N
 2	Borussia Dortmund	1	A strong contender in Bundesliga.	17	2	yellow	black	team-logos/f801c6b7-2307-4962-86c7-7e55cc86376a-league-8-Team 5	t	\N
+1	Bayern Munich	1	A top team in Germany.	2	1	red	white	\N	t	\N
 \.
 
 
@@ -721,6 +737,7 @@ COPY public.user_roles (user_id, role_id) FROM stdin;
 58	1
 59	1
 60	1
+67	1
 \.
 
 
@@ -754,67 +771,68 @@ COPY public.user_stats (id, user_id, match_id, goals, shots, assists, saves, int
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.users (id, first_name, last_name, email, password, picture_url, created_at, team_id, account_id, owner_status) FROM stdin;
-2	Jamal	Musiala	jamalmusiala@gmail.com	$2b$10$P.bdaXQaPInIv5TqqdJifuSEwRCb0xZ3a/DT67puGRpeEggy98l86	\N	2025-02-07 14:54:59.007791	1	acct_1QmnGc2K9wpSDFwj	f
-3	Leon	Goretzka	leongoretzka@gmail.com	$2b$10$9HQNCPrIWjhcTTxLsMdr9uvOaoseRDUbtY7doYuWdHhGJabVsgu0a	\N	2025-02-07 14:55:42.672843	1	acct_1QmnGc2K9wpSDFwj	f
-4	Dayot	Upamecano	dayotupamecano@gmail.com	$2b$10$08y6j/rPtekXrZ9fkjBcfe4ntCs8VjBALdot8EZsDLmklv34mSlWi	\N	2025-02-07 14:56:39.049045	1	acct_1QmnGc2K9wpSDFwj	f
-5	Thomas	Müller	thomasmuller@gmail.com	$2b$10$KJHlNvMh1nZvHSvPq5oHpOuy4Q66JxLeFm9FkWhrxg3p9KhTZ/0uS	\N	2025-02-07 15:00:00.123456	1	acct_1QmnGc2K9wpSDFwj	f
-6	Manuel	Neuer	manuelneuer@gmail.com	$2b$10$vP9lJd2WnA3QXhF5oZLKjOBjJX3n6ZjJ1y6TgEZxIQwJ7BOBZoFTK	\N	2025-02-07 15:01:10.987654	1	acct_1QmnGc2K9wpSDFwj	f
-7	Joshua	Kimmich	joshuakimmich@gmail.com	$2b$10$yYpKT3OYVJNAjLg1wnj8Ce2WTy1ZwVp4Ex2rNydZ2AFQvX6RkFu7y	\N	2025-02-07 15:02:30.456789	2	acct_1QmnGc2K9wpSDFwj	f
-8	Serge	Gnabry	sergegnabry@gmail.com	$2b$10$98XKJvhXWh/J2NexV3tOJuCB1G.VeD7QUK5W9yBZ/FoEZslz1BRQq	\N	2025-02-07 15:03:25.654321	2	acct_1QmnGc2K9wpSDFwj	f
-9	Leroy	Sané	leroysane@gmail.com	$2b$10$aJHYnX8yFz5E2B6Lx0M2nOjFQ9LpE3RBWZ5ZKj7QvJLX8Xh1NPvKy	\N	2025-02-07 15:04:45.789123	2	acct_1QmnGc2K9wpSDFwj	f
-10	Alphonso	Davies	alphonsodavies@gmail.com	$2b$10$F6QjMT5WzV3X2bNqJ5lZ2VXPB6KZ7NQJH0Yp8XWLJ4E2XJ1z9MKTq	\N	2025-02-07 15:05:55.321987	2	acct_1QmnGc2K9wpSDFwj	f
-11	Eric	Choupo-Moting	ericchoupo@gmail.com	$2b$10$PJK3X7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKT	\N	2025-02-07 15:06:50.654987	2	acct_1QmnGc2K9wpSDFwj	f
-12	Konrad	Laimer	konradlaimer@gmail.com	$2b$10$X7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLY	\N	2025-02-07 15:07:35.456213	2	acct_1QmnGc2K9wpSDFwj	f
-13	Kim	Min-jae	kimminjae@gmail.com	$2b$10$J7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLM	\N	2025-02-07 15:08:40.789654	3	acct_1QmnGc2K9wpSDFwj	f
-14	Matthijs	de Ligt	matthijsdeligt@gmail.com	$2b$10$9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMLJZTq5YXKZ	\N	2025-02-07 15:09:20.987321	3	acct_1QmnGc2K9wpSDFwj	f
-15	Raphael	Guerreiro	raphaelguerreiro@gmail.com	$2b$10$JZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NML	\N	2025-02-07 15:10:30.123789	3	acct_1QmnGc2K9wpSDFwj	f
-16	Paul	Wanner	paulwanner@gmail.com	$2b$10$YpZ7QXJ5vBKTPLMJ7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQL	\N	2025-02-07 15:11:25.654987	3	acct_1QmnGc2K9wpSDFwj	f
-17	Tarek	Buchmann	tarekbuchmann@gmail.com	$2b$10$JZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NML	\N	2025-02-07 15:12:50.456321	3	acct_1QmnGc2K9wpSDFwj	f
-18	Gabriel	Vidovic	gabrielvidovic@gmail.com	$2b$10$Z9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMLJZTq5YXK	\N	2025-02-07 15:13:40.987123	4	acct_1QmnGc2K9wpSDFwj	f
-19	Mahmoud	Dahoud	mahmouddahoud@gmail.com	$2b$10$XJ5vBKTPLMJ7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7Q	\N	2025-02-07 15:14:55.321789	4	acct_1QmnGc2K9wpSDFwj	f
-20	Florian	Wirtz	florianwirtz@gmail.com	$2b$10$PLMJ7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKT	\N	2025-02-07 15:15:30.456987	4	acct_1QmnGc2K9wpSDFwj	f
-21	Kai	Havertz	kaihavertz@gmail.com	$2b$10$MJ7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPL	\N	2025-02-07 15:16:45.789654	4	acct_1QmnGc2K9wpSDFwj	f
-22	Timo	Werner	timowerner@gmail.com	$2b$10$NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1	\N	2025-02-07 15:17:20.987123	5	acct_1QmnGc2K9wpSDFwj	f
-23	Jonathan	Tah	jonathantah@gmail.com	$2b$10$JZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NML	\N	2025-02-07 15:18:55.321987	5	acct_1QmnGc2K9wpSDFwj	f
-24	Niklas	Süle	niklassule@gmail.com	$2b$10$YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMLJZTq5	\N	2025-02-07 15:19:40.456321	5	acct_1QmnGc2K9wpSDFwj	f
-25	Robin	Gosens	robingosens@gmail.com	$2b$10$QpT7eXneC6ihDQBJtF4e01vi5EeGEY81VRlPFLQiMO5CaXdtmb8F	\N	2025-02-07 15:20:55.987654	5	acct_1QmnGc2K9wpSDFwj	f
-26	Ilkay	Gündogan	ilkaygundogan@gmail.com	$2b$10$P.bdaXQaPInIv5TqqdJifuSEwRCb0xZ3a/DT67puGRpeEggy98ly2	\N	2025-02-07 15:21:40.654321	6	acct_1QmnGc2K9wpSDFwj	f
-27	Toni	Kroos	tonikroos@gmail.com	$2b$10$9HQNCPrIWjhcTTxLsMdr9uvOaoseRDUbtY7doYuWdHhGJabVsgut2	\N	2025-02-07 15:22:30.123789	6	acct_1QmnGc2K9wpSDFwj	f
-28	Marc-André	ter Stegen	marcandreterstegen@gmail.com	$2b$10$08y6j/rPtekXrZ9fkjBcfe4ntCs8VjBALdot8EZsDLmklv34mSlFT	\N	2025-02-07 15:23:50.789654	6	acct_1QmnGc2K9wpSDFwj	f
-29	Kevin	Trapp	kevintrapp@gmail.com	$2b$10$JHlNvMh1nZvHSvPq5oHpOuy4Q66JxLeFm9FkWhrxg3p9KhTZ/0lP2	\N	2025-02-07 15:24:15.321987	7	acct_1QmnGc2K9wpSDFwj	f
-30	Lukas	Klostermann	lukasklostermann@gmail.com	$2b$10$vP9lJd2WnA3QXhF5oZLKjOBjJX3n6ZjJ1y6TgEZxIQwJ7BOBZoXLT	\N	2025-02-07 15:25:40.456321	7	acct_1QmnGc2K9wpSDFwj	f
-31	Emre	Can	emrecan@gmail.com	$2b$10$yYpKT3OYVJNAjLg1wnj8Ce2WTy1ZwVp4Ex2rNydZ2AFQvX6RkFuYP2	\N	2025-02-07 15:26:25.654987	7	acct_1QmnGc2K9wpSDFwj	f
-32	David	Raum	davidraum@gmail.com	$2b$10$98XKJvhXWh/J2NexV3tOJuCB1G.VeD7QUK5W9yBZ/FoEZslz1BRnT	\N	2025-02-07 15:27:30.789321	7	acct_1QmnGc2K9wpSDFwj	f
-33	Benjamin	Henrichs	benjaminhenrichs@gmail.com	$2b$10$aJHYnX8yFz5E2B6Lx0M2nOjFQ9LpE3RBWZ5ZKj7QvJLX8Xh1NPvML	\N	2025-02-07 15:28:50.987123	7	acct_1QmnGc2K9wpSDFwj	f
-34	Antonio	Rüdiger	antonioruediger@gmail.com	$2b$10$F6QjMT5WzV3X2bNqJ5lZ2VXPB6KZ7NQJH0Yp8XWLJ4E2XJ1z9MTL	\N	2025-02-07 15:29:25.321789	8	acct_1QmnGc2K9wpSDFwj	f
-35	Sandro	Wagner	sandrowagner@gmail.com	$2b$10$PJK3X7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vNYT	\N	2025-02-07 15:30:40.456987	8	acct_1QmnGc2K9wpSDFwj	f
-36	Maximilian	Arnold	maximilianarnold@gmail.com	$2b$10$X7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTNM2	\N	2025-02-07 15:31:50.789654	8	acct_1QmnGc2K9wpSDFwj	f
-37	Julian	Brandt	julianbrandt@gmail.com	$2b$10$J7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPML	\N	2025-02-07 15:32:45.123321	8	acct_1QmnGc2K9wpSDFwj	f
-38	Armel	Bella-Kotchap	armelbellakotchap@gmail.com	$2b$10$9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMLJZTq5YXKZ	\N	2025-02-07 15:33:50.987654	9	acct_1QmnGc2K9wpSDFwj	f
-39	Mario	Götze	mariogotze@gmail.com	$2b$10$JZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NML	\N	2025-02-07 15:34:40.654321	9	acct_1QmnGc2K9wpSDFwj	f
-40	Christian	Günter	christianguenter@gmail.com	$2b$10$YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMLJZTq5	\N	2025-02-07 15:35:55.123789	9	acct_1QmnGc2K9wpSDFwj	f
-41	Robert	Andrich	robertandrich@gmail.com	$2b$10$QpT7eXneC6ihDQBJtF4e01vi5EeGEY81VRlPFLQiMO5CaXdtmb8A	\N	2025-02-07 15:36:45.987654	9	acct_1QmnGc2K9wpSDFwj	f
-42	Nico	Schlotterbeck	nicoschlotterbeck@gmail.com	$2b$10$P.bdaXQaPInIv5TqqdJifuSEwRCb0xZ3a/DT67puGRpeEggy98lYS	\N	2025-02-07 15:37:30.654321	9	acct_1QmnGc2K9wpSDFwj	f
-43	Felix	Nmecha	felixnmecha@gmail.com	$2b$10$9HQNCPrIWjhcTTxLsMdr9uvOaoseRDUbtY7doYuWdHhGJabVsguTX	\N	2025-02-07 15:38:20.123789	9	acct_1QmnGc2K9wpSDFwj	f
-44	Josko	Gvardiol	joskogvardiol@gmail.com	$2b$10$08y6j/rPtekXrZ9fkjBcfe4ntCs8VjBALdot8EZsDLmklv34mSlGV	\N	2025-02-07 15:39:50.789654	10	acct_1QmnGc2K9wpSDFwj	f
-45	Leonardo	Bittencourt	leonardobittencourt@gmail.com	$2b$10$JHlNvMh1nZvHSvPq5oHpOuy4Q66JxLeFm9FkWhrxg3p9KhTZ/0lMN	\N	2025-02-07 15:40:15.321987	11	acct_1QmnGc2K9wpSDFwj	f
-46	Deniz	Undav	denizundav@gmail.com	$2b$10$vP9lJd2WnA3QXhF5oZLKjOBjJX3n6ZjJ1y6TgEZxIQwJ7BOBZoXUN	\N	2025-02-07 15:41:40.456321	12	acct_1QmnGc2K9wpSDFwj	f
-47	Stefan	Ortega	stefanortega@gmail.com	$2b$10$yYpKT3OYVJNAjLg1wnj8Ce2WTy1ZwVp4Ex2rNydZ2AFQvX6RkFuYPU	\N	2025-02-07 15:42:25.654987	13	acct_1QmnGc2K9wpSDFwj	f
-48	Youssoufa	Moukoko	youssoufamoukoko@gmail.com	$2b$10$98XKJvhXWh/J2NexV3tOJuCB1G.VeD7QUK5W9yBZ/FoEZslz1BRnW	\N	2025-02-07 15:43:30.789321	14	acct_1QmnGc2K9wpSDFwj	f
-49	Chris	Führich	chrisfuhrich@gmail.com	$2b$10$aJHYnX8yFz5E2B6Lx0M2nOjFQ9LpE3RBWZ5ZKj7QvJLX8Xh1NPvMH	\N	2025-02-07 15:44:50.987123	15	acct_1QmnGc2K9wpSDFwj	f
-50	Malick	Thiaw	malickthiaw@gmail.com	$2b$10$F6QjMT5WzV3X2bNqJ5lZ2VXPB6KZ7NQJH0Yp8XWLJ4E2XJ1z9MTJ	\N	2025-02-07 15:45:25.321789	16	acct_1QmnGc2K9wpSDFwj	f
-51	Jan-Niklas	Beste	janniklasbeste@gmail.com	$2b$10$PJK3X7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vNYG	\N	2025-02-07 15:46:40.456987	16	acct_1QmnGc2K9wpSDFwj	f
-52	Marius	Wolf	mariuswolf@gmail.com	$2b$10$X7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTNMK	\N	2025-02-07 15:47:50.789654	16	acct_1QmnGc2K9wpSDFwj	f
-53	Alexander	Nübel	alexandernubel@gmail.com	$2b$10$J7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPMP	\N	2025-02-07 15:48:45.123321	16	acct_1QmnGc2K9wpSDFwj	f
-54	Arne	Maier	arnemaier@gmail.com	$2b$10$9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMLJZTq5YXKW	\N	2025-02-07 15:49:50.987654	16	acct_1QmnGc2K9wpSDFwj	f
-55	Marvin	Ducksch	marvinducksch@gmail.com	$2b$10$JZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMT	\N	2025-02-07 15:50:40.654321	16	acct_1QmnGc2K9wpSDFwj	f
-56	Rani	Khedira	ranikhedira@gmail.com	$2b$10$YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMLJZTqM	\N	2025-02-07 15:51:55.123789	16	acct_1QmnGc2K9wpSDFwj	f
-57	Florian	Neuhaus	florianneuhaus@gmail.com	$2b$10$QpT7eXneC6ihDQBJtF4e01vi5EeGEY81VRlPFLQiMO5CaXdtmb8Q	\N	2025-02-07 15:52:45.987654	16	acct_1QmnGc2K9wpSDFwj	f
-58	Pascal	Groß	pascalgross@gmail.com	$2b$10$P.bdaXQaPInIv5TqqdJifuSEwRCb0xZ3a/DT67puGRpeEggy98lXW	\N	2025-02-07 15:53:30.654321	16	acct_1QmnGc2K9wpSDFwj	f
-59	Nadiem	Amiri	nadiemamiri@gmail.com	$2b$10$9HQNCPrIWjhcTTxLsMdr9uvOaoseRDUbtY7doYuWdHhGJabVsguMK	\N	2025-02-07 15:54:20.123789	16	acct_1QmnGc2K9wpSDFwj	f
-60	Luca	Waldschmidt	lucawaldschmidt@gmail.com	$2b$10$08y6j/rPtekXrZ9fkjBcfe4ntCs8VjBALdot8EZsDLmklv34mSlXJ	\N	2025-02-07 15:55:50.789654	16	acct_1QmnGc2K9wpSDFwj	f
-1	Elio	Fezollari	fezollarielio@gmail.com	$2b$10$.qpT7eX/neC6ihDQBJtF4e01vi5EeGEY81VRlPFLQiMO5CaXdtmb.	\N	2025-02-07 14:52:55.530651	16	acct_1QmnGc2K9wpSDFwj	t
+COPY public.users (id, first_name, last_name, email, password, picture_url, created_at, team_id, account_id, owner_status, profile_visibility, agreed_terms, terms_version) FROM stdin;
+2	Aum	Zaveri	test1genji@gmail.com	$2b$10$KarQBJRQsvl/kcBUHavqQeBPg9KSPP2X0Uj24Eh95Spq3xMMe5OW6	\N	2025-02-07 14:54:59.007791	1	acct_1QmnGc2K9wpSDFwj	f	f	t	1
+3	Leon	Goretzka	leongoretzka@gmail.com	$2b$10$9HQNCPrIWjhcTTxLsMdr9uvOaoseRDUbtY7doYuWdHhGJabVsgu0a	\N	2025-02-07 14:55:42.672843	1	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+4	Dayot	Upamecano	dayotupamecano@gmail.com	$2b$10$08y6j/rPtekXrZ9fkjBcfe4ntCs8VjBALdot8EZsDLmklv34mSlWi	\N	2025-02-07 14:56:39.049045	1	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+5	Thomas	Müller	thomasmuller@gmail.com	$2b$10$KJHlNvMh1nZvHSvPq5oHpOuy4Q66JxLeFm9FkWhrxg3p9KhTZ/0uS	\N	2025-02-07 15:00:00.123456	1	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+6	Manuel	Neuer	manuelneuer@gmail.com	$2b$10$vP9lJd2WnA3QXhF5oZLKjOBjJX3n6ZjJ1y6TgEZxIQwJ7BOBZoFTK	\N	2025-02-07 15:01:10.987654	1	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+7	Joshua	Kimmich	joshuakimmich@gmail.com	$2b$10$yYpKT3OYVJNAjLg1wnj8Ce2WTy1ZwVp4Ex2rNydZ2AFQvX6RkFu7y	\N	2025-02-07 15:02:30.456789	2	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+8	Serge	Gnabry	sergegnabry@gmail.com	$2b$10$98XKJvhXWh/J2NexV3tOJuCB1G.VeD7QUK5W9yBZ/FoEZslz1BRQq	\N	2025-02-07 15:03:25.654321	2	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+9	Leroy	Sané	leroysane@gmail.com	$2b$10$aJHYnX8yFz5E2B6Lx0M2nOjFQ9LpE3RBWZ5ZKj7QvJLX8Xh1NPvKy	\N	2025-02-07 15:04:45.789123	2	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+10	Alphonso	Davies	alphonsodavies@gmail.com	$2b$10$F6QjMT5WzV3X2bNqJ5lZ2VXPB6KZ7NQJH0Yp8XWLJ4E2XJ1z9MKTq	\N	2025-02-07 15:05:55.321987	2	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+11	Eric	Choupo-Moting	ericchoupo@gmail.com	$2b$10$PJK3X7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKT	\N	2025-02-07 15:06:50.654987	2	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+12	Konrad	Laimer	konradlaimer@gmail.com	$2b$10$X7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLY	\N	2025-02-07 15:07:35.456213	2	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+13	Kim	Min-jae	kimminjae@gmail.com	$2b$10$J7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLM	\N	2025-02-07 15:08:40.789654	3	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+14	Matthijs	de Ligt	matthijsdeligt@gmail.com	$2b$10$9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMLJZTq5YXKZ	\N	2025-02-07 15:09:20.987321	3	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+15	Raphael	Guerreiro	raphaelguerreiro@gmail.com	$2b$10$JZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NML	\N	2025-02-07 15:10:30.123789	3	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+16	Paul	Wanner	paulwanner@gmail.com	$2b$10$YpZ7QXJ5vBKTPLMJ7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQL	\N	2025-02-07 15:11:25.654987	3	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+17	Tarek	Buchmann	tarekbuchmann@gmail.com	$2b$10$JZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NML	\N	2025-02-07 15:12:50.456321	3	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+18	Gabriel	Vidovic	gabrielvidovic@gmail.com	$2b$10$Z9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMLJZTq5YXK	\N	2025-02-07 15:13:40.987123	4	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+19	Mahmoud	Dahoud	mahmouddahoud@gmail.com	$2b$10$XJ5vBKTPLMJ7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7Q	\N	2025-02-07 15:14:55.321789	4	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+31	Emre	Can	emrecan@gmail.com	$2b$10$yYpKT3OYVJNAjLg1wnj8Ce2WTy1ZwVp4Ex2rNydZ2AFQvX6RkFuYP2	\N	2025-02-07 15:26:25.654987	7	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+32	David	Raum	davidraum@gmail.com	$2b$10$98XKJvhXWh/J2NexV3tOJuCB1G.VeD7QUK5W9yBZ/FoEZslz1BRnT	\N	2025-02-07 15:27:30.789321	7	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+33	Benjamin	Henrichs	benjaminhenrichs@gmail.com	$2b$10$aJHYnX8yFz5E2B6Lx0M2nOjFQ9LpE3RBWZ5ZKj7QvJLX8Xh1NPvML	\N	2025-02-07 15:28:50.987123	7	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+34	Antonio	Rüdiger	antonioruediger@gmail.com	$2b$10$F6QjMT5WzV3X2bNqJ5lZ2VXPB6KZ7NQJH0Yp8XWLJ4E2XJ1z9MTL	\N	2025-02-07 15:29:25.321789	8	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+35	Sandro	Wagner	sandrowagner@gmail.com	$2b$10$PJK3X7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vNYT	\N	2025-02-07 15:30:40.456987	8	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+36	Maximilian	Arnold	maximilianarnold@gmail.com	$2b$10$X7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTNM2	\N	2025-02-07 15:31:50.789654	8	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+37	Julian	Brandt	julianbrandt@gmail.com	$2b$10$J7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPML	\N	2025-02-07 15:32:45.123321	8	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+38	Armel	Bella-Kotchap	armelbellakotchap@gmail.com	$2b$10$9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMLJZTq5YXKZ	\N	2025-02-07 15:33:50.987654	9	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+39	Mario	Götze	mariogotze@gmail.com	$2b$10$JZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NML	\N	2025-02-07 15:34:40.654321	9	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+40	Christian	Günter	christianguenter@gmail.com	$2b$10$YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMLJZTq5	\N	2025-02-07 15:35:55.123789	9	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+41	Robert	Andrich	robertandrich@gmail.com	$2b$10$QpT7eXneC6ihDQBJtF4e01vi5EeGEY81VRlPFLQiMO5CaXdtmb8A	\N	2025-02-07 15:36:45.987654	9	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+42	Nico	Schlotterbeck	nicoschlotterbeck@gmail.com	$2b$10$P.bdaXQaPInIv5TqqdJifuSEwRCb0xZ3a/DT67puGRpeEggy98lYS	\N	2025-02-07 15:37:30.654321	9	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+43	Felix	Nmecha	felixnmecha@gmail.com	$2b$10$9HQNCPrIWjhcTTxLsMdr9uvOaoseRDUbtY7doYuWdHhGJabVsguTX	\N	2025-02-07 15:38:20.123789	9	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+44	Josko	Gvardiol	joskogvardiol@gmail.com	$2b$10$08y6j/rPtekXrZ9fkjBcfe4ntCs8VjBALdot8EZsDLmklv34mSlGV	\N	2025-02-07 15:39:50.789654	10	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+45	Leonardo	Bittencourt	leonardobittencourt@gmail.com	$2b$10$JHlNvMh1nZvHSvPq5oHpOuy4Q66JxLeFm9FkWhrxg3p9KhTZ/0lMN	\N	2025-02-07 15:40:15.321987	11	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+55	Marvin	Ducksch	marvinducksch@gmail.com	$2b$10$JZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMT	\N	2025-02-07 15:50:40.654321	16	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+56	Rani	Khedira	ranikhedira@gmail.com	$2b$10$YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMLJZTqM	\N	2025-02-07 15:51:55.123789	16	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+57	Florian	Neuhaus	florianneuhaus@gmail.com	$2b$10$QpT7eXneC6ihDQBJtF4e01vi5EeGEY81VRlPFLQiMO5CaXdtmb8Q	\N	2025-02-07 15:52:45.987654	16	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+58	Pascal	Groß	pascalgross@gmail.com	$2b$10$P.bdaXQaPInIv5TqqdJifuSEwRCb0xZ3a/DT67puGRpeEggy98lXW	\N	2025-02-07 15:53:30.654321	16	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+59	Nadiem	Amiri	nadiemamiri@gmail.com	$2b$10$9HQNCPrIWjhcTTxLsMdr9uvOaoseRDUbtY7doYuWdHhGJabVsguMK	\N	2025-02-07 15:54:20.123789	16	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+60	Luca	Waldschmidt	lucawaldschmidt@gmail.com	$2b$10$08y6j/rPtekXrZ9fkjBcfe4ntCs8VjBALdot8EZsDLmklv34mSlXJ	\N	2025-02-07 15:55:50.789654	16	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+1	Elio	Fezollari	fezollarielio@gmail.com	$2b$10$.qpT7eX/neC6ihDQBJtF4e01vi5EeGEY81VRlPFLQiMO5CaXdtmb.	\N	2025-02-07 14:52:55.530651	16	acct_1QmnGc2K9wpSDFwj	t	t	t	1
+67	Aum	ZAVERI	aumzaveri06@gmail.com	$2b$10$rJ81mGP8qwj3zYk/AYVYxe1TQEFxyaha/dhI6IIk5EXs3w2u1gd6K	\N	2025-03-07 12:29:07.203211	\N	\N	f	t	t	1
+46	Deniz	Undav	denizundav@gmail.com	$2b$10$vP9lJd2WnA3QXhF5oZLKjOBjJX3n6ZjJ1y6TgEZxIQwJ7BOBZoXUN	\N	2025-02-07 15:41:40.456321	12	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+47	Stefan	Ortega	stefanortega@gmail.com	$2b$10$yYpKT3OYVJNAjLg1wnj8Ce2WTy1ZwVp4Ex2rNydZ2AFQvX6RkFuYPU	\N	2025-02-07 15:42:25.654987	13	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+48	Youssoufa	Moukoko	youssoufamoukoko@gmail.com	$2b$10$98XKJvhXWh/J2NexV3tOJuCB1G.VeD7QUK5W9yBZ/FoEZslz1BRnW	\N	2025-02-07 15:43:30.789321	14	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+49	Chris	Führich	chrisfuhrich@gmail.com	$2b$10$aJHYnX8yFz5E2B6Lx0M2nOjFQ9LpE3RBWZ5ZKj7QvJLX8Xh1NPvMH	\N	2025-02-07 15:44:50.987123	15	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+50	Malick	Thiaw	malickthiaw@gmail.com	$2b$10$F6QjMT5WzV3X2bNqJ5lZ2VXPB6KZ7NQJH0Yp8XWLJ4E2XJ1z9MTJ	\N	2025-02-07 15:45:25.321789	16	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+51	Jan-Niklas	Beste	janniklasbeste@gmail.com	$2b$10$PJK3X7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vNYG	\N	2025-02-07 15:46:40.456987	16	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+52	Marius	Wolf	mariuswolf@gmail.com	$2b$10$X7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTNMK	\N	2025-02-07 15:47:50.789654	16	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+53	Alexander	Nübel	alexandernubel@gmail.com	$2b$10$J7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPMP	\N	2025-02-07 15:48:45.123321	16	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+54	Arne	Maier	arnemaier@gmail.com	$2b$10$9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMLJZTq5YXKW	\N	2025-02-07 15:49:50.987654	16	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+20	Florian	Wirtz	florianwirtz@gmail.com	$2b$10$PLMJ7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKT	\N	2025-02-07 15:15:30.456987	4	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+21	Kai	Havertz	kaihavertz@gmail.com	$2b$10$MJ7Q1NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPL	\N	2025-02-07 15:16:45.789654	4	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+22	Timo	Werner	timowerner@gmail.com	$2b$10$NMLJZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1	\N	2025-02-07 15:17:20.987123	5	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+23	Jonathan	Tah	jonathantah@gmail.com	$2b$10$JZTq5YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NML	\N	2025-02-07 15:18:55.321987	5	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+24	Niklas	Süle	niklassule@gmail.com	$2b$10$YXKZ9WJH2V3B5LXp0F62J8MQLYpZ7QXJ5vBKTPLMJ7Q1NMLJZTq5	\N	2025-02-07 15:19:40.456321	5	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+25	Robin	Gosens	robingosens@gmail.com	$2b$10$QpT7eXneC6ihDQBJtF4e01vi5EeGEY81VRlPFLQiMO5CaXdtmb8F	\N	2025-02-07 15:20:55.987654	5	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+26	Ilkay	Gündogan	ilkaygundogan@gmail.com	$2b$10$P.bdaXQaPInIv5TqqdJifuSEwRCb0xZ3a/DT67puGRpeEggy98ly2	\N	2025-02-07 15:21:40.654321	6	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+27	Toni	Kroos	tonikroos@gmail.com	$2b$10$9HQNCPrIWjhcTTxLsMdr9uvOaoseRDUbtY7doYuWdHhGJabVsgut2	\N	2025-02-07 15:22:30.123789	6	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+28	Marc-André	ter Stegen	marcandreterstegen@gmail.com	$2b$10$08y6j/rPtekXrZ9fkjBcfe4ntCs8VjBALdot8EZsDLmklv34mSlFT	\N	2025-02-07 15:23:50.789654	6	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+29	Kevin	Trapp	kevintrapp@gmail.com	$2b$10$JHlNvMh1nZvHSvPq5oHpOuy4Q66JxLeFm9FkWhrxg3p9KhTZ/0lP2	\N	2025-02-07 15:24:15.321987	7	acct_1QmnGc2K9wpSDFwj	f	t	t	1
+30	Lukas	Klostermann	lukasklostermann@gmail.com	$2b$10$vP9lJd2WnA3QXhF5oZLKjOBjJX3n6ZjJ1y6TgEZxIQwJ7BOBZoXLT	\N	2025-02-07 15:25:40.456321	7	acct_1QmnGc2K9wpSDFwj	f	t	t	1
 \.
 
 
@@ -829,14 +847,14 @@ SELECT pg_catalog.setval('public.highlights_id_seq', 1, false);
 -- Name: league_emp_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.league_emp_id_seq', 1, false);
+SELECT pg_catalog.setval('public.league_emp_id_seq', 10, true);
 
 
 --
 -- Name: league_roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.league_roles_id_seq', 1, false);
+SELECT pg_catalog.setval('public.league_roles_id_seq', 3, true);
 
 
 --
@@ -850,42 +868,42 @@ SELECT pg_catalog.setval('public.leagues_id_seq', 4, true);
 -- Name: matches_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.matches_id_seq', 1, false);
+SELECT pg_catalog.setval('public.matches_id_seq', 5, true);
 
 
 --
 -- Name: roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.roles_id_seq', 1, false);
+SELECT pg_catalog.setval('public.roles_id_seq', 2, true);
 
 
 --
 -- Name: teams_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.teams_id_seq', 1, false);
+SELECT pg_catalog.setval('public.teams_id_seq', 21, true);
 
 
 --
 -- Name: transactions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.transactions_id_seq', 18, true);
+SELECT pg_catalog.setval('public.transactions_id_seq', 23, true);
 
 
 --
 -- Name: user_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_stats_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_stats_id_seq', 18, true);
 
 
 --
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 60, true);
+SELECT pg_catalog.setval('public.users_id_seq', 67, true);
 
 
 --
