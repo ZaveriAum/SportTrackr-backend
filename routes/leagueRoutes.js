@@ -13,6 +13,7 @@ router.use(authenticateToken)
 
 router.get('/', leagueController.getAllLeagues);
 router.get("/leagues-by-owner",leagueController.getLeagueNamesByOwner)
+router.get("/stats",leagueController.getLeagueStats)
 router.get("/:id",leagueController.getLeague)
 router.post('/', upload.single('file'), [
     check('leagueName')
@@ -48,6 +49,7 @@ router.put('/:leagueId', [
 ] , validator, leagueController.updateLeague);
 router.post('/:leagueId', upload.single('file'), leagueController.uploadLeagueLogo);
 router.delete('/:leagueId', leagueController.deleteLeague);
+
 
 
 module.exports = router;
