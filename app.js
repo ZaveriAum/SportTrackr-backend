@@ -7,6 +7,7 @@ const teamRoutes = require ('./routes/teamRoutes')
 const matchRoutes = require ('./routes/matchRoutes')
 const connectAccountRoutes = require('./routes/connectAccountRoutes')
 const stripeWebHookRoutes = require('./routes/stripeWebhookRoutes')
+const transactionRoutes = require('./routes/transactionsRoutes')
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const { requestLogger, errorLogger } = require('./middlewares/loggingMiddleware');
@@ -37,6 +38,7 @@ app.use('/v1/team', teamRoutes)
 app.use('/v1/match', matchRoutes)
 app.use('/v1/connect', connectAccountRoutes)
 
+app.use('/v1/transaction', transactionRoutes)
 // Error Logging Middleware
 app.use(errorLogger);
 
