@@ -24,5 +24,6 @@ router.get("/general/:matchId", matchController.getMatchById);
 router.put('/:matchId/forfeit', matchController.updateForfeited);
 router.post('/createMatches', matchController.createMatch);
 router.get('/createMatches/:leagueId', matchController.getDataCreateMatch);
+router.delete("/:matchId", matchController.deleteMatch)
 
   module.exports = router;

@@ -133,6 +133,23 @@ const getDataCreateMatch = async (req, res) => {
     res.status(500).json({ error: "Error creating matches" });
   }
 };
+
+const deleteMatch = async (req, res) => {
+  try {
+    const { matchId } = req.params; // Make sure `matchId` is coming from `req.params`
+    
+    if (!matchId) {
+      return res.status(400).json({ error: "Match ID is required" });
+    }
+
+    const deletedMatch = await matchService.deleteMatch(matchId);
+    res.json(deletedMatch);
+  } catch (error) {
+    console.error("Controller Error:", error.message);  // Log error for better visibility
+    res.status(500).json({ error: "Error deleting matches" });
+  }
+};
+
 module.exports = {
   updateMatch,
   getStats,
@@ -142,5 +159,6 @@ module.exports = {
   getMatchById,
   updateForfeited,
   createMatch,
-  getDataCreateMatch
+  getDataCreateMatch,
+  deleteMatch
 };

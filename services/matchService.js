@@ -680,7 +680,28 @@ const getDataCreateMatch = async (leagueId) => {
   }
 };
 
+const deleteMatch = async (matchId) => {
+  const client = await pool.connect();
+  try {
+    if (!matchId) {
+      throw new Error("Match ID is invalid");
+    }
 
+    const deleteMatchQuery = 'DELETE FROM matches WHERE id = $1';
+    const result = await client.query(deleteMatchQuery, [matchId]);
+
+    if (result.rowCount === 0) {
+      throw new Error("No match found with the provided ID");
+    }
+
+    return { message: 'Match deleted successfully!' };
+  } catch (error) {
+    console.error("Error deleting match:", error.message);  // Log detailed error
+    throw new Error("Failed to delete match.");
+  } finally {
+    client.release();
+  }
+};
 
 module.exports = {
   updateMatch,
@@ -691,5 +712,6 @@ module.exports = {
   getMatchById,
   updateForfeited,
   createMatch,
-  getDataCreateMatch
+  getDataCreateMatch,
+  deleteMatch
 };
