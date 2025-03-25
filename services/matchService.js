@@ -703,6 +703,105 @@ const deleteMatch = async (matchId) => {
   }
 };
 
+const getMatchesByUser = async (userId) => {
+  try {
+    const userTeamQuery = `SELECT team_id FROM users WHERE id = $1`;
+    const userTeamResult = await pool.query(userTeamQuery, [userId]);
+
+    if (userTeamResult.rows.length === 0 || !userTeamResult.rows[0].team_id) {
+      return { message: "User is not assigned to a team", matches: [] };
+    }
+
+    const teamId = userTeamResult.rows[0].team_id;
+
+    const matchesQuery = `
+      SELECT 
+        m.id AS match_id,
+        m.home_team_id,
+        m.away_team_id,
+        m.match_time,
+        le.user_id AS referee_id,
+        CONCAT(u.first_name, ' ', u.last_name) AS referee_name  
+      FROM matches m
+      JOIN teams t ON t.id = m.home_team_id OR t.id = m.away_team_id  
+      JOIN league_emp le ON le.league_id = t.league_id 
+      JOIN employee_roles er ON er.employee_id = le.user_id  
+      JOIN users u ON u.id = le.user_id 
+      WHERE (m.home_team_id = $1 OR m.away_team_id = $1) 
+        AND er.role_id = 3;
+    `;
+
+    const matchesResult = await pool.query(matchesQuery, [teamId]);
+    const matches = matchesResult.rows || [];
+
+    if (matches.length === 0) {
+      return { message: "No matches found for this user", matches: [] };
+    }
+
+    // Extract match IDs
+    const matchIds = matches.map(m => m.match_id);
+    if (matchIds.length === 0) return { matches };
+
+    // Fetch goals for each match
+    const teamGoalsQuery = `
+      SELECT 
+        m.id AS match_id,
+        m.home_team_id AS home_team_id,
+        COALESCE(SUM(CASE WHEN us.user_id IN (
+            SELECT id FROM users WHERE team_id = m.home_team_id
+        ) THEN us.goals END), 0) AS home_goals,
+        m.away_team_id AS away_team_id,
+        COALESCE(SUM(CASE WHEN us.user_id IN (
+            SELECT id FROM users WHERE team_id = m.away_team_id
+        ) THEN us.goals END), 0) AS away_goals
+      FROM matches m
+      LEFT JOIN user_stats us ON us.match_id = m.id
+      WHERE m.id = ANY($1)
+      GROUP BY m.id, m.home_team_id, m.away_team_id;
+    `;
+
+    const goalsResult = await pool.query(teamGoalsQuery, [matchIds]);
+    const goalsData = goalsResult.rows || [];
+
+    // Fetch team details (name + logo)
+    const teamIds = [...new Set(matches.flatMap(m => [m.home_team_id, m.away_team_id]))];
+    const teamsQuery = `SELECT id, name, logo_url FROM teams WHERE id = ANY($1)`;
+    const teamsResult = await pool.query(teamsQuery, [teamIds]);
+    const teams = teamsResult.rows || [];
+
+    // Fetch logo URLs
+    for (const team of teams) {
+      team.logo_url = team.logo_url ? await getObjectSignedUrl(team.logo_url) : null;
+    }
+
+    // Construct match results
+    const matchResults = matches.map(match => {
+      const matchGoals = goalsData.find(g => g.match_id === match.match_id) || { home_goals: 0, away_goals: 0 };
+
+      const homeTeam = teams.find(t => t.id === match.home_team_id) || {};
+      const awayTeam = teams.find(t => t.id === match.away_team_id) || {};
+
+      return {
+        matchId: match.match_id,
+        team1: homeTeam.name || "Unknown",
+        logo1: homeTeam.logo_url,
+        result: `${matchGoals.home_goals} - ${matchGoals.away_goals}`,
+        team2: awayTeam.name || "Unknown",
+        logo2: awayTeam.logo_url,
+        matchTime: match.match_time,
+        referee: match.referee_name
+      };
+    });
+
+    return { matches: matchResults };
+  } catch (error) {
+    console.error("Error fetching matches:", error);
+    throw new Error("Internal Server Error");
+  }
+};
+
+
+
 module.exports = {
   updateMatch,
   getStats,
@@ -713,5 +812,6 @@ module.exports = {
   updateForfeited,
   createMatch,
   getDataCreateMatch,
-  deleteMatch
+  deleteMatch,
+  getMatchesByUser
 };

@@ -20,6 +20,8 @@ router.post('/highlights', upload.fields([
   ]), matchController.uploadHighlights);
 router.get("/:id",matchController.getMatchDetails)
 router.get("/league/:leagueId", matchController.getMatchesByLeagueId);
+router.get("/user/:userId", matchController.getMatchesByUser);
+
 router.get("/general/:matchId", matchController.getMatchById);
 router.put('/:matchId/forfeit', matchController.updateForfeited);
 router.post('/createMatches', matchController.createMatch);

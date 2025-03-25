@@ -141,7 +141,6 @@ const refresh = async (cookies) => {
         const user = (await findUser(decode.email)).rows[0];
         const roles = await findUserRoles(user.email);
         const league_roles = await findLeagueRoles(user.email);
-
         if (!user) {
             throw new AppError(UNAUTHORIZED.UNAUTHORIZED, 401);
         }

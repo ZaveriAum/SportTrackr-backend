@@ -60,6 +60,17 @@ const getMatchesByLeagueId = async (req, res) => {
   }
 };
 
+const getMatchesByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const matchesData = await matchService.getMatchesByUser(userId);
+    res.json(matchesData);
+  } catch (error) {
+    console.error("Controller Error:", error.message);
+    res.status(500).json({ error: "Error fetching matches" });
+  }
+};
+
 const getMatchById = async (req, res) => {
   try {
     const { matchId } = req.params;
@@ -160,5 +171,6 @@ module.exports = {
   updateForfeited,
   createMatch,
   getDataCreateMatch,
-  deleteMatch
+  deleteMatch,
+  getMatchesByUser
 };

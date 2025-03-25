@@ -84,6 +84,21 @@ const getLeagueNamesByOwner = async (req,res,next)=>{
     }
 }
 
+const getLeagueNamesByStatistician = async (req, res, next) => {
+    try {
+        const userId = parseInt(req.params.userId, 10); // Convert to integer
+        if (isNaN(userId)) {
+            return res.status(400).json({ message: "Invalid user ID" });
+        }
+
+        const leagues = await leagueService.getLeagueNamesByStatistician(userId);
+        res.status(200).json(leagues);
+    } catch (e) {
+        next(e);
+    }
+};
+
+
 module.exports = {
     getAllLeagues,
     getLeague,
@@ -91,5 +106,6 @@ module.exports = {
     updateLeague,
     uploadLeagueLogo,
     deleteLeague,
-    getLeagueNamesByOwner
+    getLeagueNamesByOwner,
+    getLeagueNamesByStatistician
 }
