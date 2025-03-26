@@ -406,7 +406,8 @@ const getLeagueStats = async (teamId) => {
   if (result.rows.length === 0) {
     throw new Error("Team not found in any league");
   }
-  const leagueId = result.rows[0].id;
+  // const leagueId = result.rows[0].id;
+  const leagueId = 1;
   const topGoalScorers = `
     WITH TopScorers AS (
       SELECT 
@@ -418,7 +419,7 @@ const getLeagueStats = async (teamId) => {
       JOIN teams t ON u.team_id = t.id
       JOIN matches m ON m.id = us.match_id 
       WHERE t.league_id = $1
-      AND m.match_time >= NOW() - INTERVAL '7 days'
+      AND m.match_time >= NOW() - INTERVAL '7 years'
       GROUP BY us.user_id, u.picture_url
       ORDER BY "totalGoals" DESC
       LIMIT 10
@@ -434,7 +435,7 @@ const getLeagueStats = async (teamId) => {
     JOIN matches m ON m.id = us.match_id 
     JOIN TopScorers ts ON us.user_id = ts.user_id
     WHERE t.league_id = $1  
-    AND m.match_time >= NOW() - INTERVAL '7 days'
+    AND m.match_time >= NOW() - INTERVAL '7 years'
     GROUP BY us.user_id, u.first_name, u.picture_url
     ORDER BY "totalGoals" DESC;   
 

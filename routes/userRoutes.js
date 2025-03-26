@@ -14,6 +14,7 @@ router.use(validator)
 router.use(authenticateToken)
 
 router.get('', userController.getUserProfile)
+router.get('/mobile/:id', userController.getUserProfileMobile)
 
 router.get('/filtered', userController.getFilteredUsers);
 router.get('/:id', userController.getUserById)
