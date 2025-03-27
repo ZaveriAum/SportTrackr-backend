@@ -49,7 +49,7 @@ router.put('/:leagueId', [
 ] , validator, leagueController.updateLeague);
 router.post('/:leagueId', upload.single('file'), leagueController.uploadLeagueLogo);
 router.delete('/:leagueId', leagueController.deleteLeague);
-
+router.get('/league-points-table/:leagueId', leagueController.getLeaguePointsTable);
 
 
 module.exports = router;

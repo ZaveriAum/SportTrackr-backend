@@ -18,4 +18,6 @@ router.get("/players/:teamId",teamController.getTeamPlayers)
 router.get("/league/:id",teamController.getTeamsByLeagueId)
 router.get("/:id",teamController.getTeamById)
 router.delete("/", teamController.deleteTeam)
+router.get('/team-players/:id', teamController.getTeamPlayersByLeagueId);
+router.post('/join-team/:id', teamController.joinTeam);
 module.exports = router;

@@ -147,6 +147,7 @@ const updateTeam = async (userEmail, data, file, teamId) => {
       awayColor = teamToUpdate.awayColor,
       description = teamToUpdate.description,
       teamVisibility = teamToUpdate.teamVisibility,
+      password = teamToUpdate.password
     } = teamInfo;
 
     if (name !== teamToUpdate.name) {
@@ -187,6 +188,7 @@ const updateTeam = async (userEmail, data, file, teamId) => {
       teamLogoUrl,
       teamVisibility,
       teamId,
+      password
     ];
 
     const updateQuery = `
@@ -197,8 +199,9 @@ const updateTeam = async (userEmail, data, file, teamId) => {
       home_color = COALESCE($3, home_color),
       away_color = COALESCE($4, away_color),
       logo_url = COALESCE($5, logo_url),
-      team_visibility = COALESCE($6, team_visibility)
-    WHERE id = $7
+      team_visibility = COALESCE($6, team_visibility),
+      password = COALESCE($7, password)
+    WHERE id = $8
     RETURNING *;
   `;
 
@@ -451,7 +454,105 @@ const getTeamPlayers = async (teamId) => {
   }
 };
 
+const getTeamPlayersByLeagueId = async (leagueId) => {
+  try {
+    if (!leagueId) {
+      throw new AppError("League ID is required", 400);
+    }
 
+    const teamsQuery = `
+      SELECT 
+          t.id, 
+          t.name,
+          t.logo_url AS "logoUrl", 
+          t.team_visibility AS "teamVisibility", 
+          t.password AS "teamPassword",
+          CONCAT(u.first_name, ' ', u.last_name) AS "ownerName",
+          o.id AS "ownerId",
+          o.picture_url AS "ownerLogoUrl",
+          CONCAT(c.first_name, ' ', c.last_name) AS "captainName",
+          c.id AS "captainId",
+          c.picture_url AS "captainLogoUrl",
+          l.league_name AS "leagueName",
+          -- Get players excluding owner and captain
+          json_agg(
+              DISTINCT jsonb_build_object(
+                  'id', p.id,
+                  'name', CONCAT(p.first_name, ' ', p.last_name),
+                  'logoUrl', p.picture_url
+              )
+          ) AS "players"
+      FROM 
+          teams t
+      LEFT JOIN 
+          users u ON t.owner_id = u.id  -- Owner details
+      LEFT JOIN 
+          users o ON t.owner_id = o.id  -- Owner details (repeating for clarity)
+      LEFT JOIN 
+          users c ON t.captain_id = c.id  -- Captain details
+      LEFT JOIN 
+          leagues l ON t.league_id = l.id  
+      LEFT JOIN 
+          users p ON t.id = p.team_id AND p.id != t.owner_id AND p.id != t.captain_id  -- Exclude owner and captain from players
+      WHERE 
+          t.league_id = $1
+      GROUP BY 
+          t.id, u.first_name, u.last_name, l.league_name, o.id, o.picture_url, c.id, c.picture_url;
+    `;
+    const result = await pool.query(teamsQuery, [leagueId]);
+
+    const teams = await Promise.all(
+      result.rows.map(async (team) => {
+        const teamLogoUrl = team.logoUrl ? await getObjectSignedUrl(team.logoUrl) : null;
+        team.logoUrl = teamLogoUrl;
+
+        const ownerLogoUrl = team.ownerLogoUrl ? await getObjectSignedUrl(team.ownerLogoUrl) : null;
+        team.ownerLogoUrl = ownerLogoUrl;
+
+        const captainLogoUrl = team.captainLogoUrl ? await getObjectSignedUrl(team.captainLogoUrl) : null;
+        team.captainLogoUrl = captainLogoUrl;
+
+        team.players = await Promise.all(
+          team.players.map(async (player) => {
+            const playerLogoUrl = player.logoUrl ? await getObjectSignedUrl(player.logoUrl) : null;
+            player.logoUrl = playerLogoUrl;
+            return player;
+          })
+        );
+
+        return team;
+      })
+    );
+
+    return teams;
+  } catch (e) {
+    throw new AppError(`${e.message}` || "Unknown Error", e.statusCode || 500);
+  }
+};
+
+const joinTeam = async (user, teamId, password)=>{
+  try{
+    if (user.teamId === teamId || user.teamId)
+      throw new AppError("Already in Team", 400);
+
+    const leagueTimings = await pool.query(`SELECT l.end_time, t.team_visibility, t.password FROM leagues l JOIN teams t ON t.league_id = l.id WHERE t.id = $1`, [teamId]);
+
+    if((!leagueTimings.rows[0].team_visibility && await bcrypt.compare(password,  leagueTimings.rows[0].password )) || leagueTimings.rows[0].team_visibility){
+
+      const today = new Date();
+      const endTime = new Date(leagueTimings.rows[0].end_time)
+      
+      if (today > endTime)
+        throw new AppError("League is Finished", 400)
+
+      await pool.query(`UPDATE users SET team_id=$1 WHERE email = $2`, [teamId, user.email])
+    }else{
+      throw new AppError("Invalid Password")
+    }
+  }catch(e){
+    throw new AppError(e.message || "Unknow Error", e.statusCode || 500);
+  }
+}
 
 module.exports = {
   createTeam,
@@ -461,4 +562,6 @@ module.exports = {
   getTeamByLeagueOwner,
   deleteTeam,
   getTeamPlayers
+  getTeamPlayersByLeagueId,
+  joinTeam
 };

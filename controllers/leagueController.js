@@ -93,6 +93,17 @@ const getLeagueStats = async(req,res,next)=>{
     }   
 }
 
+const getLeaguePointsTable = async (req, res, next) => {
+    try{
+        const pointsTable = await leagueService.getLeaguePointsTable(req.params.leagueId);
+        res.status(200).json({
+            pointsTable
+        });
+    }catch(e){
+        next(e);
+    }
+} 
+
 module.exports = {
     getAllLeagues,
     getLeague,
@@ -102,4 +113,5 @@ module.exports = {
     deleteLeague,
     getLeagueNamesByOwner,
     getLeagueStats
+    getLeaguePointsTable
 }
