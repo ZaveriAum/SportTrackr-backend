@@ -84,6 +84,15 @@ const getLeagueNamesByOwner = async (req,res,next)=>{
     }
 }
 
+const getLeagueStats = async(req,res,next)=>{
+    try{
+        res.status(200).json(await leagueService.getLeagueStats(req.user.teamId))
+    }
+    catch(e){
+        next(e);
+    }   
+}
+
 module.exports = {
     getAllLeagues,
     getLeague,
@@ -91,5 +100,6 @@ module.exports = {
     updateLeague,
     uploadLeagueLogo,
     deleteLeague,
-    getLeagueNamesByOwner
+    getLeagueNamesByOwner,
+    getLeagueStats
 }
