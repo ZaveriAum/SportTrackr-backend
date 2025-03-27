@@ -342,7 +342,6 @@ const uploadHighlights = async (user, files, body) => {
   const uploadPromises = highlightVideos.map(async (file, index) => {
     const highlight = highlightsData[index];
     
-    // Log each highlight and file before processing
     console.log(`Processing file: ${file.originalname}`);
     console.log(`Highlight Data: matchId = ${highlight.matchId}, playerId = ${highlight.playerId}, type = ${highlight.type}`);
     
@@ -808,6 +807,56 @@ const getMatchesByUser = async (userId) => {
     throw new Error("Internal Server Error");
   }
 };
+const getHighlights = async () => {
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT 
+    h.id, 
+    h.match_id, 
+    h.highlight_url, 
+    h.highlight_type, 
+    h.highlight_from, 
+    m.match_time
+FROM highlights h
+JOIN matches m ON m.id = h.match_id
+ORDER BY m.match_time DESC
+LIMIT 7;
+    `;
+    const { rows } = await client.query(query);
+    return rows;
+  } catch (error) {
+    console.error("Error fetching highlights:", error);
+    throw new AppError("Failed to retrieve highlights.", 500);
+  } 
+};
+
+const getHighlightsByUser = async (userId) => {
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT 
+          h.id, 
+          h.match_id, 
+          h.highlight_url, 
+          h.highlight_type, 
+          h.highlight_from, 
+          m.match_time
+      FROM highlights h
+      JOIN matches m ON m.id = h.match_id
+      WHERE h.highlight_from = $1
+      ORDER BY m.match_time DESC
+      LIMIT 7;
+    `;
+    const { rows } = await client.query(query, [userId]);
+    return rows;
+  } catch (error) {
+    console.error("Error fetching user highlights:", error);
+    throw new AppError("Failed to retrieve user highlights.", 500);
+  } finally {
+    client.release();
+  }
+};
 
 module.exports = {
   updateMatch,
@@ -820,5 +869,7 @@ module.exports = {
   createMatch,
   getDataCreateMatch,
   deleteMatch,
-  getMatchesByUser
+  getMatchesByUser,
+  getHighlights,
+  getHighlightsByUser
 };

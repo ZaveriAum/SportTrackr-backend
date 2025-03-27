@@ -161,6 +161,28 @@ const deleteMatch = async (req, res) => {
   }
 };
 
+const getHighlights = async (req, res) => {
+  try {
+    const matchData = await matchService.getHighlights();
+    console.log(matchData)
+    res.json(matchData);
+  } catch (error) {
+    console.error("Controller Error:", error.message);
+    res.status(500).json({ error: "Error fetching matches" });
+  }
+};
+
+
+const getHighlightsByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const matchesData = await matchService.getHighlightsByUser(userId);
+    res.json(matchesData);
+  } catch (error) {
+    console.error("Controller Error:", error.message);
+    res.status(500).json({ error: "Error fetching highlights" });
+  }
+};
 module.exports = {
   updateMatch,
   getStats,
@@ -172,5 +194,7 @@ module.exports = {
   createMatch,
   getDataCreateMatch,
   deleteMatch,
-  getMatchesByUser
+  getMatchesByUser,
+  getHighlights,
+  getHighlightsByUser
 };
