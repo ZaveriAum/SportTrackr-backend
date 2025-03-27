@@ -28,4 +28,5 @@ router.post('/createMatches', matchController.createMatch);
 router.get('/createMatches/:leagueId', matchController.getDataCreateMatch);
 router.delete("/:matchId", matchController.deleteMatch)
 
-  module.exports = router;
+
+module.exports = router;

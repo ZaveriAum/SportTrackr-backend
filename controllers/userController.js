@@ -46,8 +46,9 @@ const updateUserPassword = async(req, res, next) => {
 
 const uploadProfilePhoto = async(req, res, next) => {
     try{
-        await userService.uploadProfilePhoto(req.user.email, req.file);
+        const profilePictureUrl = await userService.uploadProfilePhoto(req.user.email, req.file);
         res.status(200).json({
+            profilePictureUrl: profilePictureUrl,
             message: "Profile Photo Added"
         })
     }catch(e){
@@ -62,11 +63,20 @@ const getFilteredUsers = async (req, res, next) => {
 
       res.json(users);
     } catch (err) {
-      console.error('Error fetching filtered users:', err);
-      res.status(500).send('Error fetching users');
+      next(err);
     }
   };
   
+const toggleProfile = async (req, res, next) => {
+    try{
+        await userService.toggleProfile(req.user.email);
+        res.status(200).json({
+            message : "Visibility Changed Successfully"
+        })
+    }catch(e){
+        next(e);
+    }
+}
 
 module.exports = {
     getUserProfile,
@@ -74,5 +84,6 @@ module.exports = {
     updateUserProfile,
     updateUserPassword,
     uploadProfilePhoto,
-    getFilteredUsers
+    getFilteredUsers,
+    toggleProfile
 }

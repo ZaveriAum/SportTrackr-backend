@@ -27,7 +27,7 @@ const getAllLeagues = async () => {
 
         const url = league.logo_url
             ? await getObjectSignedUrl(league.logo_url)
-            : await getObjectSignedUrl(DEFAULT_LEAGUE_LOGO)
+            : null
         
         league.logo_url = url
         return league;
@@ -68,7 +68,7 @@ const getLeague = async (id) => {
     const league = query.rows[0];
     const url = league.logo_url
             ? await getObjectSignedUrl(league.logo_url)
-            : await getObjectSignedUrl(DEFAULT_LEAGUE_LOGO)
+            : null
         
     league.logo_url = url
     return toCamelCase(league) ;
@@ -313,6 +313,67 @@ const getLeagueNamesByStatistician = async (userId) => {
       throw new AppError(e.message || "Error finding leagues", e.statusCode || 500);
   }
 };
+const getLeaguePointsTable = async (leagueId) => {
+  try{
+    const teamsList = await pool.query(`
+      WITH match_scores AS (
+        SELECT 
+            m.id AS match_id,
+            u.team_id AS team_id,
+            t.name AS team_name,
+            COALESCE(SUM(us.goals), 0) AS total_goals
+        FROM matches m
+        JOIN users u ON u.team_id IN (m.home_team_id, m.away_team_id)
+        JOIN teams t ON u.team_id = t.id
+        LEFT JOIN user_stats us ON us.user_id = u.id AND us.match_id = m.id
+        GROUP BY m.id, u.team_id, t.name
+        ),
+        match_results AS (
+            SELECT 
+            ms1.match_id,
+            ms1.team_id AS team_id,
+            ms1.team_name,
+            ms1.total_goals,
+            ms2.team_id AS opponent_team_id,
+            ms2.total_goals AS opponent_goals,
+            CASE 
+                WHEN ms1.total_goals > ms2.total_goals THEN 3
+                WHEN ms1.total_goals = ms2.total_goals THEN 1
+                ELSE 0
+            END AS points
+        FROM match_scores ms1
+        JOIN match_scores ms2 ON ms1.match_id = ms2.match_id AND ms1.team_id != ms2.team_id
+        )
+        SELECT 
+            t.id AS team_id,
+            t.name AS team_name,
+          t.logo_url as team_logo,
+            COALESCE(SUM(mr.points), 0) AS total_points,
+            COUNT(mr.match_id) AS matches_played,
+            SUM(CASE WHEN mr.points = 3 THEN 1 ELSE 0 END) AS wins,
+            SUM(CASE WHEN mr.points = 1 THEN 1 ELSE 0 END) AS draws,
+            SUM(CASE WHEN mr.points = 0 THEN 1 ELSE 0 END) AS losses
+        FROM teams t
+        LEFT JOIN match_results mr ON t.id = mr.team_id
+        WHERE t.league_id = $1
+        GROUP BY t.league_id, t.id, t.name
+        ORDER BY total_points DESC, wins DESC;
+      `,[leagueId]);
+    let teams = teamsList.rows;
+    await Promise.all(
+      teams.map(async (team) => {
+        const url = team.team_logo
+            ? await getObjectSignedUrl(team.team_logo)
+            : null
+        team.team_logo = url
+        return team;
+      })
+    );
+    return teams;
+  }catch(e){
+    throw new AppError(e.message || 'Unknown Error', e.statusCode || 500);
+  }
+}
 
 module.exports = {
   updateLeague,
@@ -323,5 +384,6 @@ module.exports = {
   uploadLeagueLogo,
   deleteLeague,
   getLeagueNamesByOwner,
-  getLeagueNamesByStatistician
+  getLeagueNamesByStatistician,
+  getLeaguePointsTable
 }

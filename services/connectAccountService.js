@@ -2,9 +2,12 @@ const stripe = require('../config/stripe');
 const {AppError, BAD_REQUEST} = require('../utilities/errorCodes')
 const pool = require('../config/db')
 
-
 const createConnectAccountLink = async (user) => {
   try {
+
+    if(user.teamId){
+      throw new AppError("Team Owner cannot be League Owner", 400);
+    }
 
     const query = await pool.query('Select first_name, last_name from users where email=$1 and owner_status=$2', [user.email, false])
 

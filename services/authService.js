@@ -60,12 +60,15 @@ const register = async (body, token) => {
 
     try{
 
-        const { firstName, lastName, password, confirmPassword } = body;
+        const { firstName, lastName, password, confirmPassword, agreed } = body;
 
         // Check if passwords match
         if (password !== confirmPassword) {
             throw new AppError(BAD_REQUEST.PASSWORD_MISMATCH, 400);
         }
+
+        if (!agreed || agreed === false)
+            throw new AppError("Please accept Terms and Condition to Move Forward", 400);
 
         const decode = jwt.verify(token, process.env.EMAIL_TOKEN_SECRET);
 
@@ -83,7 +86,7 @@ const register = async (body, token) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Insert user into database
-        const user = await pool.query('INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING *', [firstName, lastName, decode.email, hashedPassword]);
+        const user = await pool.query('INSERT INTO users (first_name, last_name, email, password, agreed_terms, terms_version) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *', [firstName, lastName, decode.email, hashedPassword, true, process.env.TERMS_CONDITIONS_VERSION]);
 
         // Adding "user" role to first time users
         await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)', [user.rows[0].id, 1]);

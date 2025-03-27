@@ -38,9 +38,8 @@ const getTeamsByLeagueId = async(req,res,next)=>{
 }
 
 const getTeamById = async(req,res,next)=>{
-    const teamId = req.params.id
-    
     try{
+        const teamId = req.params.id
         const team = await teamService.getTeamById(teamId)
         res.status(200).json({
             team
@@ -70,11 +69,35 @@ const deleteTeam = async(req, res, next) => {
         next(e);
     }
 }
+
+const getTeamPlayersByLeagueId = async(req, res, next) => {
+    try{
+        const teams = await teamService.getTeamPlayersByLeagueId(req.params.id)
+        res.status(200).json({
+            teams
+        })
+    }catch(e){
+        next(e);
+    }
+}
+
+const joinTeam = async(req, res, next) => {
+    try{
+        await teamService.joinTeam(req.user, req.params.id, req.body.password);
+        res.status(200).json({
+        })
+    }catch(e){
+        next(e);
+    }
+}
+
 module.exports = {
     updateTeam,
     createTeam,
     getTeamsByLeagueId,
     getTeamById,
     getTeamByLeagueOwner,
-    deleteTeam
+    deleteTeam,
+    getTeamPlayersByLeagueId,
+    joinTeam
 }
