@@ -98,6 +98,15 @@ const getLeagueNamesByStatistician = async (req, res, next) => {
     }
 };
 
+const getLeagueStats = async(req,res,next)=>{
+    try{
+        res.status(200).json(await leagueService.getLeagueStats(req.user.teamId))
+    }
+    catch(e){
+        next(e);
+    }   
+}
+
 const getLeaguePointsTable = async (req, res, next) => {
     try{
         const pointsTable = await leagueService.getLeaguePointsTable(req.params.leagueId);
@@ -108,14 +117,7 @@ const getLeaguePointsTable = async (req, res, next) => {
         next(e);
     }
 } 
-const getLeagueStats = async(req,res,next)=>{
-    try{
-        res.status(200).json(await leagueService.getLeagueStats(req.user.teamId))
-    }
-    catch(e){
-        next(e);
-    }   
-}
+
 
 module.exports = {
     getAllLeagues,
@@ -127,5 +129,6 @@ module.exports = {
     getLeagueNamesByOwner,
     getLeagueNamesByStatistician,
     getLeaguePointsTable,
-    getLeagueStats
+    getLeagueStats,
+    getLeaguePointsTable
 }

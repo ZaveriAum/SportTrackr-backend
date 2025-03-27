@@ -71,6 +71,16 @@ const deleteTeam = async(req, res, next) => {
 }
 
 
+const getTeamPlayers = async(req,res,next)=>{
+    const teamId = req.params.teamId
+    try{
+        const teamPlayers = await teamService.getTeamPlayers(teamId)
+        res.status(200).json(teamPlayers)
+      }catch(e){
+        next(e);
+    }
+}
+
 const getTeamPlayersByLeagueId = async(req, res, next) => {
     try{
         const teams = await teamService.getTeamPlayersByLeagueId(req.params.id)
@@ -82,15 +92,8 @@ const getTeamPlayersByLeagueId = async(req, res, next) => {
     }
 }
 
-const getTeamPlayers = async(req,res,next)=>{
-    const teamId = req.params.teamId
-    try{
-        const teamPlayers = await teamService.getTeamPlayers(teamId)
-        res.status(200).json(teamPlayers)
-    }catch(e){
-        next(e);
-    }
-}
+
+
 
 const joinTeam = async(req, res, next) => {
     try{

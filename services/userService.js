@@ -61,7 +61,6 @@ const getUserProfile = async (email) => {
   }
 };
 
-
 const getUserProfileMobile = async (userId) => {
   try {
     const visibilityQuery = `SELECT profile_visibility FROM users WHERE id = $1`;
