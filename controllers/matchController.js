@@ -60,10 +60,10 @@ const getMatchesByLeagueId = async (req, res) => {
   }
 };
 
-const getMatchesByUser = async (req, res) => {
+const getMatchesByTeamId = async (req, res) => {
   try {
-    const { userId } = req.params;
-    const matchesData = await matchService.getMatchesByUser(userId);
+    const { teamId } = req.params;
+    const matchesData = await matchService.getMatchesByTeamId(teamId);
     res.json(matchesData);
   } catch (error) {
     console.error("Controller Error:", error.message);
@@ -161,10 +161,27 @@ const deleteMatch = async (req, res) => {
   }
 };
 
-const getHighlights = async (req, res) => {
+const getGoalHighlights = async (req, res) => {
   try {
-    const matchData = await matchService.getHighlights();
-    console.log(matchData)
+    const matchData = await matchService.getGoalHighlights();
+    res.json(matchData);
+  } catch (error) {
+    console.error("Controller Error:", error.message);
+    res.status(500).json({ error: "Error fetching matches" });
+  }
+};
+const getDribbleHighlights = async (req, res) => {
+  try {
+    const matchData = await matchService.getDribbleHighlights();
+    res.json(matchData);
+  } catch (error) {
+    console.error("Controller Error:", error.message);
+    res.status(500).json({ error: "Error fetching matches" });
+  }
+};
+const getSaveHighlights = async (req, res) => {
+  try {
+    const matchData = await matchService.getSaveHighlights();
     res.json(matchData);
   } catch (error) {
     console.error("Controller Error:", error.message);
@@ -194,7 +211,9 @@ module.exports = {
   createMatch,
   getDataCreateMatch,
   deleteMatch,
-  getMatchesByUser,
-  getHighlights,
-  getHighlightsByUser
+  getMatchesByTeamId,
+  getGoalHighlights,
+  getHighlightsByUser,
+  getSaveHighlights,
+  getDribbleHighlights,
 };

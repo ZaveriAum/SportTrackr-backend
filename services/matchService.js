@@ -701,19 +701,9 @@ const deleteMatch = async (matchId) => {
     client.release();
   }
 };
-
-const getMatchesByUser = async (userId) => {
+const getMatchesByTeamId = async (teamId) => {  // Pass teamId directly
   try {
-    const userTeamQuery = `SELECT team_id FROM users WHERE id = $1`;
-    const userTeamResult = await pool.query(userTeamQuery, [userId]);
-
-    if (userTeamResult.rows.length === 0 || !userTeamResult.rows[0].team_id) {
-      return { message: "User is not assigned to a team", matches: [] };
-    }
-
-    const teamId = userTeamResult.rows[0].team_id;
-
-    // Fetch matches
+    // Fetch matches where the specified team is involved
     const matchesQuery = `
       SELECT 
         m.id AS match_id,
@@ -734,12 +724,11 @@ const getMatchesByUser = async (userId) => {
         (m.home_team_id = $1 OR m.away_team_id = $1) 
         AND er.role_id = 3;
     `;
-
     const matchesResult = await pool.query(matchesQuery, [teamId]);
     const matches = matchesResult.rows || [];
 
     if (matches.length === 0) {
-      return { message: "No matches found for this user", matches: [] };
+      return { message: "No matches found for this team", matches: [] };
     }
 
     // Extract match IDs as integers
@@ -761,7 +750,6 @@ const getMatchesByUser = async (userId) => {
       WHERE m.id = ANY($1::INTEGER[]) 
       GROUP BY m.id;
     `;
-
     const goalsResult = await pool.query(teamGoalsQuery, [matchIds]);
     const goalsData = goalsResult.rows || [];
 
@@ -807,21 +795,25 @@ const getMatchesByUser = async (userId) => {
     throw new Error("Internal Server Error");
   }
 };
-const getHighlights = async () => {
+
+const getGoalHighlights = async () => {
   const client = await pool.connect();
   try {
     const query = `
-      SELECT 
-          h.id, 
-          h.match_id, 
-          h.highlight_url, 
-          h.highlight_type, 
-          h.highlight_from, 
-          m.match_time
-      FROM highlights h
-      JOIN matches m ON m.id = h.match_id
-      ORDER BY m.match_time DESC
-      LIMIT 7;
+          SELECT 
+    h.id, 
+    h.match_id, 
+    h.highlight_url, 
+    h.highlight_type, 
+    h.highlight_from, 
+    m.match_time,
+    CONCAT(u.first_name, ' ', u.last_name) as full_name
+    FROM highlights h
+    JOIN matches m ON m.id = h.match_id
+    JOIN users u ON u.id = h.highlight_from
+    WHERE h.highlight_type = 'Goal'
+    ORDER BY m.match_time DESC
+    LIMIT 7;
     `;
     
     const { rows } = await client.query(query);
@@ -844,7 +836,86 @@ const getHighlights = async () => {
     client.release();
   }
 };
+const getDribbleHighlights = async () => {
+  const client = await pool.connect();
+  try {
+    const query = `
+       SELECT 
+    h.id, 
+    h.match_id, 
+    h.highlight_url, 
+    h.highlight_type, 
+    h.highlight_from, 
+    m.match_time,
+    CONCAT(u.first_name, ' ', u.last_name) as full_name
+    FROM highlights h
+    JOIN matches m ON m.id = h.match_id
+    JOIN users u ON u.id = h.highlight_from
+    WHERE h.highlight_type = 'Dribble'
+    ORDER BY m.match_time DESC
+    LIMIT 7;
+    `;
+    
+    const { rows } = await client.query(query);
 
+    // Generate signed URLs for each highlight
+    const highlights = await Promise.all(
+      rows.map(async (highlight) => ({
+        ...highlight,
+        highlight_url: highlight.highlight_url
+          ? await getObjectSignedUrl(highlight.highlight_url) // Convert to signed URL
+          : null,
+      }))
+    );
+
+    return highlights;
+  } catch (error) {
+    console.error("Error fetching highlights:", error);
+    throw new AppError("Failed to retrieve highlights.", 500);
+  } finally {
+    client.release();
+  }
+};
+const getSaveHighlights = async () => {
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT 
+    h.id, 
+    h.match_id, 
+    h.highlight_url, 
+    h.highlight_type, 
+    h.highlight_from, 
+    m.match_time,
+    CONCAT(u.first_name, ' ', u.last_name) as full_name
+    FROM highlights h
+    JOIN matches m ON m.id = h.match_id
+    JOIN users u ON u.id = h.highlight_from
+    WHERE h.highlight_type = 'Save'
+    ORDER BY m.match_time DESC
+    LIMIT 7;
+    `;
+    
+    const { rows } = await client.query(query);
+
+    // Generate signed URLs for each highlight
+    const highlights = await Promise.all(
+      rows.map(async (highlight) => ({
+        ...highlight,
+        highlight_url: highlight.highlight_url
+          ? await getObjectSignedUrl(highlight.highlight_url) // Convert to signed URL
+          : null,
+      }))
+    );
+
+    return highlights;
+  } catch (error) {
+    console.error("Error fetching highlights:", error);
+    throw new AppError("Failed to retrieve highlights.", 500);
+  } finally {
+    client.release();
+  }
+};
 const getHighlightsByUser = async (userId) => {
   const client = await pool.connect();
   try {
@@ -896,7 +967,9 @@ module.exports = {
   createMatch,
   getDataCreateMatch,
   deleteMatch,
-  getMatchesByUser,
-  getHighlights,
-  getHighlightsByUser
+  getMatchesByTeamId,
+  getGoalHighlights,
+  getDribbleHighlights,
+  getSaveHighlights,
+  getHighlightsByUser,
 };
