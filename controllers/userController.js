@@ -11,6 +11,18 @@ const getUserProfile = async (req, res, next) => {
     }
 }
 
+const getUserProfileMobile = async(req,res,next)=>{
+    try{
+        const id = req.params.id;
+        const userProfile = await userService.getUserProfileMobile(id)
+        res.status(200).json({
+            userProfile
+        })
+    }
+    catch(e){
+        next(e)
+    }
+}
 const getUserById = async (req, res, next) => {
     try{
         const user = await userService.getUserById(req.params.id)
@@ -80,6 +92,7 @@ const toggleProfile = async (req, res, next) => {
 
 module.exports = {
     getUserProfile,
+    getUserProfileMobile,
     getUserById,
     updateUserProfile,
     updateUserPassword,
