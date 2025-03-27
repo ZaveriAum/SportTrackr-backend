@@ -47,6 +47,8 @@ const generateTokens = async (user) => {
     const payload = {
         id: user.id,
         email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
         roles: [...roles, ...league_roles],
         teamId: user.team_id || null
     };

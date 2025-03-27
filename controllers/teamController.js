@@ -76,6 +76,11 @@ const getTeamPlayersByLeagueId = async(req, res, next) => {
         res.status(200).json({
             teams
         })
+const getTeamPlayers = async(req,res,next)=>{
+    const teamId = req.params.teamId
+    try{
+        const teamPlayers = await teamService.getTeamPlayers(teamId)
+        res.status(200).json(teamPlayers)
     }catch(e){
         next(e);
     }
@@ -99,5 +104,6 @@ module.exports = {
     getTeamByLeagueOwner,
     deleteTeam,
     getTeamPlayersByLeagueId,
-    joinTeam
+    joinTeam,
+    getTeamPlayers
 }
