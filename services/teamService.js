@@ -12,6 +12,7 @@ const {sendTeamDeletionToOwner, sendTeamDeletionToPlayer, sendRefundConfirmation
 
 const createTeam = async (user, data, file) => {
   try {
+
     if (user.teamId !== null) {
       throw new AppError(`${UNAUTHORIZED.ACCESS_DENIED}`, 401);
     }
@@ -58,7 +59,7 @@ const createTeam = async (user, data, file) => {
       );
     }
 
-    if (teamVisibility==true && !password) {
+    if (teamVisibility===false && !password) {
       throw new AppError("Private teams require a password.", 400);
     }
 
@@ -146,7 +147,6 @@ const updateTeam = async (userEmail, data, file, teamId) => {
       awayColor = teamToUpdate.awayColor,
       description = teamToUpdate.description,
       teamVisibility = teamToUpdate.teamVisibility,
-      captainId = teamToUpdate.captainId,
     } = teamInfo;
 
     if (name !== teamToUpdate.name) {
@@ -179,11 +179,9 @@ const updateTeam = async (userEmail, data, file, teamId) => {
         "team-logos"
       );
     }
-
     const values = [
       name,
       description,
-      captainId,
       homeColor,
       awayColor,
       teamLogoUrl,
@@ -196,20 +194,16 @@ const updateTeam = async (userEmail, data, file, teamId) => {
     SET 
       name = COALESCE($1, name),
       description = COALESCE($2, description),
-      captain_id = COALESCE($3, captain_id),
-      home_color = COALESCE($4, home_color),
-      away_color = COALESCE($5, away_color),
-      logo_url = COALESCE($6, logo_url),
-      team_visibility = COALESCE($7, team_visibility)
-    WHERE id = $8
+      home_color = COALESCE($3, home_color),
+      away_color = COALESCE($4, away_color),
+      logo_url = COALESCE($5, logo_url),
+      team_visibility = COALESCE($6, team_visibility)
+    WHERE id = $7
     RETURNING *;
   `;
 
     const updatedTeam = await pool.query(updateQuery, values);
-
-    updatedTeam.rows[0].logoUrl = await getObjectSignedUrl(
-      updatedTeam.rows[0].logo_url
-    );
+    updatedTeam.rows[0].logoUrl = updatedTeam.rows[0].logoUrl ? getObjectSignedUrl(updatedTeam.rows[0].logoUrl) : null;
 
     return toCamelCase(updatedTeam.rows[0]);
   } catch (e) {
@@ -228,8 +222,6 @@ const updateTeam = async (userEmail, data, file, teamId) => {
 
 const getTeamsByLeagueId = async (leagueId) => {
   try {
-
-    console.log("In get team")
 
     if (!leagueId) {
       throw new AppError("League ID is required", 400);
@@ -265,7 +257,7 @@ WHERE
 
     const teams = await Promise.all(
       result.rows.map(async (team) => {
-        const signedUrl = await getObjectSignedUrl(team.logoUrl);
+        const signedUrl = team.logoUrl ? await getObjectSignedUrl(team.logoUrl) : null;
         const { logoUrl, ...teamWithoutLogoUrl } = team;
         return { ...teamWithoutLogoUrl, signedUrl };
       })
@@ -321,7 +313,7 @@ const getTeamById = async (teamId) => {
     }
 
     const team = result.rows[0];
-    const signedUrl = await getObjectSignedUrl(team.logoUrl);
+    const signedUrl = team.logoUrl ? await getObjectSignedUrl(team.logoUrl) : null;
     const { logoUrl, ...teamWithoutLogoUrl } = team;
     return { ...teamWithoutLogoUrl, signedUrl };
 
