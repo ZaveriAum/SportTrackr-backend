@@ -61,26 +61,7 @@ const getUserProfile = async (email) => {
   }
 };
 
-    try {
-        const result = await pool.query('SELECT first_name, last_name, picture_url FROM users WHERE email = $1', [email]);
-        const user = result.rows[0];
-        if (!user) {
-            throw new AppError(BAD_REQUEST.USER_NOT_EXISTS, 400)
-        }
 
-        const pictureUrl = user.picture_url
-            ? await getObjectSignedUrl(user.picture_url)
-            : await getObjectSignedUrl(DEFAULT_PROFILE_PICTURE);
-
-        return {
-            first_name: user.first_name,
-            last_name: user.last_name,
-            picture_url: pictureUrl,
-        }
-    } catch (e) {
-        throw new AppError('Unknown Error', 500)
-    }
-}
 const getUserProfileMobile = async (userId) => {
   try {
     const visibilityQuery = `SELECT profile_visibility FROM users WHERE id = $1`;
