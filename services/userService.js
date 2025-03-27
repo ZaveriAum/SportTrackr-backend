@@ -59,6 +59,7 @@ const getUserProfileMobile = async (userId) => {
           t.logo_url AS "teamLogo", 
 		  t.name  AS "teamName",
           l.logo_url AS "leagueLogo",
+		  t.id as "teamId",
           u.email,
           u.picture_url, 
           SUM(us.goals) AS "totalGoals",
@@ -81,9 +82,9 @@ const getUserProfileMobile = async (userId) => {
       LEFT JOIN 
           MostFrequentPosition mfp ON mfp.user_id = u.id
       WHERE 
-          u.id = $1 
+          u.id = $1
       GROUP BY 
-          u.id,t.name, u.first_name, u.last_name, t.logo_url, l.logo_url, mfp.position_played, u.picture_url
+          u.id,t.name,t.id, u.first_name, u.last_name, t.logo_url, l.logo_url, mfp.position_played, u.picture_url
       LIMIT 1;`,
       [userId] 
     );
@@ -125,6 +126,7 @@ const getUserProfileMobile = async (userId) => {
       mostFrequentPosition: user.mostFrequentPosition,
       pictureUrl: pictureUrl,
       teamLogo: teamLogoUrl,
+      teamId:user.teamId,
       teamName:user.teamName,
       leagueLogo: leagueLogoUrl,
     };

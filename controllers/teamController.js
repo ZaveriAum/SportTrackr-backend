@@ -70,11 +70,22 @@ const deleteTeam = async(req, res, next) => {
         next(e);
     }
 }
+
+const getTeamPlayers = async(req,res,next)=>{
+    const teamId = req.params.teamId
+    try{
+        const teamPlayers = await teamService.getTeamPlayers(teamId)
+        res.status(200).json(teamPlayers)
+    }catch(e){
+        next(e);
+    }
+}
 module.exports = {
     updateTeam,
     createTeam,
     getTeamsByLeagueId,
     getTeamById,
     getTeamByLeagueOwner,
-    deleteTeam
+    deleteTeam,
+    getTeamPlayers
 }

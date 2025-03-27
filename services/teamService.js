@@ -1,5 +1,6 @@
 require("dotenv").config();
 const pool = require("../config/db");
+const DEFAULT_PROFILE_PICTURE='defualts/default_profile_photo.jpeg'
 const { AppError, UNAUTHORIZED, BAD_REQUEST, FORBIDDEN } = require("../utilities/errorCodes");
 
 const { toCamelCase } = require("../utilities/utilities");
@@ -409,11 +410,63 @@ const deleteTeam = async(email, teamId)=>{
   }
 }
 
+const getTeamPlayers = async (teamId) => {
+  try {
+    const query = `
+      SELECT 
+        u.email, 
+        u.first_name, 
+        u.last_name,
+        u.id,
+        u.profile_visibility,
+        u.picture_url,
+        CASE 
+            WHEN t.captain_id = u.id THEN 'true'
+            ELSE 'false'
+        END AS captain_status
+      FROM 
+        users u
+      JOIN 
+        teams t ON u.team_id = t.id
+      WHERE 
+        u.team_id = $1
+    `;
+
+    const results = await pool.query(query, [teamId]);
+
+    const playersWithSignedUrls = await Promise.all(
+      results.rows.map(async (user) => { 
+        const signedUrl = user.picture_url
+          ? await getObjectSignedUrl(user.picture_url) 
+          : await getObjectSignedUrl(DEFAULT_PROFILE_PICTURE);
+
+        return {
+          email: user.email,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          id: user.id,
+          pictureUrl: signedUrl, 
+          captainStatus: user.captain_status, 
+          profileVisibility:user.profile_visibility
+        };
+      })
+    );
+
+    return playersWithSignedUrls; 
+  } catch (error) {
+    console.error('Error fetching team players:', error);
+    throw new Error('Failed to fetch team players');
+  }
+};
+
+
+
 module.exports = {
   createTeam,
   updateTeam,
   getTeamsByLeagueId,
   getTeamById,
   getTeamByLeagueOwner,
-  deleteTeam
+  deleteTeam,
+  getTeamPlayers
 };
