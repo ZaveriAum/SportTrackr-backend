@@ -112,6 +112,6 @@ module.exports = {
     uploadLeagueLogo,
     deleteLeague,
     getLeagueNamesByOwner,
-    getLeagueStats
+    getLeagueStats,
     getLeaguePointsTable
 }

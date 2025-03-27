@@ -110,7 +110,7 @@ module.exports = {
     getTeamById,
     getTeamByLeagueOwner,
     deleteTeam,
-    getTeamPlayers
+    getTeamPlayers,
     getTeamPlayersByLeagueId,
     joinTeam
 }
