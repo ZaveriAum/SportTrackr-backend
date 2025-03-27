@@ -812,23 +812,37 @@ const getHighlights = async () => {
   try {
     const query = `
       SELECT 
-    h.id, 
-    h.match_id, 
-    h.highlight_url, 
-    h.highlight_type, 
-    h.highlight_from, 
-    m.match_time
-FROM highlights h
-JOIN matches m ON m.id = h.match_id
-ORDER BY m.match_time DESC
-LIMIT 7;
+          h.id, 
+          h.match_id, 
+          h.highlight_url, 
+          h.highlight_type, 
+          h.highlight_from, 
+          m.match_time
+      FROM highlights h
+      JOIN matches m ON m.id = h.match_id
+      ORDER BY m.match_time DESC
+      LIMIT 7;
     `;
+    
     const { rows } = await client.query(query);
-    return rows;
+
+    // Generate signed URLs for each highlight
+    const highlights = await Promise.all(
+      rows.map(async (highlight) => ({
+        ...highlight,
+        highlight_url: highlight.highlight_url
+          ? await getObjectSignedUrl(highlight.highlight_url) // Convert to signed URL
+          : null,
+      }))
+    );
+
+    return highlights;
   } catch (error) {
     console.error("Error fetching highlights:", error);
     throw new AppError("Failed to retrieve highlights.", 500);
-  } 
+  } finally {
+    client.release();
+  }
 };
 
 const getHighlightsByUser = async (userId) => {
@@ -848,8 +862,20 @@ const getHighlightsByUser = async (userId) => {
       ORDER BY m.match_time DESC
       LIMIT 7;
     `;
+    
     const { rows } = await client.query(query, [userId]);
-    return rows;
+
+    // Generate signed URLs for each highlight
+    const highlights = await Promise.all(
+      rows.map(async (highlight) => ({
+        ...highlight,
+        highlight_url: highlight.highlight_url
+          ? await getObjectSignedUrl(highlight.highlight_url)
+          : null,
+      }))
+    );
+
+    return highlights;
   } catch (error) {
     console.error("Error fetching user highlights:", error);
     throw new AppError("Failed to retrieve user highlights.", 500);
@@ -857,6 +883,7 @@ const getHighlightsByUser = async (userId) => {
     client.release();
   }
 };
+
 
 module.exports = {
   updateMatch,
