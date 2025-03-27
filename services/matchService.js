@@ -369,11 +369,11 @@ const uploadHighlights = async (user, files, body) => {
 
       let fileUrl;
       try {
-        fileUrl = await uploadFile(file.buffer, key, file.mimetype);
+        fileUrl = await uploadFile(file.buffer, key, file.mimetype, "highlights");
         console.log(`File uploaded successfully: ${fileUrl}`);
       } catch (error) {
         console.error('Error uploading file:', error);
-        throw error; // Re-throw to trigger rollback
+        throw error; 
       }
 
       const updateHighlightQuery = `
