@@ -114,58 +114,70 @@ GROUP BY l.league_name, l.price;
   return leagues.rows;
 };
 
-const getFilteredEmployees = async (user,leagueId,roleId,name)=>{
-  const filteredEmployeeQuery = `SELECT 
-  CONCAT(u.first_name, ' ', u.last_name) AS "fullName",
-  l.league_name AS "league",       
-  lr.role_name AS "leagueRole",
-  u.picture_url as pictureUrl
-FROM league_emp le
-JOIN employee_roles er 
-  ON le.id = er.employee_id
-JOIN users u
-  ON le.user_id = u.id
-JOIN leagues l
-  ON le.league_id = l.id   
-JOIN league_roles lr
-  ON er.role_id = lr.id    
-WHERE 
-  (CAST($1 AS INTEGER) IS NULL OR le.league_id = $1)  -- Cast $1 as INTEGER
-  AND (CAST($2 AS INTEGER) IS NULL OR er.role_id = $2)  -- Cast $2 as INTEGER
-AND (
-    CAST($3 AS TEXT) IS NULL OR CONCAT(u.first_name, ' ', u.last_name) ILIKE '%' || CAST($3 AS TEXT) || '%'
-  );
+  const getFilteredEmployees = async (user,leagueId,roleId,name)=>{
+    const filteredEmployeeQuery = `SELECT 
+        CONCAT(u.first_name, ' ', u.last_name) AS "fullName",
+        l.league_name AS "league",       
+        lr.role_name AS "leagueRole",
+        u.picture_url as pictureUrl
+      FROM league_emp le
+      JOIN employee_roles er 
+        ON le.id = er.employee_id
+      JOIN users u
+        ON le.user_id = u.id
+      JOIN leagues l
+        ON le.league_id = l.id   
+      JOIN league_roles lr
+        ON er.role_id = lr.id    
+      WHERE 
+        (CAST($1 AS INTEGER) IS NULL OR le.league_id = $1)  -- Cast $1 as INTEGER
+        AND (CAST($2 AS INTEGER) IS NULL OR er.role_id = $2)  -- Cast $2 as INTEGER
+      AND (
+          CAST($3 AS TEXT) IS NULL OR CONCAT(u.first_name, ' ', u.last_name) ILIKE '%' || CAST($3 AS TEXT) || '%'
+        );
 
-`
+      `
 
-if(!leagueId){
-  leagueId = null
-}
-if(!roleId){
-  roleId = null
-}
-if(!name){
-  name=null
-}
+      if(!leagueId){
+        leagueId = null
+      }
+      if(!roleId){
+        roleId = null
+      }
+      if(!name){
+        name=null
+      }
 
 
-const filteredEmployees = await pool.query(filteredEmployeeQuery, [leagueId, roleId, name]);
+      const filteredEmployees = await pool.query(filteredEmployeeQuery, [leagueId, roleId, name]);
 
-const employees = Promise.all(filteredEmployees.rows.map(async (employee) => {
-  return {
-    fullName: employee.fullName,
-    league: employee.league,
-    leagueRole: employee.leagueRole,
-    signedUrl: employee.pictureUrl ? await getObjectSignedUrl(employee.pictureUrl) : null,
-  };
-}));
+      const employees = Promise.all(filteredEmployees.rows.map(async (employee) => {
+        return {
+          fullName: employee.fullName,
+          league: employee.league,
+          leagueRole: employee.leagueRole,
+          signedUrl: employee.pictureUrl ? await getObjectSignedUrl(employee.pictureUrl) : null,
+        };
+      }));
 
-return employees;
+      return employees;
 };
+
+const getLeaguesEmployeesIn = async(email)=>{
+  try{
+    const leagueIds = await pool.query(`SELECT league_id from league_emp le JOIN employee_roles er ON le.id = er.employee_id JOIN users u ON u.id = le.user_id
+                                  WHERE email=$1`, [email]);
+    
+    return leagueIds.rows.map((league)=>league.league_id);
+  }catch(e){
+    throw new AppError(e.message || "Unknown Error", e.statusCode, 500);
+  }
+}
 
 module.exports = {
   getEmployees,
   assignEmployeeToLeague,
   getAdminDashboardStats,
-  getFilteredEmployees
+  getFilteredEmployees,
+  getLeaguesEmployeesIn
 };

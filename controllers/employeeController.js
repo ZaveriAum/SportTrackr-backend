@@ -42,9 +42,21 @@ const getFilteredEmployees = async (req, res,next) => {
     }
   };
 
+const getLeaguesEmployeesIn = async (req, res, next) => {
+    try{
+        const leagueIds = await employeeService.getLeaguesEmployeesIn(req.user.email);
+        res.status(200).json({
+            leagueIds
+        });
+    }catch(e){
+        next(e);
+    }
+}
+
 module.exports = {
     getLeagues,
     assignEmployeeToLeague,
     getAdminDashboardStats,
-    getFilteredEmployees
+    getFilteredEmployees,
+    getLeaguesEmployeesIn
 }

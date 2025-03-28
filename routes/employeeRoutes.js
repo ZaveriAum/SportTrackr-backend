@@ -18,6 +18,7 @@ router.get('/:leagueId', employeeController.getLeagues);
 
 router.post('/:leagueId', employeeController.assignEmployeeToLeague)
 
+router.get('/employeed/in', employeeController.getLeaguesEmployeesIn);
 
 
 module.exports = router;
