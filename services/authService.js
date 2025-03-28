@@ -116,7 +116,12 @@ const login = async (body) => {
             }
 
             const tokens = await generateTokens(user);
-            const roles = await findUserRoles(email);
+
+            // Get user roles and league roles
+            const userRoles = await findUserRoles(email);
+            const leagueRoles = await findLeagueRoles(email);
+
+            const roles = [...userRoles, ...leagueRoles];
             return {tokens,roles}
 
         } else {
@@ -141,7 +146,6 @@ const refresh = async (cookies) => {
         const user = (await findUser(decode.email)).rows[0];
         const roles = await findUserRoles(user.email);
         const league_roles = await findLeagueRoles(user.email);
-
         if (!user) {
             throw new AppError(UNAUTHORIZED.UNAUTHORIZED, 401);
         }

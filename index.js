@@ -1,5 +1,5 @@
 const app = require('./app')
-const SERVER_PORT = process.env.SERVER_PORT || 5000
+const SERVER_PORT = process.env.SERVER_PORT || 5001
 
 // home route
 app.get('/', (req, res) => {

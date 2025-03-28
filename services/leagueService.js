@@ -395,7 +395,30 @@ const getLeagueNamesByOwner = async (ownerEmail) => {
       e.statusCode || 401
     );
   }
+}
+
+
+const getLeagueNamesByStatistician = async (userId) => {
+  try {
+      if (!userId) {
+          throw new AppError(UNAUTHORIZED.ACCESS_DENIED, 401);
+      }
+
+      const leagueListQuery = `
+          SELECT leagues.id, league_name AS name
+          FROM leagues
+          JOIN league_emp ON leagues.id = league_emp.league_id
+          JOIN employee_roles er ON er.employee_id = league_emp.id
+          WHERE er.role_id = 2 AND league_emp.user_id = $1;
+      `;
+
+      const leagueList = await pool.query(leagueListQuery, [userId]);
+      return leagueList.rows;
+  } catch (e) {
+      throw new AppError(e.message || "Error finding leagues", e.statusCode || 500);
+  }
 };
+
 
 const getLeagueStats = async (teamId) => {
   const leagueQuery = `SELECT l.id FROM leagues l JOIN teams t ON t.league_id = l.id WHERE t.id=$1`;
@@ -457,6 +480,7 @@ const getLeagueStats = async (teamId) => {
 
   return { topGoalScorers: processedTopScorers };
 };
+
 
 const getLeaguePointsTable = async (leagueId) => {
   try{
@@ -529,6 +553,7 @@ module.exports = {
   uploadLeagueLogo,
   deleteLeague,
   getLeagueNamesByOwner,
+  getLeagueNamesByStatistician,
   getLeagueStats,
   getLeaguePointsTable
 }

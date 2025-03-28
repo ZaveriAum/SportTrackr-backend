@@ -12,6 +12,8 @@ const upload = multer({ storage: storage })
 router.use(authenticateToken)
 
 router.get('/', leagueController.getAllLeagues);
+router.get("/leagues-by-statistician/:userId",leagueController.getLeagueNamesByStatistician)
+
 router.get("/leagues-by-owner",leagueController.getLeagueNamesByOwner)
 router.get("/stats",leagueController.getLeagueStats)
 router.get("/:id",leagueController.getLeague)

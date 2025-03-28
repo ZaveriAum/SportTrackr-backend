@@ -554,6 +554,7 @@ const joinTeam = async (user, teamId, password)=>{
   }
 }
 
+
 module.exports = {
   createTeam,
   updateTeam,

@@ -70,6 +70,7 @@ const deleteTeam = async(req, res, next) => {
     }
 }
 
+
 const getTeamPlayers = async(req,res,next)=>{
     const teamId = req.params.teamId
     try{
@@ -86,11 +87,12 @@ const getTeamPlayersByLeagueId = async(req, res, next) => {
         res.status(200).json({
             teams
         })
-
     }catch(e){
         next(e);
     }
 }
+
+
 
 
 const joinTeam = async(req, res, next) => {
@@ -103,6 +105,7 @@ const joinTeam = async(req, res, next) => {
     }
 }
 
+
 module.exports = {
     updateTeam,
     createTeam,
@@ -110,7 +113,7 @@ module.exports = {
     getTeamById,
     getTeamByLeagueOwner,
     deleteTeam,
-    getTeamPlayers,
     getTeamPlayersByLeagueId,
-    joinTeam
+    joinTeam,
+    getTeamPlayers
 }
